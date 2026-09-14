@@ -390,6 +390,35 @@
   [hidden]{display:none !important;}
   @media (prefers-reduced-motion: reduce){*{transition:none !important;}}
 
+  /* ---------- PDF-Download (Beleg) ---------- */
+  .btn-pdf svg{width:15px; height:15px;}
+  .doc-toolbar-meta{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  @media print{
+    :root, :root[data-theme="dark"]{
+      --paper:#f7f2e4; --paper-edge:#e7dcc0; --paper-rule:#d9cba4;
+      --ink-doc:#241d12; --ink-doc-soft:#5c5138;
+    }
+    html, body{background:#fff !important;}
+    .suite-sidebar, .suite-topbar,
+    #view-testdaten > header.rail,
+    #view-testdaten .stage-controls,
+    #view-testdaten .legend,
+    #view-testdaten .doc-toolbar,
+    #view-testdaten .category-picker,
+    #view-testdaten .classification-panel,
+    #view-testdaten footer{
+      display:none !important;
+    }
+    .suite-main{padding:0 !important;}
+    .suite-view{max-width:none !important;}
+    .doc-wrap{margin-top:0 !important;}
+    .document{
+      box-shadow:none !important; border:none !important; border-radius:0 !important;
+    }
+    *{-webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important;}
+    @page{size:A4; margin:14mm;}
+  }
+
   /* ========================= Suite-Shell: Sidebar, Übersicht, Module ========================= */
   .suite-shell{display:flex; min-height:100vh; align-items:stretch;}
   .suite-sidebar{
@@ -698,8 +727,14 @@
 
     <div class="doc-wrap">
       <div class="doc-toolbar">
-        <span class="beleg-id" id="beleg-id"></span>
-        <span class="layout-badge" id="layout-badge"></span>
+        <span class="doc-toolbar-meta">
+          <span class="beleg-id" id="beleg-id"></span>
+          <span class="layout-badge" id="layout-badge"></span>
+        </span>
+        <button class="btn btn-ghost btn-pdf" id="btn-pdf" type="button" title="Diesen Beleg als PDF speichern">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5"/><path d="M4 17v2.4A1.6 1.6 0 0 0 5.6 21h12.8a1.6 1.6 0 0 0 1.6-1.6V17"/></svg>
+          PDF herunterladen
+        </button>
       </div>
       <div class="document" id="document" aria-live="polite"></div>
     </div>
@@ -1896,6 +1931,14 @@ function renderLetter(mode){
 }
 
 document.getElementById("btn-new").addEventListener("click", newBeleg);
+document.getElementById("btn-pdf").addEventListener("click", ()=>{
+  const originalTitle = document.title;
+  const belegId = (document.getElementById("beleg-id").textContent || "Beleg").trim();
+  document.title = "GOAeneu_Beleg_" + belegId.replace(/[^A-Za-z0-9-]+/g, "_");
+  const restoreTitle = () => { document.title = originalTitle; window.removeEventListener("afterprint", restoreTitle); };
+  window.addEventListener("afterprint", restoreTitle);
+  window.print();
+});
 document.getElementById("btn-theme").addEventListener("click", ()=>{
   const root = document.documentElement;
   const cur = root.getAttribute("data-theme");
