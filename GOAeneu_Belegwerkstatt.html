@@ -731,9 +731,9 @@
           <span class="beleg-id" id="beleg-id"></span>
           <span class="layout-badge" id="layout-badge"></span>
         </span>
-        <button class="btn btn-ghost btn-pdf" id="btn-pdf" type="button" title="Diesen Beleg als PDF speichern">
+        <button class="btn btn-ghost btn-pdf" id="btn-pdf" type="button" title="Diesen Beleg als PDF herunterladen">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5"/><path d="M4 17v2.4A1.6 1.6 0 0 0 5.6 21h12.8a1.6 1.6 0 0 0 1.6-1.6V17"/></svg>
-          PDF herunterladen
+          <span id="btn-pdf-label">PDF herunterladen</span>
         </button>
       </div>
       <div class="document" id="document" aria-live="polite"></div>
@@ -1931,13 +1931,73 @@ function renderLetter(mode){
 }
 
 document.getElementById("btn-new").addEventListener("click", newBeleg);
-document.getElementById("btn-pdf").addEventListener("click", ()=>{
+let pdfLibsPromise = null;
+function loadPdfLibs(){
+  if(pdfLibsPromise) return pdfLibsPromise;
+  function loadScript(src){
+    return new Promise((resolve, reject)=>{
+      const s = document.createElement("script");
+      s.src = src;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error("Skript konnte nicht geladen werden: " + src));
+      document.head.appendChild(s);
+    });
+  }
+  pdfLibsPromise = Promise.all([
+    loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"),
+    loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js")
+  ]).catch(err => { pdfLibsPromise = null; throw err; });
+  return pdfLibsPromise;
+}
+
+function printFallback(belegId){
   const originalTitle = document.title;
-  const belegId = (document.getElementById("beleg-id").textContent || "Beleg").trim();
   document.title = "GOAeneu_Beleg_" + belegId.replace(/[^A-Za-z0-9-]+/g, "_");
   const restoreTitle = () => { document.title = originalTitle; window.removeEventListener("afterprint", restoreTitle); };
   window.addEventListener("afterprint", restoreTitle);
   window.print();
+}
+
+document.getElementById("btn-pdf").addEventListener("click", async ()=>{
+  const btn = document.getElementById("btn-pdf");
+  const label = document.getElementById("btn-pdf-label");
+  const belegId = (document.getElementById("beleg-id").textContent || "Beleg").trim();
+  const filename = "GOAeneu_Beleg_" + belegId.replace(/[^A-Za-z0-9-]+/g, "_") + ".pdf";
+  const originalLabel = label.textContent;
+  btn.disabled = true;
+  label.textContent = "PDF wird erstellt …";
+  try{
+    await loadPdfLibs();
+    if(document.fonts && document.fonts.ready) await document.fonts.ready;
+    const target = document.getElementById("document");
+    const canvas = await window.html2canvas(target, { scale:2, backgroundColor:"#ffffff", useCORS:true });
+    const imgData = canvas.toDataURL("image/png");
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit:"mm", format:"a4" });
+    const marginMM = 10;
+    const pageWidthMM = pdf.internal.pageSize.getWidth();
+    const pageHeightMM = pdf.internal.pageSize.getHeight();
+    const imgWidthMM = pageWidthMM - marginMM*2;
+    const usableHeightMM = pageHeightMM - marginMM*2;
+    const imgHeightMM = canvas.height * imgWidthMM / canvas.width;
+    let heightLeftMM = imgHeightMM;
+    let positionMM = marginMM;
+    pdf.addImage(imgData, "PNG", marginMM, positionMM, imgWidthMM, imgHeightMM);
+    heightLeftMM -= usableHeightMM;
+    while(heightLeftMM > 0){
+      pdf.addPage();
+      positionMM = marginMM - (imgHeightMM - heightLeftMM);
+      pdf.addImage(imgData, "PNG", marginMM, positionMM, imgWidthMM, imgHeightMM);
+      heightLeftMM -= usableHeightMM;
+    }
+    pdf.save(filename);
+  }catch(err){
+    console.warn("Direkter PDF-Download nicht verfügbar, Druckdialog wird stattdessen geöffnet.", err);
+    printFallback(belegId);
+  }finally{
+    btn.disabled = false;
+    label.textContent = originalLabel;
+  }
 });
 document.getElementById("btn-theme").addEventListener("click", ()=>{
   const root = document.documentElement;
