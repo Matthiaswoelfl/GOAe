@@ -949,17 +949,84 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   .flow-arrow{display:flex; align-items:center; padding:0 8px; color:var(--ink-doc-soft); flex:none;}
   .flow-arrow svg{width:18px; height:18px;}
 
-  .source-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-bottom:22px;}
-  @media (max-width:700px){.source-grid{grid-template-columns:1fr;}}
-  .source-card{background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:16px 18px; cursor:pointer; text-align:left;}
-  .source-card:hover{border-color:var(--accent);}
-  .source-card[data-active="true"]{border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 20%, transparent);}
-  .source-card .shead{display:flex; align-items:center; gap:10px; margin-bottom:8px;}
-  .source-card .sicon{width:32px; height:32px; border-radius:8px; background:color-mix(in srgb, var(--accent) 14%, transparent); color:var(--accent-strong); display:flex; align-items:center; justify-content:center; flex:none;}
-  .source-card .sicon svg{width:17px; height:17px;}
-  .source-card .stitle{font-weight:700; font-size:.9rem; color:var(--ink);}
-  .source-card .smeta{font-size:.76rem; color:var(--ink-soft); display:flex; gap:12px; flex-wrap:wrap;}
-  .source-card .smeta b{color:var(--ink); font-variant-numeric:tabular-nums;}
+  /* ---------- Prüfung GOÄ-Bezug: Facet-Sidebar + Datentabelle ---------- */
+  .pr-shell{display:flex; gap:16px; align-items:flex-start;}
+  @media (max-width:880px){.pr-shell{flex-direction:column;}}
+
+  .pr-sidebar{
+    width:216px; flex:none; background:var(--card-bg); border:1px solid var(--card-border);
+    border-radius:12px; padding:16px; position:sticky; top:16px;
+  }
+  @media (max-width:880px){.pr-sidebar{width:100%; position:static;}}
+  .pr-reset{
+    display:block; width:100%; text-align:left; font:600 .74rem "Source Sans 3"; color:var(--accent-strong);
+    background:transparent; border:none; padding:0 0 14px; cursor:pointer;
+  }
+  .pr-reset:hover{text-decoration:underline;}
+  .pr-facet-group{margin-bottom:16px;}
+  .pr-facet-group:last-child{margin-bottom:0;}
+  .pr-facet-label{
+    font:700 .66rem "Source Sans 3"; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .pr-facet-item{
+    display:flex; justify-content:space-between; align-items:center; gap:8px; width:100%;
+    font:500 .82rem "Source Sans 3"; color:var(--ink); background:transparent; border:none; border-radius:7px;
+    padding:6px 8px; cursor:pointer; text-align:left;
+  }
+  .pr-facet-item:hover{background:var(--bg);}
+  .pr-facet-item[data-active="true"]{background:var(--accent); color:var(--accent-contrast);}
+  .pr-facet-item[data-active="true"] .pr-facet-count{background:rgba(255,255,255,.25); color:inherit;}
+  .pr-facet-count{
+    font:700 .68rem "IBM Plex Mono",monospace; color:var(--ink-soft); background:var(--bg);
+    border-radius:999px; padding:1px 7px; min-width:20px; text-align:center;
+  }
+
+  .pr-main{flex:1; min-width:0;}
+  .pr-toolbar{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px;}
+  .pr-search{
+    display:flex; align-items:center; gap:8px; background:var(--card-bg); border:1px solid var(--card-border);
+    border-radius:9px; padding:8px 12px; flex:1; min-width:220px; max-width:420px;
+  }
+  .pr-search svg{width:15px; height:15px; color:var(--ink-soft); flex:none;}
+  .pr-search input{border:none; background:transparent; outline:none; font:500 .84rem "Source Sans 3"; color:var(--ink); width:100%;}
+  .pr-search input::placeholder{color:var(--ink-soft);}
+  .pr-toolbar-right{display:flex; align-items:center; gap:14px;}
+  .pr-count{font-size:.78rem; color:var(--ink-soft); white-space:nowrap;}
+  .pr-export-btn{padding:8px 14px; font-size:.8rem;}
+
+  .pr-table-wrap{background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; overflow-x:auto; margin-bottom:18px;}
+  .pr-table{width:100%; border-collapse:collapse; font-size:.78rem; min-width:620px;}
+  .pr-table thead th{
+    text-align:left; font:700 .64rem "Source Sans 3"; text-transform:uppercase; letter-spacing:.04em;
+    color:var(--ink-soft); padding:11px 10px; border-bottom:1px solid var(--card-border); background:var(--bg);
+    white-space:nowrap;
+  }
+  .pr-table tbody tr{border-bottom:1px solid var(--card-border); cursor:pointer;}
+  .pr-table tbody tr:last-child{border-bottom:none;}
+  .pr-table tbody tr:hover{background:var(--bg);}
+  .pr-table tbody tr[data-active="true"]{background:var(--bg); box-shadow:inset 3px 0 0 var(--accent);}
+  .pr-table td{padding:9px 10px; vertical-align:middle; color:var(--ink);}
+  .pr-col-quelle{display:flex; align-items:center; gap:8px; font-weight:600; white-space:nowrap;}
+  .pr-source-icon{width:17px; height:17px; color:var(--accent-strong); flex:none; display:flex;}
+  .pr-source-icon svg{width:100%; height:100%;}
+  .pr-path{
+    font-family:"IBM Plex Mono",monospace; font-size:.7rem; color:var(--ink-soft);
+    max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .pr-empty-row td{padding:26px 14px; text-align:center; color:var(--ink-soft); font-size:.84rem;}
+
+  .pr-dot{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle;}
+  .pr-dot-direkt{background:var(--cat-violation);}
+  .pr-dot-mittelbar{background:var(--cat-boundary);}
+
+  .pr-badge{display:inline-block; font:700 .68rem "Source Sans 3"; padding:3px 9px; border-radius:999px; white-space:nowrap;}
+  .pr-prio-hoch{background:var(--cat-violation-bg); color:var(--cat-violation);}
+  .pr-prio-mittel{background:var(--cat-boundary-bg); color:var(--cat-boundary);}
+  .pr-prio-niedrig{background:var(--bg); color:var(--ink-soft);}
+  .pr-status-offen{background:var(--bg); color:var(--ink-soft);}
+  .pr-status-in-pruefung{background:var(--cat-conflict-bg); color:var(--cat-conflict);}
+  .pr-status-uebernommen{background:var(--cat-ok-bg); color:var(--cat-ok);}
 </style>
 
 
@@ -1178,8 +1245,33 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         <h1>Prüfung definierter Bereiche auf GOÄ-Bezug</h1>
         <p>Durchsucht die festgelegten Quellenbereiche — ConNet, von der Continentale verantwortete Internetdomänen, PDF-Druckstücke und Tabellen, die die Basis von Programmen bilden — nach GOÄ-Bezug, zeigt die Fundstellen an und schlägt plausible neue Formulierungen vor, die bei Relevanz die neuen tariflichen Leistungen berücksichtigen. Quellen, Fundstellen und Textvorschläge unten sind Beispieldaten zur Veranschaulichung.</p>
       </div>
-      <div class="source-grid" id="pr-source-grid"></div>
-      <div id="pr-detail"></div>
+      <div class="pr-shell">
+        <aside class="pr-sidebar" id="pr-sidebar"></aside>
+        <div class="pr-main">
+          <div class="pr-toolbar">
+            <div class="pr-search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6"/></svg>
+              <input type="text" id="pr-search-input" placeholder="Volltext: Fundstelle, Bereich oder Wortlaut durchsuchen…">
+            </div>
+            <div class="pr-toolbar-right">
+              <span class="pr-count" id="pr-result-count"></span>
+              <button class="btn btn-ghost pr-export-btn" id="pr-export-btn" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5"/><path d="M4 17v2.4A1.6 1.6 0 0 0 5.6 21h12.8a1.6 1.6 0 0 0 1.6-1.6V17"/></svg>
+                Export
+              </button>
+            </div>
+          </div>
+          <div class="pr-table-wrap">
+            <table class="pr-table">
+              <thead>
+                <tr><th>Quelle</th><th>Bereich</th><th>Fundstelle</th><th>GOÄ-Bezug</th><th>Priorität</th><th>Status</th></tr>
+              </thead>
+              <tbody id="pr-table-body"></tbody>
+            </table>
+          </div>
+          <div id="pr-detail"></div>
+        </div>
+      </div>
     </section>
   </main>
 </div>
@@ -2366,6 +2458,27 @@ document.getElementById("btn-pdf").addEventListener("click", async ()=>{
   }
 });
 
+async function saveBlobForViewer(filename, blob){
+  if(typeof window.claude !== "undefined" && typeof window.claude.use === "function"){
+    try{
+      const downloads = await window.claude.use("downloads");
+      if(downloads){
+        await downloads.save({ filename, data: blob });
+        return;
+      }
+    }catch(capErr){
+      if(capErr && capErr.code === "declined") return;
+    }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+}
+
 async function generatePdfAndSave(filename){
   if(typeof window.html2canvas !== "function" || !window.jspdf) throw new Error("PDF-Bibliotheken nicht verfügbar.");
   if(document.fonts && document.fonts.ready){
@@ -2393,19 +2506,7 @@ async function generatePdfAndSave(filename){
     heightLeftMM -= usableHeightMM;
   }
   const pdfBlob = pdf.output("blob");
-  let handled = false;
-  if(typeof window.claude !== "undefined" && typeof window.claude.use === "function"){
-    try{
-      const downloads = await window.claude.use("downloads");
-      if(downloads){
-        await downloads.save({ filename, data: pdfBlob });
-        handled = true;
-      }
-    }catch(capErr){
-      if(capErr && capErr.code === "declined") handled = true;
-    }
-  }
-  if(!handled) pdf.save(filename);
+  await saveBlobForViewer(filename, pdfBlob);
 }
 document.getElementById("btn-theme").addEventListener("click", ()=>{
   const root = document.documentElement;
@@ -2585,73 +2686,210 @@ const PR_ICONS = {
 const PR_SOURCES = [
   {id:"connet", titel:"ConNet", desc:"Internes Wissens- und Arbeitsanweisungsportal für den Kundendienst", seitenGeprueft:1240,
     fundstellen:[
-      {pfad:"ConNet › Abrechnung › Privatärztliche Rechnungen › FAQ Steigerungssatz",
+      {pfad:"ConNet › Abrechnung › Privatärztliche Rechnungen › FAQ Steigerungssatz", kategorie:"Steigerungsfaktor",
         auszug:"„Der Regelhöchstsatz beträgt das 2,3-fache des Gebührensatzes (bei technischen Leistungen 1,8-fach). Eine Überschreitung ist nur mit schriftlicher Begründung des Arztes zulässig.“",
         grund:"GOÄneu (§5) kennt keinen Steigerungsfaktor mit Schwellenwert mehr — der Gebührensatz ist ein fester Eurobetrag je Ziffer. Abweichungen sind nur über die Faktor-Gründe HV/AB/BT/ST/NT möglich.",
-        vorschlag:"„GOÄneu sieht grundsätzlich einen festen Gebührensatz je Ziffer vor. Ein abweichender Faktor ist nur bei individueller Honorarvereinbarung (HV), einer Allgemeinen Bestimmung (AB) oder bei Basis-/Standard-/Notlagentarif-Versicherten (BT/ST/NT) zulässig und muss entsprechend gekennzeichnet sein.“", tarifBezug:false},
-      {pfad:"ConNet › Abrechnung › Analogziffern",
+        vorschlag:"„GOÄneu sieht grundsätzlich einen festen Gebührensatz je Ziffer vor. Ein abweichender Faktor ist nur bei individueller Honorarvereinbarung (HV), einer Allgemeinen Bestimmung (AB) oder bei Basis-/Standard-/Notlagentarif-Versicherten (BT/ST/NT) zulässig und muss entsprechend gekennzeichnet sein.“",
+        tarifBezug:false, goaBezug:"direkt", prioritaet:"hoch", status:"in Prüfung"},
+      {pfad:"ConNet › Abrechnung › Analogziffern", kategorie:"Analogbewertung",
         auszug:"„Analog abgerechnete Leistungen erkennen Sie am Zusatz ‚Analog‘ im Freitext der Rechnung.“",
         grund:"§12 Abs.4 Nr.6 GOÄneu schreibt für Analogleistungen das Präfix „A“ als verbindliche Kennzeichnung vor, nicht einen Freitext-Zusatz.",
-        vorschlag:"„Analogleistungen sind ab GOÄneu am Präfix „A“ in der Vergütungstabelle zu erkennen; die Begründung muss zusätzlich Nummer und Bezeichnung der herangezogenen Basisleistung enthalten.“", tarifBezug:false}
+        vorschlag:"„Analogleistungen sind ab GOÄneu am Präfix „A“ in der Vergütungstabelle zu erkennen; die Begründung muss zusätzlich Nummer und Bezeichnung der herangezogenen Basisleistung enthalten.“",
+        tarifBezug:false, goaBezug:"direkt", prioritaet:"mittel", status:"offen"},
+      {pfad:"ConNet › Abrechnung › Stationäre Behandlung › Minderungssatz", kategorie:"Honorarminderung",
+        auszug:"„Bei stationärer Behandlung ist grundsätzlich ein pauschaler Abschlag von 20% auf die Gebühr vorzunehmen.“",
+        grund:"§6a Abs.1 GOÄneu differenziert: 25% Minderung bei Behandlung durch einen angestellten Krankenhausarzt, aber nur 15% bei Behandlung durch einen Belegarzt — ein einheitlicher 20%-Abschlag ist unzutreffend.",
+        vorschlag:"„Bei stationärer Behandlung mindert sich die Gebühr nach §6a GOÄneu um 25% (Krankenhausarzt) bzw. 15% (Belegarzt). Der zutreffende Minderungssatz richtet sich nach der Arztfunktion, nicht pauschal.“",
+        tarifBezug:false, goaBezug:"direkt", prioritaet:"hoch", status:"in Prüfung"}
     ]},
   {id:"webdomains", titel:"Continentale-Domains", desc:"Von der Continentale verantwortete Internetdomänen, u. a. continentale.de", seitenGeprueft:380,
     fundstellen:[
-      {pfad:"continentale.de/kundenservice/haeufige-fragen/goa-abrechnung",
+      {pfad:"continentale.de/kundenservice/haeufige-fragen/goa-abrechnung", kategorie:"Tarif/Erstattung",
         auszug:"„Für eine einfache Beratung berechnet Ihr Arzt in der Regel 4,66 € (GOÄ-Nr. 1).“",
         grund:"Mit GOÄneu ändern sich Nummerierung und Bewertung: „Persönliche Beratung durch den Arzt“ ist neu Ziffer 1 mit 14,11 € (Dauer unter 10 Minuten) bzw. Ziffer 2 mit 21,21 € (je vollendete 10 Minuten).",
-        vorschlag:"„Für eine Beratung berechnet Ihr Arzt nach GOÄneu 14,11 € (Nr. 1, unter 10 Minuten) bzw. 21,21 € je vollendete 10 Minuten (Nr. 2).“", tarifBezug:true},
-      {pfad:"continentale.de/leistungen/krankenvollversicherung/erstattung",
+        vorschlag:"„Für eine Beratung berechnet Ihr Arzt nach GOÄneu 14,11 € (Nr. 1, unter 10 Minuten) bzw. 21,21 € je vollendete 10 Minuten (Nr. 2).“",
+        tarifBezug:true, goaBezug:"direkt", prioritaet:"hoch", status:"offen"},
+      {pfad:"continentale.de/leistungen/krankenvollversicherung/erstattung", kategorie:"Verweisstruktur",
         auszug:"„Rechnungen werden auf Basis der Gebührenordnung für Ärzte (GOÄ) geprüft und nach dem tariflich vereinbarten Umfang erstattet.“",
         grund:"Allgemeiner Verweis auf „die GOÄ“ — sollte klarstellen, dass seit GOÄneu zusätzlich das maschinenlesbare Rechnungsformular (Anlage 2) Voraussetzung für die Fälligkeit ist.",
-        vorschlag:"„Rechnungen werden auf Basis der aktuell geltenden Gebührenordnung für Ärzte (GOÄ) geprüft. Seit Inkrafttreten von GOÄneu ist zusätzlich die Verwendung des maschinenlesbaren Rechnungsformulars (Anlage 2 GOÄ) Voraussetzung für die Fälligkeit Ihrer Rechnung.“", tarifBezug:false}
+        vorschlag:"„Rechnungen werden auf Basis der aktuell geltenden Gebührenordnung für Ärzte (GOÄ) geprüft. Seit Inkrafttreten von GOÄneu ist zusätzlich die Verwendung des maschinenlesbaren Rechnungsformulars (Anlage 2 GOÄ) Voraussetzung für die Fälligkeit Ihrer Rechnung.“",
+        tarifBezug:false, goaBezug:"mittelbar", prioritaet:"niedrig", status:"übernommen"},
+      {pfad:"continentale.de/kundenservice/haeufige-fragen/hausbesuch-kosten", kategorie:"Verweisstruktur",
+        auszug:"„Fahrtkosten des Arztes zu einem Hausbesuch können als Wegegeld separat abgerechnet werden.“",
+        grund:"§12 Abs.4 Nr.4/5 GOÄneu unterscheidet Wegegeld (Präfix „W“, Entfernung bis 25 km) und Reiseentschädigung (Präfix „R“, über 25 km) als zwei unterschiedliche Positionen mit eigener Kennzeichnungspflicht.",
+        vorschlag:"„Fahrtkosten Ihres Arztes zu einem Hausbesuch werden je nach Entfernung als Wegegeld (bis 25 km, Präfix „W“) oder Reiseentschädigung (über 25 km, Präfix „R“) gesondert ausgewiesen.“",
+        tarifBezug:false, goaBezug:"direkt", prioritaet:"mittel", status:"offen"}
     ]},
   {id:"pdf", titel:"PDF-Druckstücke", desc:"Kundeninformationen, Merkblätter und Antragsunterlagen im PDF-Format", seitenGeprueft:96,
     fundstellen:[
-      {pfad:"Merkblatt_Privatpatient_2023.pdf · Seite 4",
+      {pfad:"Merkblatt_Privatpatient_2023.pdf · Seite 4", kategorie:"Sachkosten",
         auszug:"„Sachkosten wie Verbandmaterial und Einmalspritzen können Ihnen gesondert in Rechnung gestellt werden.“",
         grund:"§10 Abs.2 GOÄneu schließt Einmalspritzen, -kanülen, -handschuhe und Schnellverbandmaterial ausdrücklich von der gesonderten Berechnung aus — diese Kosten sind mit der Gebühr abgegolten.",
-        vorschlag:"„Bestimmte Sachkosten (u. a. Einmalspritzen, -kanülen, Schnellverbandmaterial) sind nach GOÄneu bereits mit der ärztlichen Gebühr abgegolten und dürfen nicht gesondert berechnet werden. Andere Auslagen, z. B. Medikamente, bleiben gesondert erstattungsfähig.“", tarifBezug:false}
+        vorschlag:"„Bestimmte Sachkosten (u. a. Einmalspritzen, -kanülen, Schnellverbandmaterial) sind nach GOÄneu bereits mit der ärztlichen Gebühr abgegolten und dürfen nicht gesondert berechnet werden. Andere Auslagen, z. B. Medikamente, bleiben gesondert erstattungsfähig.“",
+        tarifBezug:false, goaBezug:"direkt", prioritaet:"mittel", status:"in Prüfung"},
+      {pfad:"Antragsunterlagen_Privatpatient_Merkblatt.pdf · Seite 2", kategorie:"Formularpflicht",
+        auszug:"„Reichen Sie uns die Original-Rechnung Ihres Arztes zur Erstattung ein.“",
+        grund:"Seit GOÄneu ist die Verwendung des maschinenlesbaren Rechnungsformulars nach Anlage 2 (§12 GOÄneu) Fälligkeitsvoraussetzung — eine formlose Originalrechnung genügt nicht mehr in jedem Fall.",
+        vorschlag:"„Reichen Sie uns die Rechnung Ihres Arztes im GOÄ-Rechnungsformular (Anlage 2) zur Erstattung ein. Nur so ist die Fälligkeit der Rechnung nach GOÄneu sichergestellt.“",
+        tarifBezug:false, goaBezug:"mittelbar", prioritaet:"mittel", status:"offen"}
     ]},
   {id:"tabellen", titel:"Tabellen & Programmbasis", desc:"Tabellen, die die fachliche Basis von Abrechnungsprogrammen bilden", seitenGeprueft:22,
     fundstellen:[
-      {pfad:"Tarifierungstabelle_GOAE_Basissaetze.xlsx · Blatt „Grundleistungen“",
+      {pfad:"Tarifierungstabelle_GOAE_Basissaetze.xlsx · Blatt „Grundleistungen“", kategorie:"Tarif/Erstattung",
         auszug:"Zeile „Nr. 1 – Beratung – 4,66 €“, Zeile „Nr. 5 – Symptombezogene Untersuchung – 4,66 €“",
         grund:"Diese Tabelle bildet die fachliche Basis für die automatisierte Rechnungsprüfung im Abrechnungsprogramm. Ziffern, Bezeichnungen und Sätze entsprechen der alten GOÄ und stimmen nicht mit dem GOÄneu-Gebührenverzeichnis überein.",
-        vorschlag:"Tabelle auf Basis des GOÄneu-Gebührenverzeichnisses aktualisieren, u. a.: Nr. 1 „Persönliche Beratung durch den Arzt“ (unter 10 Min.) = 14,11 €; Nr. 18 „Vollständige körperliche Untersuchung eines Organsystems“ = 25,44 €. Vollständige Neuabbildung aller Gebührenpositionen erforderlich.", tarifBezug:true}
+        vorschlag:"Tabelle auf Basis des GOÄneu-Gebührenverzeichnisses aktualisieren, u. a.: Nr. 1 „Persönliche Beratung durch den Arzt“ (unter 10 Min.) = 14,11 €; Nr. 18 „Vollständige körperliche Untersuchung eines Organsystems“ = 25,44 €. Vollständige Neuabbildung aller Gebührenpositionen erforderlich.",
+        tarifBezug:true, goaBezug:"direkt", prioritaet:"hoch", status:"offen"},
+      {pfad:"Pruefregeln_Abrechnungsautomat.json › Regel „doppelte_abrechnung“", kategorie:"Komplexleistungen",
+        auszug:"Prüfregel enthält keinen Abgleich auf den Zusatz „soweit nicht in Komplexleistungen enthalten“.",
+        grund:"GOÄneu führt für mehrere Ziffern (u. a. Nr. 721) diesen Zusatz ein — Einzelleistungen dürfen nicht neben einer bereits abgerechneten Komplexleistung erstattet werden. Ohne diese Prüfregel drohen Doppelerstattungen.",
+        vorschlag:"Prüfregel ergänzen: Einzelposition mit Zusatz „soweit nicht in Komplexleistungen enthalten“ gegen im selben Behandlungszeitraum abgerechnete Komplexleistungen abgleichen und bei Überschneidung automatisch kürzen/markieren.",
+        tarifBezug:false, goaBezug:"direkt", prioritaet:"hoch", status:"offen"}
     ]},
 ];
 
-function initPruefung(){
-  const grid = document.getElementById("pr-source-grid");
-  grid.innerHTML = PR_SOURCES.map(s=>
-    '<button class="source-card" type="button" data-src="'+s.id+'" data-active="false">'+
-      '<div class="shead"><span class="sicon">'+PR_ICONS[s.id]+'</span><span class="stitle">'+esc(s.titel)+'</span></div>'+
-      '<div class="smeta"><span>'+esc(s.desc)+'</span></div>'+
-      '<div class="smeta" style="margin-top:8px;"><span><b>'+s.seitenGeprueft.toLocaleString("de-DE")+'</b> Seiten/Dateien geprüft</span><span><b>'+s.fundstellen.length+'</b> Fundstellen</span></div>'+
-    '</button>'
-  ).join("");
-  grid.querySelectorAll(".source-card").forEach(btn=>btn.addEventListener("click", ()=>selectPrSource(btn.dataset.src)));
-  selectPrSource(PR_SOURCES[0].id);
+const PR_ROWS = [];
+PR_SOURCES.forEach(s=>{ s.fundstellen.forEach(f=>{ PR_ROWS.push(Object.assign({sourceId:s.id, sourceTitel:s.titel}, f, {id:PR_ROWS.length})); }); });
+
+const PR_PRIO_ORDER = {hoch:0, mittel:1, niedrig:2};
+const PR_PRIO_LABEL = {hoch:"Hoch", mittel:"Mittel", niedrig:"Niedrig"};
+const PR_STATUS_LABEL = {"offen":"Offen", "in Prüfung":"In Prüfung", "übernommen":"Übernommen"};
+const PR_STATUS_CLASS = {"offen":"offen", "in Prüfung":"in-pruefung", "übernommen":"uebernommen"};
+
+const prState = {sourceId:null, goaBezug:null, prioritaet:null, status:null, search:"", selected:PR_ROWS.length?0:null};
+
+function prFacetCounts(field){
+  const counts = {};
+  PR_ROWS.forEach(r=>{ counts[r[field]] = (counts[r[field]]||0)+1; });
+  return counts;
 }
 
-function selectPrSource(id){
-  document.querySelectorAll("#pr-source-grid .source-card").forEach(b=>{ b.dataset.active = (b.dataset.src===id) ? "true":"false"; });
-  const s = PR_SOURCES.find(x=>x.id===id);
-  const detail = document.getElementById("pr-detail");
-  detail.innerHTML = '<h2 style="margin:0 0 4px;font-size:1.05rem;">'+esc(s.titel)+'</h2>'+
-    '<p style="margin:0 0 18px;color:var(--ink-soft);font-size:.86rem;">'+s.fundstellen.length+' Fundstelle(n) mit GOÄ-Bezug in '+s.seitenGeprueft.toLocaleString("de-DE")+' geprüften Seiten/Dateien.</p>'+
-    s.fundstellen.map(f=>
-      '<div class="finding-card">'+
-        '<div class="finding-head"><span class="finding-loc">'+esc(f.pfad)+'</span>'+
-        (f.tarifBezug?'<span class="tarif-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 15l4-4 3 3 5-6"/></svg>berücksichtigt neue tarifliche Leistungen</span>':'')+
-        '</div>'+
-        '<div class="finding-reason"><b>Warum GOÄ-Bezug:</b> '+esc(f.grund)+'</div>'+
-        '<div class="diff-block">'+
-          '<div class="diff-col old"><span class="diff-label">Bisheriger Text</span>'+esc(f.auszug)+'</div>'+
-          '<div class="diff-col new"><span class="diff-label">Vorschlag neue Formulierung</span>'+esc(f.vorschlag)+'</div>'+
-        '</div>'+
-      '</div>'
+function prFacetGroupHtml(field, label, order, labelMap){
+  const counts = prFacetCounts(field);
+  const keys = order || Object.keys(counts);
+  return '<div class="pr-facet-group">'+
+    '<div class="pr-facet-label">'+esc(label)+'</div>'+
+    keys.filter(k=>counts[k]).map(k=>
+      '<button class="pr-facet-item" type="button" data-field="'+field+'" data-value="'+esc(k)+'" data-active="'+(prState[field]===k?"true":"false")+'">'+
+        '<span>'+esc(labelMap?labelMap[k]:k)+'</span><span class="pr-facet-count">'+counts[k]+'</span>'+
+      '</button>'
+    ).join("") +
+  '</div>';
+}
+
+function renderPrSidebar(){
+  const sourceLabelMap = {}; PR_SOURCES.forEach(s=>sourceLabelMap[s.id]=s.titel);
+  const sidebar = document.getElementById("pr-sidebar");
+  sidebar.innerHTML =
+    '<button class="pr-reset" type="button" id="pr-reset-btn"'+((!prState.sourceId&&!prState.goaBezug&&!prState.prioritaet&&!prState.status&&!prState.search)?' hidden':'')+'>Alle Filter zurücksetzen</button>'+
+    prFacetGroupHtml("sourceId","Quelle", PR_SOURCES.map(s=>s.id), sourceLabelMap)+
+    prFacetGroupHtml("goaBezug","GOÄ-Bezug", ["direkt","mittelbar"], {direkt:"Direkt", mittelbar:"Mittelbar"})+
+    prFacetGroupHtml("prioritaet","Priorität", ["hoch","mittel","niedrig"], PR_PRIO_LABEL)+
+    prFacetGroupHtml("status","Status", ["offen","in Prüfung","übernommen"], PR_STATUS_LABEL);
+  sidebar.querySelectorAll(".pr-facet-item").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const field = btn.dataset.field, value = btn.dataset.value;
+      prState[field] = (prState[field]===value) ? null : value;
+      renderPrSidebar(); renderPrTable();
+    });
+  });
+  const resetBtn = document.getElementById("pr-reset-btn");
+  if(resetBtn) resetBtn.addEventListener("click", ()=>{
+    prState.sourceId=null; prState.goaBezug=null; prState.prioritaet=null; prState.status=null; prState.search="";
+    const input = document.getElementById("pr-search-input"); if(input) input.value="";
+    renderPrSidebar(); renderPrTable();
+  });
+}
+
+function getFilteredPrRows(){
+  const q = prState.search.trim().toLowerCase();
+  return PR_ROWS.filter(r=>
+    (!prState.sourceId || r.sourceId===prState.sourceId) &&
+    (!prState.goaBezug || r.goaBezug===prState.goaBezug) &&
+    (!prState.prioritaet || r.prioritaet===prState.prioritaet) &&
+    (!prState.status || r.status===prState.status) &&
+    (!q || (r.pfad+" "+r.kategorie+" "+r.auszug+" "+r.vorschlag).toLowerCase().includes(q))
+  );
+}
+
+function renderPrTable(){
+  const rows = getFilteredPrRows();
+  const body = document.getElementById("pr-table-body");
+  const countEl = document.getElementById("pr-result-count");
+  if(countEl) countEl.textContent = rows.length+" von "+PR_ROWS.length+" Fundstellen";
+  if(!rows.length){
+    body.innerHTML = '<tr class="pr-empty-row"><td colspan="6">Keine Fundstellen für diese Filterkombination.</td></tr>';
+  } else {
+    body.innerHTML = rows.map(r=>
+      '<tr data-row="'+r.id+'" data-active="'+(prState.selected===r.id?"true":"false")+'">'+
+        '<td class="pr-col-quelle"><span class="pr-source-icon">'+PR_ICONS[r.sourceId]+'</span>'+esc(r.sourceTitel)+'</td>'+
+        '<td>'+esc(r.kategorie)+'</td>'+
+        '<td class="pr-path" title="'+esc(r.pfad)+'">'+esc(r.pfad)+'</td>'+
+        '<td><span class="pr-dot pr-dot-'+r.goaBezug+'"></span>'+(r.goaBezug==="direkt"?"Direkt":"Mittelbar")+'</td>'+
+        '<td><span class="pr-badge pr-prio-'+r.prioritaet+'">'+PR_PRIO_LABEL[r.prioritaet]+'</span></td>'+
+        '<td><span class="pr-badge pr-status-'+PR_STATUS_CLASS[r.status]+'">'+esc(PR_STATUS_LABEL[r.status])+'</span></td>'+
+      '</tr>'
     ).join("");
+  }
+  body.querySelectorAll("tr[data-row]").forEach(tr=>{
+    tr.addEventListener("click", ()=>selectPrRow(parseInt(tr.dataset.row,10)));
+  });
+  if(rows.length && !rows.some(r=>r.id===prState.selected)){
+    selectPrRow(rows[0].id);
+  } else {
+    renderPrDetail();
+  }
+}
+
+function selectPrRow(id){
+  prState.selected = id;
+  document.querySelectorAll("#pr-table-body tr[data-row]").forEach(tr=>{
+    tr.dataset.active = (parseInt(tr.dataset.row,10)===id) ? "true":"false";
+  });
+  renderPrDetail();
+}
+
+function renderPrDetail(){
+  const detail = document.getElementById("pr-detail");
+  const f = PR_ROWS.find(r=>r.id===prState.selected);
+  if(!f){ detail.innerHTML = ""; return; }
+  detail.innerHTML =
+    '<div class="finding-card">'+
+      '<div class="finding-head"><span class="finding-loc">'+esc(f.pfad)+'</span>'+
+      (f.tarifBezug?'<span class="tarif-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 15l4-4 3 3 5-6"/></svg>berücksichtigt neue tarifliche Leistungen</span>':'')+
+      '</div>'+
+      '<div class="finding-reason"><b>Warum GOÄ-Bezug:</b> '+esc(f.grund)+'</div>'+
+      '<div class="diff-block">'+
+        '<div class="diff-col old"><span class="diff-label">Bisheriger Text</span>'+esc(f.auszug)+'</div>'+
+        '<div class="diff-col new"><span class="diff-label">Vorschlag neue Formulierung</span>'+esc(f.vorschlag)+'</div>'+
+      '</div>'+
+    '</div>';
+}
+
+function prCsvField(v){
+  const s = String(v==null?"":v);
+  return /[",\n;]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+
+async function exportPrCsv(){
+  const rows = getFilteredPrRows();
+  const header = ["Quelle","Bereich","Fundstelle","GOÄ-Bezug","Priorität","Status","Bisheriger Text","Formulierungsvorschlag"];
+  const lines = [header.map(prCsvField).join(";")];
+  rows.forEach(r=>{
+    lines.push([r.sourceTitel, r.kategorie, r.pfad, r.goaBezug==="direkt"?"Direkt":"Mittelbar", PR_PRIO_LABEL[r.prioritaet], PR_STATUS_LABEL[r.status], r.auszug, r.vorschlag].map(prCsvField).join(";"));
+  });
+  const csv = "﻿"+lines.join("\r\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+  await saveBlobForViewer("GOAeneu_Pruefung_GOA-Bezug.csv", blob);
+}
+
+function initPruefung(){
+  renderPrSidebar();
+  renderPrTable();
+  const searchInput = document.getElementById("pr-search-input");
+  if(searchInput) searchInput.addEventListener("input", ()=>{ prState.search = searchInput.value; renderPrSidebar(); renderPrTable(); });
+  const exportBtn = document.getElementById("pr-export-btn");
+  if(exportBtn) exportBtn.addEventListener("click", ()=>exportPrCsv());
 }
 
 const hbStatEl = document.getElementById("stat-handbuecher");
