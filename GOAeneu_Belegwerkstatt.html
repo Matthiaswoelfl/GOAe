@@ -1815,7 +1815,7 @@ function applyVerstoss(b){
       p.titel = "";
       addFlag(p,"violation","§12 Abs. 2 Nr. 3 GOÄneu","Titel der Leistungslegende/Kurzbezeichnung fehlt — Pflichtangabe.");
       pp.push({status:"violation", rule:"§12 Abs. 2 Nr. 3 GOÄneu", title:"Titel der Leistungslegende fehlt", detail:"Zu GOÄ-Nr. "+p.goaeNr+" fehlt der für den Patienten verständliche Titel bzw. die Kurzbezeichnung der Leistung. Das Gesetz verlangt „bei Leistungen deren Nummer, die Anzahl und den Titel der Leistungslegende“.",
-        kundentext:kt("Zu einer abgerechneten Leistung fehlt die Leistungsbezeichnung, sodass wir nicht nachvollziehen können, was genau erbracht wurde.","The description of one billed service is missing, so we cannot determine what exactly was provided."),
+        kundentext:kt("Zur GOÄ-Nr. "+p.goaeNr+" fehlt die Kurzbezeichnung der Leistung auf der Rechnung. Ohne diese Angabe können wir nicht nachvollziehen, was genau erbracht wurde.","The short description of the service under GOÄ no. "+p.goaeNr+" is missing from the invoice. Without it we cannot determine what exactly was provided."),
         korrektur:{typ:"streichen", posId:p.id}});
     } else if(subtype==="analog_ohne_praefix"){
       const a = b.fach.analog;
@@ -1824,13 +1824,13 @@ function applyVerstoss(b){
       addFlag(nl,"violation","§12 Abs. 4 Nr. 6 / Abs. 5 GOÄneu","Analog erbrachte Leistung ohne Präfix „A“ abgerechnet — Nummer und Bezeichnung der als gleichwertig erachteten Leistung fehlen der Kennzeichnung.");
       b.positionen.push(nl);
       pp.push({status:"violation", rule:"§12 Abs. 4 Nr. 6 / Abs. 5 GOÄneu", title:"Analogleistung nicht als solche gekennzeichnet", detail:"„"+a.echt+"“ wird über Nr. "+a.basisNr+" abgerechnet, ohne das Präfix „A“ zu setzen. §12 Abs.5 verlangt, dass die entsprechend bewertete Leistung „für den Zahlungspflichtigen verständlich“ sowie Nummer und Bezeichnung der als gleichwertig erachteten Leistung angegeben werden.",
-        kundentext:kt("Eine Leistung wurde nach einer vergleichbaren GOÄ-Nummer abgerechnet, ohne dies als sogenannte Analogleistung zu kennzeichnen. Ohne diese Kennzeichnung können wir die Abrechnung nicht nachvollziehen.","A service was billed under a comparable GOÄ number without being marked as an analogous service. Without this label we cannot verify the billing."),
+        kundentext:kt("Die Leistung „"+a.echt+"“ wurde über GOÄ-Nr. "+a.basisNr+" abgerechnet, ohne als Analogleistung (Präfix „A“) gekennzeichnet zu sein. Ohne diese Kennzeichnung können wir die Abrechnung nicht nachvollziehen.","The service “"+a.echt+"” was billed under GOÄ no. "+a.basisNr+" without being marked as an analogous service (prefix “A”). Without this label we cannot verify the billing."),
         korrektur:{typ:"streichen", posId:nl.id}});
     } else if(subtype==="diagnose_fehlt_unbegruendet"){
       b.diagnose.text = ""; b.diagnose.icd = ""; b.diagnose.entfaellt = false; b.diagnose.entfaelltGrund = null;
       b.diagnoseFlag = true;
       pp.push({status:"violation", rule:"§12 Abs. 2 Nr. 1 GOÄneu (Pflichtangabe)", title:"Diagnoseangabe fehlt ohne erkennbaren Ausnahmegrund", detail:"Der Beleg enthält weder ICD-Code noch Klartext-Diagnose. Anders als beim Ausnahmefall „schutzwürdige Interessen“ ist hier kein Grund für das Entfallen dokumentiert — die Leistungen sind medizinisch nicht nachvollziehbar.",
-        kundentext:kt("Zu Ihrer Rechnung liegt keine Diagnose vor, sodass wir die medizinische Notwendigkeit der abgerechneten Leistungen nicht prüfen können.","No diagnosis was provided with your invoice, so we cannot assess the medical necessity of the billed services."),
+        kundentext:kt("Zu den abgerechneten Leistungen liegt keine Diagnose vor, sodass wir deren medizinische Notwendigkeit nicht prüfen können.","No diagnosis was provided for the billed services, so we cannot assess their medical necessity."),
         korrektur:{typ:"gesamt"}});
     } else if(subtype==="ab_ohne_konkretisierung"){
       const p = pick(b.positionen.filter(x=>x.kind==="leistung"));
@@ -1838,12 +1838,12 @@ function applyVerstoss(b){
       p.begruendung = "Erhöhter Aufwand.";
       addFlag(p,"violation","Kap. 3.9 Faktor-Grund „AB“","Faktor-Grund „AB“ gesetzt, aber die konkrete Allgemeine Bestimmung wird in der Begründung nicht benannt.");
       pp.push({status:"violation", rule:"Kap. 3.9 Faktor-Grund „AB“", title:"Abrechnungsbestimmung nicht konkretisiert", detail:"Bei Faktor-Grund „AB“ verlangt das Rechnungsformular ausdrücklich, dass „die konkrete Allgemeine Bestimmung oder Abrechnungsbestimmung … in der Begründung anzugeben“ ist. Hier steht nur „Erhöhter Aufwand.“ — das erfüllt die Vorgabe nicht.",
-        kundentext:kt("Für einen erhöhten Rechnungsbetrag fehlt die Angabe, auf welche Regelung sich die Erhöhung stützt. Ohne diese Angabe können wir nur den regulären Gebührensatz erstatten.","For an increased invoice amount, there is no indication of which rule justifies the increase. Without this information we can only reimburse the standard fee."),
+        kundentext:kt("Die Leistung nach GOÄ-Nr. "+p.goaeNr+" ("+p.titel+") wurde mit erhöhtem Satz (Faktor-Grund „AB“) abgerechnet, ohne die konkrete Allgemeine Bestimmung zu benennen. Ohne diese Angabe können wir nur den regulären Gebührensatz erstatten.","The service under GOÄ no. "+p.goaeNr+" ("+p.titel+") was billed at an increased rate (reason “AB”) without naming the specific general provision. Without this we can only reimburse the standard fee."),
         korrektur:{typ:"faktor", posId:p.id}});
     } else if(subtype==="rechenfehler"){
       b.summenFehler = round2(randInt(3,18) + Math.random());
       pp.push({status:"violation", rule:"§12 Abs. 2 Nr. 2 GOÄneu / Tabellenfuß", title:"Gesamtrechnungsbetrag stimmt nicht mit den Einzelpositionen überein", detail:"Der ausgewiesene Gesamtrechnungsbetrag weicht von der rechnerisch korrekten Summe der Einzelpositionen um "+euro(b.summenFehler)+" ab.",
-        kundentext:kt("Die Summe der Einzelpositionen ergibt einen anderen Betrag als den ausgewiesenen Rechnungsbetrag. Wir legen daher den rechnerisch korrekten Betrag zugrunde.","The sum of the individual items does not match the stated invoice total. We therefore apply the mathematically correct amount."),
+        kundentext:kt("Die Summe der Einzelpositionen ergibt einen anderen Betrag als den ausgewiesenen Rechnungsbetrag. Wir legen den rechnerisch korrekten Betrag zugrunde.","The sum of the individual items does not match the stated invoice total. We apply the mathematically correct amount."),
         korrektur:{typ:"rechenfehler"}});
     } else if(subtype==="sachkosten_unzulaessig"){
       let sk = b.positionen.find(p=>p.kind==="sachkosten");
@@ -1851,7 +1851,7 @@ function applyVerstoss(b){
       else { sk.begruendung = pick(SACHKOSTEN_UNZULAESSIG); }
       addFlag(sk,"violation","§10 Abs. 2 GOÄneu","Diese Auslage ist im Gesetz ausdrücklich von der gesonderten Berechnung ausgeschlossen.");
       pp.push({status:"violation", rule:"§10 Abs. 2 GOÄneu", title:"Nicht berechnungsfähige Auslage abgerechnet", detail:"„"+sk.begruendung+"“ steht wortgleich auf der Ausschlussliste des §10 Abs.2 GOÄneu (u. a. Einmalspritzen, -kanülen, -handschuhe, Schnellverbandmaterial, Desinfektionsmittel). Diese Kosten sind mit der Gebühr bereits abgegolten und dürfen nicht gesondert als Auslage (Präfix „E“) berechnet werden.",
-        kundentext:kt("Die abgerechnete Auslage gehört zu den Kosten, die bereits mit der ärztlichen Gebühr abgegolten sind, und darf deshalb nicht zusätzlich berechnet werden.","The billed expense is among the costs already covered by the medical fee and therefore cannot be charged separately."),
+        kundentext:kt("Die abgerechnete Auslage „"+sk.begruendung+"“ gehört zu den Kosten, die bereits mit der ärztlichen Gebühr abgegolten sind (§10 Abs. 2 GOÄneu), und darf deshalb nicht zusätzlich berechnet werden.","The billed expense “"+sk.begruendung+"” is among the costs already covered by the medical fee (§10 (2) GOÄneu) and therefore cannot be charged separately."),
         korrektur:{typ:"streichen", posId:sk.id}});
     } else if(subtype==="hv_verbotenes_kapitel"){
       const p = pick(b.positionen.filter(x=>x.kind==="leistung"));
@@ -1860,7 +1860,7 @@ function applyVerstoss(b){
       p.begruendung = "Honorarvereinbarung: Faktor 2,5 (Leistung aus Kapitel M).";
       addFlag(p,"violation","§2 Abs. 1 S. 2 GOÄneu","Honorarvereinbarung für eine Leistung aus Kapitel M — für die Kapitel E, M, N und O ist eine solche Vereinbarung ausdrücklich unzulässig.");
       pp.push({status:"violation", rule:"§2 Abs. 1 S. 2 GOÄneu", title:"Honorarvereinbarung in einem gesetzlich ausgeschlossenen Kapitel", detail:"§2 Abs.1 S.2 GOÄneu schließt eine abweichende Vereinbarung „für Leistungen nach den Kapiteln E, M, N und O“ ausdrücklich aus. Für Nr. "+p.goaeNr+" ist dennoch eine Honorarvereinbarung mit Faktor 2,5 hinterlegt — unzulässig.",
-        kundentext:kt("Für diese Leistung wurde ein individuell erhöhtes Honorar vereinbart, obwohl das für diese Art von Leistung nicht zulässig ist. Wir erstatten daher nur den regulären Gebührensatz.","An individually increased fee was agreed for this service, although this is not permitted for this type of service. We therefore reimburse only the standard fee."),
+        kundentext:kt("Die Leistung nach GOÄ-Nr. "+p.goaeNr+" ("+p.titel+") wurde mit einem individuell vereinbarten Honorar (Faktor 2,5) abgerechnet, was für diese Leistungsart nicht zulässig ist. Wir erstatten daher nur den regulären Gebührensatz.","The service under GOÄ no. "+p.goaeNr+" ("+p.titel+") was billed with an individually agreed fee (factor 2.5), which is not permitted for this type of service. We therefore reimburse only the standard fee."),
         korrektur:{typ:"faktor", posId:p.id}});
     } else if(subtype==="bmi_unter_schwelle"){
       const s = Z.sonoOrgan.sonder;
@@ -1870,7 +1870,7 @@ function applyVerstoss(b){
       b.positionen.push(pos);
       addFlag(pos,"violation",s.quelle,"Angegebener BMI liegt deutlich unter dem für den Zuschlag erforderlichen Schwellenwert von 40.");
       pp.push({status:"violation", rule:s.quelle, title:"BMI-Zuschlag trotz nicht erfüllter Voraussetzung", detail:"Für Nr. "+pos.goaeNr+" wird der "+s.faktor.toFixed(1).replace(".",",")+"-fache Satz berechnet. Aus den angegebenen Körpermaßen errechnet sich ein BMI von "+km.bmi.toFixed(1).replace(".",",")+" — deutlich unter dem in der Bestimmung geforderten Schwellenwert „BMI ≥ 40“. Die Voraussetzung für den Zuschlag liegt damit erkennbar nicht vor.",
-        kundentext:kt("Für diese Untersuchung wurde ein erhöhter Satz berechnet, der erst ab einem bestimmten Körpergewicht im Verhältnis zur Größe zulässig ist. Die angegebenen Maße erreichen diesen Wert nicht, daher können wir nur den regulären Satz erstatten.","An increased fee was charged for this examination, which only applies from a certain weight relative to height. The stated measurements do not reach that threshold, so we can only reimburse the standard fee."),
+        kundentext:kt("Die Leistung nach GOÄ-Nr. "+pos.goaeNr+" ("+pos.titel+") wurde zum "+s.faktor.toFixed(1).replace(".",",")+"-fachen Satz abgerechnet. Dieser Zuschlag setzt einen BMI ≥ 40 voraus; die angegebenen Körpermaße erreichen diesen Wert nicht, daher können wir nur den regulären Satz erstatten.","The service under GOÄ no. "+pos.goaeNr+" ("+pos.titel+") was billed at the "+s.faktor.toFixed(1)+"-fold rate. This surcharge requires a BMI of 40 or higher; the stated measurements do not reach that threshold, so we can only reimburse the standard rate."),
         korrektur:{typ:"faktor", posId:pos.id}});
     } else if(subtype==="bmi_pflichtangabe_fehlt"){
       const s = Z.sonoOrgan.sonder;
@@ -1878,7 +1878,7 @@ function applyVerstoss(b){
       b.positionen.push(pos);
       addFlag(pos,"violation",s.quelle,"Körpermaße (Größe, Gewicht, BMI) fehlen vollständig — Pflichtangabe für diesen Zuschlag.");
       pp.push({status:"violation", rule:s.quelle, title:"BMI-Zuschlag ohne Angabe der Körpermaße", detail:"Für Nr. "+pos.goaeNr+" wird der "+s.faktor.toFixed(1).replace(".",",")+"-fache Satz berechnet, die Begründung nennt aber weder Größe noch Gewicht noch BMI. Die Bestimmung verlangt ausdrücklich: „Die Körpermaße (Größe, Gewicht, BMI) müssen in der Rechnung angegeben werden.“",
-        kundentext:kt("Für diese Untersuchung wurde ein erhöhter Satz berechnet, für den laut Vorgabe Körpergröße, Gewicht und BMI auf der Rechnung stehen müssen. Diese Angaben fehlen, daher können wir zunächst nur den regulären Satz erstatten.","An increased fee was charged for this examination, which requires height, weight and BMI to be stated on the invoice. This information is missing, so we can initially only reimburse the standard fee."),
+        kundentext:kt("Die Leistung nach GOÄ-Nr. "+pos.goaeNr+" ("+pos.titel+") wurde zum erhöhten Satz abgerechnet, doch Körpergröße, Gewicht und BMI fehlen auf der Rechnung. Diese Angaben sind Voraussetzung für den Zuschlag; ohne sie können wir zunächst nur den regulären Satz erstatten.","The service under GOÄ no. "+pos.goaeNr+" ("+pos.titel+") was billed at an increased rate, but height, weight and BMI are missing from the invoice. These details are required for the surcharge; without them we can initially only reimburse the standard rate."),
         korrektur:{typ:"faktor", posId:pos.id}});
     } else if(subtype==="gerinnung_ohne_begruendung"){
       const s = Z.exzisionKlein.sonderGerinnung;
@@ -1886,7 +1886,7 @@ function applyVerstoss(b){
       b.positionen.push(pos);
       addFlag(pos,"violation",s.quelle,"Weder Wirkstoff/Gerinnungsstörung noch der Grund für die nicht mögliche Normalisierung sind genannt.");
       pp.push({status:"violation", rule:s.quelle, title:"Gerinnungsstörungs-Zuschlag ohne Pflichtangaben", detail:"Für Nr. "+pos.goaeNr+" wird der "+s.faktor.toFixed(1).replace(".",",")+"-fache Satz berechnet, die Begründung lautet nur „Erhöhter Aufwand.“ Die Bestimmung verlangt ausdrücklich, dass „die medizinische Indikation und der Grund für die nicht rechtzeitig mögliche Normalisierung der Blutstillung … in der Rechnung angegeben werden“ müssen.",
-        kundentext:kt("Für diesen Eingriff wurde ein erhöhter Satz berechnet, der eine genaue Begründung zur Gerinnungssituation voraussetzt. Diese Begründung fehlt, daher können wir zunächst nur den regulären Satz erstatten.","An increased fee was charged for this procedure, which requires a specific justification regarding the clotting situation. This justification is missing, so we can initially only reimburse the standard fee."),
+        kundentext:kt("Die Leistung nach GOÄ-Nr. "+pos.goaeNr+" ("+pos.titel+") wurde zum erhöhten Satz abgerechnet, doch die erforderliche Begründung zur Gerinnungssituation fehlt. Ohne diese Angabe können wir zunächst nur den regulären Satz erstatten.","The service under GOÄ no. "+pos.goaeNr+" ("+pos.titel+") was billed at an increased rate, but the required justification regarding the clotting situation is missing. Without it we can initially only reimburse the standard rate."),
         korrektur:{typ:"faktor", posId:pos.id}});
     } else if(subtype==="mehrfacheingriff_kein_abschlag"){
       const s = Z.exzisionKlein.sonderMehrfach;
@@ -1895,7 +1895,7 @@ function applyVerstoss(b){
       b.positionen.push(pos1,pos2);
       addFlag(pos2,"violation",s.quelle,"Zweite Hauptleistung an derselben Lokalisation ohne den vorgeschriebenen Abschlag auf "+s.faktor.toFixed(1).replace(".",",")+"-fach abgerechnet.");
       pp.push({status:"violation", rule:s.quelle, title:"Mehrfacheingriff-Abschlag nicht angewendet", detail:"Beide Positionen zu Nr. "+pos2.goaeNr+" betreffen dieselbe Lokalisation mit demselben Zugang in derselben Sitzung. Die Bestimmung schreibt vor: „Sofern an derselben Lokalisation mit demselben Zugang mehrere Eingriffe in zeitlichem Zusammenhang durchgeführt werden, ist ab der zweiten Hauptleistung nur die "+s.faktor.toFixed(1).replace(".",",")+"-fache Gebühr zu berechnen.“ Hier ist die zweite Position aber zum vollen Satz abgerechnet.",
-        kundentext:kt("Für den zweiten Eingriff an derselben Stelle in derselben Sitzung gilt ein reduzierter Satz. Dieser wurde nicht angewendet — wir korrigieren den Betrag entsprechend.","A reduced fee applies to the second procedure at the same site in the same session. This reduction was not applied — we are correcting the amount accordingly."),
+        kundentext:kt("Die zweite Leistung nach GOÄ-Nr. "+pos2.goaeNr+" ("+pos2.titel+") in derselben Sitzung und Lokalisation wurde ohne den vorgeschriebenen reduzierten Satz abgerechnet. Wir korrigieren den Betrag entsprechend.","The second service under GOÄ no. "+pos2.goaeNr+" ("+pos2.titel+") at the same site and session was billed without the required reduced rate. We are correcting the amount accordingly."),
         korrektur:{typ:"mehrfach", posId:pos2.id, faktor:s.faktor}});
     } else if(subtype==="minderung_fehlt"){
       const rolle = pick(["Krankenhausarzt","Belegarzt"]);
@@ -1905,7 +1905,7 @@ function applyVerstoss(b){
       b.minderung = null;
       addFlag(b.positionen[0],"violation","§6a Abs. 1 GOÄneu","Stationäre Behandlung, aber keine Minderung auf der Rechnung ausgewiesen.");
       pp.push({status:"violation", rule:"§6a Abs. 1 GOÄneu", title:"Pflichtminderung bei stationärer Behandlung fehlt", detail:"Die Behandlung ist als „"+art+"“ gekennzeichnet (Rolle: "+rolle+"). §6a Abs.1 GOÄneu schreibt für solche Leistungen zwingend eine Minderung von "+prozent+" % vor — „sind die nach dieser Verordnung berechneten Gebühren um 25 Prozent zu mindern. Die Minderung für Leistungen … von Belegärzten oder niedergelassenen anderen Ärzten beträgt 15 Prozent.“ Auf dieser Rechnung fehlt die Minderung vollständig.",
-        kundentext:kt("Für diese stationäre Behandlung ist gesetzlich ein Abschlag auf die Gebühren vorgeschrieben. Dieser Abschlag fehlt auf der eingereichten Rechnung; wir korrigieren den Betrag entsprechend.","A statutory reduction on the fees is required for this inpatient treatment. This reduction is missing from the submitted invoice; we are adjusting the amount accordingly."),
+        kundentext:kt("Für diese stationäre Behandlung ("+art+", "+rolle+") ist gesetzlich ein Abschlag von "+prozent+" % auf die Gebühren vorgeschrieben. Dieser Abschlag fehlt auf der eingereichten Rechnung; wir korrigieren den Betrag entsprechend.","A statutory "+prozent+"% reduction on the fees is required for this inpatient treatment ("+art+", "+rolle+"). This reduction is missing from the submitted invoice; we are adjusting the amount accordingly."),
         korrektur:{typ:"minderung", prozent}});
     } else if(subtype==="stationaer_sachkosten"){
       const rolle = pick(["Krankenhausarzt","Belegarzt"]);
@@ -1917,7 +1917,7 @@ function applyVerstoss(b){
       b.positionen.push(sk);
       addFlag(sk,"violation","§6a Abs. 2 GOÄneu","Sachkosten trotz Minderungspflicht gesondert berechnet — bei geminderten stationären Gebühren grundsätzlich nicht gesondert berechnungsfähig.");
       pp.push({status:"violation", rule:"§6a Abs. 2 GOÄneu", title:"Sachkosten trotz Minderungspflicht gesondert berechnet", detail:"Die Rechnung weist korrekt eine Minderung von "+prozent+" % aus („"+art+"“, "+rolle+"), berechnet aber zusätzlich Sachkosten gesondert. §6a Abs.2 GOÄneu bestimmt: „Neben den … geminderten Gebühren darf der Arzt Kosten nicht berechnen“, soweit die Leistung Bestandteil der allgemeinen Krankenhausleistungen ist.",
-        kundentext:kt("Neben der bereits geminderten stationären Gebühr wurden zusätzlich Sachkosten berechnet. Das ist bei stationären Leistungen grundsätzlich nicht zulässig — wir streichen diese Position.","In addition to the already-reduced inpatient fee, separate material costs were charged. This is generally not permitted for inpatient services, so we are removing this item."),
+        kundentext:kt("Die zusätzlich berechnete Auslage „"+sk.begruendung+"“ ist neben der bereits geminderten stationären Gebühr nicht gesondert berechnungsfähig (§6a Abs. 2 GOÄneu). Wir streichen diese Position.","The additionally billed expense “"+sk.begruendung+"” cannot be charged separately alongside the already-reduced inpatient fee (§6a (2) GOÄneu). We are removing this item."),
         korrektur:{typ:"streichen", posId:sk.id}});
     }
   });
@@ -2076,8 +2076,8 @@ function buildKuerzungstext(beleg, pp){
   const empf = beleg.empfaenger || beleg.patient;
   const an = anredeText(empf);
   const {zeilen, altGesamt, neuGesamt, diff} = berechneKuerzung(beleg, pp);
-  const lineDe = z => z.gesamt ? "– "+z.grundDe : "– "+(z.titel?z.titel+": ":"")+(z.alt!==null?euro(z.alt)+" → "+euro(z.neu)+" – ":"")+z.grundDe;
-  const lineEn = z => z.gesamt ? "– "+z.grundEn : "– "+(z.titel?z.titel+": ":"")+(z.alt!==null?euro(z.alt)+" → "+euro(z.neu)+" – ":"")+z.grundEn;
+  const lineDe = z => z.gesamt ? "– "+z.grundDe : "– "+(z.alt!==null?euro(z.alt)+" → "+euro(z.neu)+" – ":"")+z.grundDe;
+  const lineEn = z => z.gesamt ? "– "+z.grundEn : "– "+(z.alt!==null?euro(z.alt)+" → "+euro(z.neu)+" – ":"")+z.grundEn;
   const zeilenDe = zeilen.map(lineDe).join("\n");
   const zeilenEn = zeilen.map(lineEn).join("\n");
   const de = an.de+"\n\n"+
