@@ -6,7 +6,7 @@
 <title>GOÄneu Suite</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap">
+<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Caveat:wght@400;600&display=swap">
 <script>
 /*!
  * html2canvas 1.4.1 <https://html2canvas.hertzen.com>
@@ -658,6 +658,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   .lay-c .closing{margin-top:20px; line-height:1.7;}
 
   .schlussvermerk{margin-top:22px; padding-top:12px; border-top:1px dashed var(--paper-rule); font-size:.78rem; font-style:italic; color:var(--ink-doc-soft);}
+
+  .handnotiz{
+    margin:20px 6px 4px; font-family:"Caveat","Segoe Script",cursive; font-weight:600;
+    font-size:1.45rem; line-height:1.25; color:#1f3f73; opacity:.88;
+    display:inline-block; transform:rotate(var(--handnotiz-rot,-1.5deg));
+  }
+  :root[data-theme="dark"] .handnotiz{color:#8fb4e8;}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .handnotiz{color:#8fb4e8;}}
 
   /* Layout D: modern/kompakt, kartenbasiert */
   .lay-d .accent-bar{height:4px; border-radius:3px; background:var(--doc-accent); margin:-4px 0 20px;}
@@ -1375,6 +1383,20 @@ const BEGRUENDUNGEN_MEDIZINISCH = [
   "Erschwerte Untersuchungsbedingungen durch eingeschränkte Mobilität der Patientin/des Patienten",
   "Besondere Schwierigkeit des Krankheitsbildes mit atypischer Symptomatik",
 ];
+/* Handschriftliche Vermerke, wie sie auf eingereichten (gescannten) Rechnungen häufig vorkommen —
+   rein optisch, ohne Auswirkung auf die Prüflogik; nur zur Veranschaulichung von Beleg-Realismus. */
+const HANDNOTIZEN = [
+  "Bitte den Betrag direkt an mich überweisen, danke!",
+  "Bitte um schnelle Bearbeitung, vielen Dank!",
+  "Rückfragen gerne telefonisch, bin tagsüber erreichbar.",
+  "Vielen Dank für die gute Betreuung!",
+  "Bitte um Kulanz, Frist leider knapp verpasst.",
+  "Original liegt bei, bitte Kopie zurücksenden.",
+  "Neue Adresse siehe Rückseite, bitte aktualisieren.",
+  "Danke im Voraus für die schnelle Erstattung!",
+  "Bitte NICHT an die Praxis, sondern direkt an mich überweisen.",
+  "Zur Info: Rechnung wurde bereits privat beglichen.",
+];
 /* §8 Abs. 1 GOÄneu: Wegegeld nach Entfernungsstufe, Tag-/Nachtsatz (Nacht = 20–8 Uhr) */
 function wegegeldBetrag(km, nacht){
   let tag;
@@ -1564,6 +1586,8 @@ function generateStil(){
     kopfSerif: Math.random()<0.4,
     zebra: Math.random()<0.5,
     linien: pick(["fein","kraeftig"]),
+    handnotiz: Math.random()<0.35 ? pick(HANDNOTIZEN) : null,
+    handnotizRot: (Math.random()*5-2.5).toFixed(1)+"deg",
   };
 }
 
@@ -2364,7 +2388,10 @@ function renderDocument(b){
   el.className = classes.join(" ");
   el.style.setProperty("--doc-accent", b.stil.farbe);
   el.style.setProperty("--doc-accent-rgb", hexToRgbTriplet(b.stil.farbe));
-  el.innerHTML = LAYOUT_RENDERERS[b.layout](b);
+  el.style.setProperty("--handnotiz-rot", b.stil.handnotizRot);
+  let html = LAYOUT_RENDERERS[b.layout](b);
+  if(b.stil.handnotiz) html += '<div class="handnotiz">'+esc(b.stil.handnotiz)+'</div>';
+  el.innerHTML = html;
   document.getElementById("beleg-id").textContent = b.id;
   const layoutNames = {a:"Klassisch-tabellarisch", b:"PVS-Stil (Abrechnungsstelle)", c:"Brief-Stil", d:"Modern/kompakt", e:"Klinik-Kopfbogen"};
   document.getElementById("layout-badge").innerHTML = "Kopf-Layout: <b>"+layoutNames[b.layout]+"</b> · Vergütungstabelle: fixe Feldnamen &amp; Reihenfolge lt. Formular";
