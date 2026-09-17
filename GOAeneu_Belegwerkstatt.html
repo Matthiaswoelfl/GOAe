@@ -507,6 +507,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   .source-line strong{color:var(--rail-text); font-weight:600;}
   .source-line + .source-line{margin-top:8px;}
   .source-line.warn svg{color:#e2c05a;}
+  .source-line.ok svg{color:#6fcf97;}
 
   /* ---------- Stage controls ---------- */
   .stage-controls{
@@ -1162,6 +1163,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
       <span><strong>Zentrale Strukturänderung ggü. der alten GOÄ:</strong> § 5 GOÄneu kennt keinen Steigerungsfaktor mit Schwellenwert (2,3-/1,8-fach) mehr — der Gebührensatz ist ein fester Eurobetrag je Ziffer. Ein abweichender Faktor ist nur bei individueller Honorarvereinbarung nach § 2 („HV“, vor Behandlung schriftlich), bei einer Allgemeinen Bestimmung („AB“) oder bei Basis-/Standard-/Notlagentarif-Versicherten („BT“/„ST“/„NT“, § 12 Abs. 2 Nr. 6 i. V. m. § 75 SGB V) zulässig.</span>
     </p>
+    <p class="source-line ok">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+      <span><strong>Zielformat von Continentale bestätigt (Rückfragen vom 15.09.2026):</strong> Testrechnungen werden „beides“ benötigt — strukturierte Daten für die automatisierte Prüfung und Rechnungsdokumente fürs Input Management. Dieses Tool liefert daher zu jedem Beleg sowohl das strukturierte Beleg-Datenmodell als auch das gerenderte Rechnungsdokument inkl. PDF-Download.</span>
+    </p>
     <p class="source-line warn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 16.5h.01M10.3 3.9 2.5 18a1.6 1.6 0 0 0 1.4 2.4h16.2a1.6 1.6 0 0 0 1.4-2.4L13.7 3.9a1.6 1.6 0 0 0-2.8 0Z"/></svg>
       <span><strong>Synthetische Testdaten.</strong> Praxen, Patient:innen, GOÄ-Ziffern und Beträge sind frei erzeugt. Das Formular regelt Rechnungs<em>inhalte</em> und deren Tabellenreihenfolge, nicht das grafische Layout des Rechnungskopfs (Kap. 2.1.2 / 3) — deshalb wechselt hier nur die Kopf-Gestaltung, nie die Feldnamen oder Spaltenreihenfolge der Vergütungstabelle.</span>
@@ -1331,6 +1336,7 @@ const ANALOG = {
   sturzrisiko:      {basisNr:"2",    basisBez:"Persönliche Beratung durch den Arzt (je vollendete 10 Minuten)", satz1:21.21, echt:"KI-gestützte Sturzrisikoanalyse mittels App-basierter Ganganalyse"},
   hautmapping:      {basisNr:"4118", basisBez:"Dermatoskopie mittels Auflichtmikroskopie (bei mehr als 5 Hautläsionen)", satz1:24.99, echt:"KI-gestützte Ganzkörper-Kartierung und Verlaufsvergleich von Pigmentmalen (3D-Totalkörperfotografie)"},
   rhythmusKI:       {basisNr:"2901", basisBez:"Elektrokardiographische Untersuchung mit mindestens zwölf Ableitungen in Ruhe", satz1:29.00, echt:"KI-gestützte Rhythmusanalyse von Smartwatch-EKG-Rohdaten (ärztlicher Over-read)"},
+  mkgPlanungKI:     {basisNr:"18",   basisBez:"Vollständige körperliche Untersuchung eines Organsystems", satz1:25.44, echt:"KI-gestützte 3D-Volumentomographie-Planung für komplexe Kieferoperationen"},
 };
 
 const PRAEFIX_INFO = {
@@ -1427,6 +1433,14 @@ const FACHRICHTUNGEN = [
     ziffern:[Z.beratung,Z.dermatoskopie,Z.kryotherapie,Z.exzisionKlein,Z.blutentnahme],
     analog: ANALOG.hautmapping,
     frueherkennung: Z.frueherkHaut,
+  },
+  {
+    name:"Mund-Kiefer-Gesichtschirurgie", suffix:"Praxis für MKG-Chirurgie",
+    diagnosen:["Retinierter und verlagerter Weisheitszahn 38","Radikuläre Zyste, odontogen","Fraktur des Unterkiefers, geschlossen"],
+    icd:{"Retinierter und verlagerter Weisheitszahn 38":"K01.1","Radikuläre Zyste, odontogen":"K04.8","Fraktur des Unterkiefers, geschlossen":"S02.60"},
+    ziffern:[Z.beratung,Z.einBeratung,Z.organUntersuchung,Z.blutentnahme],
+    analog: ANALOG.mkgPlanungKI,
+    frueherkennung: null,
   },
 ];
 /* Faktor-Grund "HV" im Basis-Generator nur für Leistungen aus Kap. B (Grundleistungen) — §2 Abs.1 S.2 GOÄneu schließt Kap. E/M/N/O aus */
@@ -1745,7 +1759,9 @@ function applyKorrekt(b){
 
 function applyGrenzfall(b){
   const pp = [];
-  const subtype = pick(["hv_wahlleistung","analog_kapitel_m","wegegeld_25km","nachtbesuch_grenze","minderung_rolle","verdachtsdiagnose","bmi_grenzwert_prosa","gerinnung_grenzwertig"]);
+  const grenzfallPool = ["hv_wahlleistung","analog_kapitel_m","wegegeld_25km","nachtbesuch_grenze","minderung_rolle","verdachtsdiagnose","bmi_grenzwert_prosa","gerinnung_grenzwertig"];
+  if(b.fach.name==="Mund-Kiefer-Gesichtschirurgie") grenzfallPool.push("goz_pflicht_korrekt");
+  const subtype = pick(grenzfallPool);
   if(subtype==="hv_wahlleistung"){
     const p = pick(b.positionen.filter(x=>x.kind==="leistung"));
     p.faktorGrund = ["HV"];
@@ -1796,6 +1812,19 @@ function applyGrenzfall(b){
     addFlag(pos,"boundary",s.quelle,"Gerinnungshemmer und Dringlichkeit sind genannt, ob die Interventionszeit dadurch „nahezu verdoppelt“ war, bleibt offen.");
     pp.push({status:"boundary", rule:s.quelle, title:"Gerinnungsstörungs-Zuschlag knapp begründet", detail:"Für Nr. "+pos.goaeNr+" wird der "+s.faktor.toFixed(1).replace(".",",")+"-fache Satz wegen einer Gerinnungsstörung unter DOAK-Therapie angesetzt. Wirkstoff und Dringlichkeit sind genannt — die Bestimmung verlangt aber zusätzlich, dass „die Interventions- bzw. Schnitt-Naht-Zeit nahezu verdoppelt“ war; ob das hier ausreichend belegt ist, ist auslegungsbedürftig.",
       kundentext:kt("Für diesen Eingriff wurde ein erhöhter Satz berechnet, weil eine die Blutgerinnung beeinflussende Medikation vorlag. Wir prüfen, ob der dadurch entstandene Mehraufwand ausreichend belegt ist.","An increased fee was charged for this procedure because of medication affecting blood clotting. We are checking whether the resulting extra effort is sufficiently documented.")});
+  } else if(subtype==="goz_pflicht_korrekt"){
+    const betrag = round2(180 + Math.random()*140);
+    const goz = {
+      id: Math.random().toString(36).slice(2,9), kind:"leistung",
+      anzahl:1, praefixe:[], goaeNr:"GOZ", titel:"Operative Entfernung eines retinierten und verlagerten Zahnes (GOZ-Leistung)",
+      dauer:null, satz1:betrag,
+      begruendung:"Abrechnung nach der Gebührenordnung für Zahnärzte (GOZ), § 6 Abs. 1 GOÄneu — Leistung ist im Gebührenverzeichnis für zahnärztliche Leistungen aufgeführt; die Rechnungsstellung erfolgt dennoch auf dem GOÄ-Formular (Anlage 2). Ziffer und Punktwert hier illustrativ, da kein GOZ-Gebührenverzeichnis vorliegt.",
+      faktorGrund:[], faktor:null, betrag, arztNr:1, flags:[],
+    };
+    b.positionen.push(goz);
+    addFlag(goz,"boundary","§6 Abs. 1 GOÄneu","Zahnärztliche Katalogleistung eines MKG-Chirurgen — Vergütung ausschließlich nach GOZ, Rechnungsstellung dennoch auf dem GOÄ-Formular (Anlage 2).");
+    pp.push({status:"boundary", rule:"§6 Abs. 1 GOÄneu", title:"Zahnärztliche Leistung korrekt nach GOZ abgerechnet", detail:"Der Mund-Kiefer-Gesichtschirurg erbringt mit „"+goz.titel+"“ eine Leistung aus dem Gebührenverzeichnis für zahnärztliche Leistungen (Anlage zur GOZ). §6 Abs.1 S.1 GOÄneu schreibt vor, dass solche Leistungen ausschließlich nach GOZ vergütet werden — die Rechnungsstellung selbst erfolgt aber weiterhin ausschließlich über das maschinenlesbare GOÄ-Formular (Anlage 2, §6 Abs.1 S.2). Beides ist hier korrekt umgesetzt; die Kombination „GOÄ-Formular, aber GOZ-Vergütung“ ist ein für automatisierte Prüfungen ungewöhnlicher Sonderfall.",
+      kundentext:kt("Für diese zahnärztliche Leistung wurde korrekt die Gebührenordnung für Zahnärzte (GOZ) statt der GOÄ angewendet, wie es für diese Art von Behandlung vorgeschrieben ist.","For this dental service, the dental fee schedule (GOZ) was correctly applied instead of the GOÄ, as required for this type of treatment.")});
   } else {
     b.diagnose.kennzeichen = "VA";
     addFlag(b.positionen[0],"boundary","§12 Abs. 2 Nr. 1 GOÄneu","Verdachtsdiagnose (VA) kurz vor der eigentlichen Befundabklärung — laut Gesetz nur bis dahin zulässig.");
@@ -1808,10 +1837,19 @@ function applyGrenzfall(b){
 function applyVerstoss(b){
   const pp = [];
   const pool = ["titel_fehlt","analog_ohne_praefix","diagnose_fehlt_unbegruendet","ab_ohne_konkretisierung","rechenfehler","sachkosten_unzulaessig","hv_verbotenes_kapitel","bmi_unter_schwelle","bmi_pflichtangabe_fehlt","gerinnung_ohne_begruendung","mehrfacheingriff_kein_abschlag","minderung_fehlt","stationaer_sachkosten"];
-  const subtypes = pickN(pool, randInt(1,2));
+  if(b.fach.name==="Mund-Kiefer-Gesichtschirurgie") pool.push("goz_pflicht_verstoss");
+  /* "titel_fehlt" läuft zuletzt, damit touchedIds bereits alle von anderen Subtypes in diesem
+     Durchlauf angefassten Positionen kennt — verhindert, dass zwei Verstoß-Texte sich auf dieselbe
+     Position widersprechend beziehen (z.B. "Titel fehlt" auf einer Position, deren Titel ein anderer
+     Text im selben Schreiben gerade zitiert). */
+  const subtypes = pickN(pool, randInt(1,2)).sort((a)=> a==="titel_fehlt" ? 1 : -1);
+  const touchedIds = new Set();
   subtypes.forEach(subtype=>{
     if(subtype==="titel_fehlt"){
-      const p = pick(b.positionen.filter(x=>x.kind==="leistung"));
+      const kandidaten = b.positionen.filter(x=>x.kind==="leistung" && !touchedIds.has(x.id));
+      if(!kandidaten.length) return;
+      const p = pick(kandidaten);
+      touchedIds.add(p.id);
       p.titel = "";
       addFlag(p,"violation","§12 Abs. 2 Nr. 3 GOÄneu","Titel der Leistungslegende/Kurzbezeichnung fehlt — Pflichtangabe.");
       pp.push({status:"violation", rule:"§12 Abs. 2 Nr. 3 GOÄneu", title:"Titel der Leistungslegende fehlt", detail:"Zu GOÄ-Nr. "+p.goaeNr+" fehlt der für den Patienten verständliche Titel bzw. die Kurzbezeichnung der Leistung. Das Gesetz verlangt „bei Leistungen deren Nummer, die Anzahl und den Titel der Leistungslegende“.",
@@ -1821,6 +1859,7 @@ function applyVerstoss(b){
       const a = b.fach.analog;
       const nl = makeAnalogPos(a, {faktor:1.0, analogPrefix:false});
       nl.praefixe = [];
+      touchedIds.add(nl.id);
       addFlag(nl,"violation","§12 Abs. 4 Nr. 6 / Abs. 5 GOÄneu","Analog erbrachte Leistung ohne Präfix „A“ abgerechnet — Nummer und Bezeichnung der als gleichwertig erachteten Leistung fehlen der Kennzeichnung.");
       b.positionen.push(nl);
       pp.push({status:"violation", rule:"§12 Abs. 4 Nr. 6 / Abs. 5 GOÄneu", title:"Analogleistung nicht als solche gekennzeichnet", detail:"„"+a.echt+"“ wird über Nr. "+a.basisNr+" abgerechnet, ohne das Präfix „A“ zu setzen. §12 Abs.5 verlangt, dass die entsprechend bewertete Leistung „für den Zahlungspflichtigen verständlich“ sowie Nummer und Bezeichnung der als gleichwertig erachteten Leistung angegeben werden.",
@@ -1834,6 +1873,7 @@ function applyVerstoss(b){
         korrektur:{typ:"gesamt"}});
     } else if(subtype==="ab_ohne_konkretisierung"){
       const p = pick(b.positionen.filter(x=>x.kind==="leistung"));
+      touchedIds.add(p.id);
       p.faktorGrund = ["AB"]; p.faktor = 1.5; p.betrag = round2(p.satz1*1.5);
       p.begruendung = "Erhöhter Aufwand.";
       addFlag(p,"violation","Kap. 3.9 Faktor-Grund „AB“","Faktor-Grund „AB“ gesetzt, aber die konkrete Allgemeine Bestimmung wird in der Begründung nicht benannt.");
@@ -1855,6 +1895,7 @@ function applyVerstoss(b){
         korrektur:{typ:"streichen", posId:sk.id}});
     } else if(subtype==="hv_verbotenes_kapitel"){
       const p = pick(b.positionen.filter(x=>x.kind==="leistung"));
+      touchedIds.add(p.id);
       p.faktorGrund = ["HV"]; p.faktor = 2.5;
       p.betrag = round2(p.satz1*p.faktor);
       p.begruendung = "Honorarvereinbarung: Faktor 2,5 (Leistung aus Kapitel M).";
@@ -1868,6 +1909,7 @@ function applyVerstoss(b){
       const pos = makeVergPos(Z.sonoOrgan, {faktor:s.faktor,
         begruendung:"Körpergröße "+(km.groesseCm/100).toFixed(2).replace(".",",")+"m, Gewicht ca. "+km.gewichtKg+"kg (BMI "+km.bmi.toFixed(1).replace(".",",")+")."});
       b.positionen.push(pos);
+      touchedIds.add(pos.id);
       addFlag(pos,"violation",s.quelle,"Angegebener BMI liegt deutlich unter dem für den Zuschlag erforderlichen Schwellenwert von 40.");
       pp.push({status:"violation", rule:s.quelle, title:"BMI-Zuschlag trotz nicht erfüllter Voraussetzung", detail:"Für Nr. "+pos.goaeNr+" wird der "+s.faktor.toFixed(1).replace(".",",")+"-fache Satz berechnet. Aus den angegebenen Körpermaßen errechnet sich ein BMI von "+km.bmi.toFixed(1).replace(".",",")+" — deutlich unter dem in der Bestimmung geforderten Schwellenwert „BMI ≥ 40“. Die Voraussetzung für den Zuschlag liegt damit erkennbar nicht vor.",
         kundentext:kt("Die Leistung nach GOÄ-Nr. "+pos.goaeNr+" ("+pos.titel+") wurde zum "+s.faktor.toFixed(1).replace(".",",")+"-fachen Satz abgerechnet. Dieser Zuschlag setzt einen BMI ≥ 40 voraus; die angegebenen Körpermaße erreichen diesen Wert nicht, daher können wir nur den regulären Satz erstatten.","The service under GOÄ no. "+pos.goaeNr+" ("+pos.titel+") was billed at the "+s.faktor.toFixed(1)+"-fold rate. This surcharge requires a BMI of 40 or higher; the stated measurements do not reach that threshold, so we can only reimburse the standard rate."),
@@ -1876,6 +1918,7 @@ function applyVerstoss(b){
       const s = Z.sonoOrgan.sonder;
       const pos = makeVergPos(Z.sonoOrgan, {faktor:s.faktor, begruendung:"Erhöhter Aufwand aufgrund der Körperkonstitution."});
       b.positionen.push(pos);
+      touchedIds.add(pos.id);
       addFlag(pos,"violation",s.quelle,"Körpermaße (Größe, Gewicht, BMI) fehlen vollständig — Pflichtangabe für diesen Zuschlag.");
       pp.push({status:"violation", rule:s.quelle, title:"BMI-Zuschlag ohne Angabe der Körpermaße", detail:"Für Nr. "+pos.goaeNr+" wird der "+s.faktor.toFixed(1).replace(".",",")+"-fache Satz berechnet, die Begründung nennt aber weder Größe noch Gewicht noch BMI. Die Bestimmung verlangt ausdrücklich: „Die Körpermaße (Größe, Gewicht, BMI) müssen in der Rechnung angegeben werden.“",
         kundentext:kt("Die Leistung nach GOÄ-Nr. "+pos.goaeNr+" ("+pos.titel+") wurde zum erhöhten Satz abgerechnet, doch Körpergröße, Gewicht und BMI fehlen auf der Rechnung. Diese Angaben sind Voraussetzung für den Zuschlag; ohne sie können wir zunächst nur den regulären Satz erstatten.","The service under GOÄ no. "+pos.goaeNr+" ("+pos.titel+") was billed at an increased rate, but height, weight and BMI are missing from the invoice. These details are required for the surcharge; without them we can initially only reimburse the standard rate."),
@@ -1884,6 +1927,7 @@ function applyVerstoss(b){
       const s = Z.exzisionKlein.sonderGerinnung;
       const pos = makeVergPos(Z.exzisionKlein, {faktor:s.faktor, begruendung:"Erhöhter Aufwand."});
       b.positionen.push(pos);
+      touchedIds.add(pos.id);
       addFlag(pos,"violation",s.quelle,"Weder Wirkstoff/Gerinnungsstörung noch der Grund für die nicht mögliche Normalisierung sind genannt.");
       pp.push({status:"violation", rule:s.quelle, title:"Gerinnungsstörungs-Zuschlag ohne Pflichtangaben", detail:"Für Nr. "+pos.goaeNr+" wird der "+s.faktor.toFixed(1).replace(".",",")+"-fache Satz berechnet, die Begründung lautet nur „Erhöhter Aufwand.“ Die Bestimmung verlangt ausdrücklich, dass „die medizinische Indikation und der Grund für die nicht rechtzeitig mögliche Normalisierung der Blutstillung … in der Rechnung angegeben werden“ müssen.",
         kundentext:kt("Die Leistung nach GOÄ-Nr. "+pos.goaeNr+" ("+pos.titel+") wurde zum erhöhten Satz abgerechnet, doch die erforderliche Begründung zur Gerinnungssituation fehlt. Ohne diese Angabe können wir zunächst nur den regulären Satz erstatten.","The service under GOÄ no. "+pos.goaeNr+" ("+pos.titel+") was billed at an increased rate, but the required justification regarding the clotting situation is missing. Without it we can initially only reimburse the standard rate."),
@@ -1893,6 +1937,7 @@ function applyVerstoss(b){
       const pos1 = makeVergPos(Z.exzisionKlein, {begruendung:"Erste Exzision, linker Unterarm."});
       const pos2 = makeVergPos(Z.exzisionKlein, {begruendung:"Zweite Exzision, gleiche Lokalisation und Zugang, gleiche Sitzung."});
       b.positionen.push(pos1,pos2);
+      touchedIds.add(pos1.id); touchedIds.add(pos2.id);
       addFlag(pos2,"violation",s.quelle,"Zweite Hauptleistung an derselben Lokalisation ohne den vorgeschriebenen Abschlag auf "+s.faktor.toFixed(1).replace(".",",")+"-fach abgerechnet.");
       pp.push({status:"violation", rule:s.quelle, title:"Mehrfacheingriff-Abschlag nicht angewendet", detail:"Beide Positionen zu Nr. "+pos2.goaeNr+" betreffen dieselbe Lokalisation mit demselben Zugang in derselben Sitzung. Die Bestimmung schreibt vor: „Sofern an derselben Lokalisation mit demselben Zugang mehrere Eingriffe in zeitlichem Zusammenhang durchgeführt werden, ist ab der zweiten Hauptleistung nur die "+s.faktor.toFixed(1).replace(".",",")+"-fache Gebühr zu berechnen.“ Hier ist die zweite Position aber zum vollen Satz abgerechnet.",
         kundentext:kt("Die zweite Leistung nach GOÄ-Nr. "+pos2.goaeNr+" ("+pos2.titel+") in derselben Sitzung und Lokalisation wurde ohne den vorgeschriebenen reduzierten Satz abgerechnet. Wir korrigieren den Betrag entsprechend.","The second service under GOÄ no. "+pos2.goaeNr+" ("+pos2.titel+") at the same site and session was billed without the required reduced rate. We are correcting the amount accordingly."),
@@ -1919,6 +1964,15 @@ function applyVerstoss(b){
       pp.push({status:"violation", rule:"§6a Abs. 2 GOÄneu", title:"Sachkosten trotz Minderungspflicht gesondert berechnet", detail:"Die Rechnung weist korrekt eine Minderung von "+prozent+" % aus („"+art+"“, "+rolle+"), berechnet aber zusätzlich Sachkosten gesondert. §6a Abs.2 GOÄneu bestimmt: „Neben den … geminderten Gebühren darf der Arzt Kosten nicht berechnen“, soweit die Leistung Bestandteil der allgemeinen Krankenhausleistungen ist.",
         kundentext:kt("Die zusätzlich berechnete Auslage „"+sk.begruendung+"“ ist neben der bereits geminderten stationären Gebühr nicht gesondert berechnungsfähig (§6a Abs. 2 GOÄneu). Wir streichen diese Position.","The additionally billed expense “"+sk.begruendung+"” cannot be charged separately alongside the already-reduced inpatient fee (§6a (2) GOÄneu). We are removing this item."),
         korrektur:{typ:"streichen", posId:sk.id}});
+    } else if(subtype==="goz_pflicht_verstoss"){
+      const pos = makeVergPos(Z.exzisionKlein, {begruendung:"Operative Entfernung eines retinierten und verlagerten Zahnes 38."});
+      pos.titel = "Osteotomie eines retinierten und verlagerten Zahnes (fälschlich als GOÄ-Leistung abgerechnet)";
+      b.positionen.push(pos);
+      touchedIds.add(pos.id);
+      addFlag(pos,"violation","§6 Abs. 1 GOÄneu","Zahnärztliche Katalogleistung eines MKG-Chirurgen wurde über eine reguläre GOÄ-Ziffer statt nach GOZ abgerechnet.");
+      pp.push({status:"violation", rule:"§6 Abs. 1 GOÄneu", title:"Zahnärztliche Leistung fälschlich nach GOÄ statt GOZ abgerechnet", detail:"„"+pos.titel+"“ ist im Gebührenverzeichnis für zahnärztliche Leistungen (Anlage zur GOZ) gelistet. §6 Abs.1 S.1 GOÄneu schreibt für Mund-Kiefer-Gesichtschirurgen bei solchen Leistungen zwingend die Vergütung nach GOZ vor. Hier wurde stattdessen die reguläre GOÄ-Ziffer "+pos.goaeNr+" („Exzision eines kleinen kutanen Prozesses“, "+euro(pos.satz1)+") angesetzt — unzulässig.",
+        kundentext:kt("Die Leistung nach GOÄ-Nr. "+pos.goaeNr+" ("+pos.titel+") ist eine zahnärztliche Katalogleistung und muss nach der Gebührenordnung für Zahnärzte (GOZ) abgerechnet werden, nicht nach GOÄ. Wir können diese Position daher in der eingereichten Form nicht erstatten.","The service under GOÄ no. "+pos.goaeNr+" ("+pos.titel+") is a dental catalog service and must be billed under the dental fee schedule (GOZ), not the GOÄ. We are therefore unable to reimburse this item as submitted."),
+        korrektur:{typ:"streichen", posId:pos.id}});
     }
   });
   return {pp, outcome:"Erwartetes Systemverhalten: Beleg wird zurückgewiesen bzw. es wird eine Nachforderung an die Praxis ausgelöst."};
