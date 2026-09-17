@@ -564,8 +564,26 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     box-shadow:var(--shadow-doc);
     padding:clamp(18px,4vw,38px);
     font-family:"Source Serif 4", Georgia, serif;
+    position:relative; overflow:hidden;
   }
   .document h3, .document h4{font-family:"Source Sans 3",sans-serif;}
+  /* ---------- Simulation Eingangsqualität (Scan/Foto-Störungen) ---------- */
+  .document.qual-schief{transform:rotate(var(--qual-rot,0deg));}
+  .qual-layer{position:absolute; inset:0; pointer-events:none; border-radius:inherit;}
+  .qual-layer-verblasst{background:rgba(255,255,255,.42);}
+  .qual-layer-rauschen{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:180px 180px; opacity:.5;
+  }
+  .qual-layer-schatten{background:linear-gradient(105deg, rgba(15,12,5,.22), transparent 42%);}
+  .qual-layer-vignette{background:radial-gradient(ellipse at 50% 45%, transparent 58%, rgba(10,8,3,.18) 100%);}
+  .qual-layer-knick{background:linear-gradient(178deg, transparent 47%, rgba(0,0,0,.11) 49.5%, rgba(255,255,255,.4) 50.5%, transparent 53%);}
+  .qual-stempel{
+    position:absolute; top:16px; right:14px; padding:7px 15px; border:2.5px solid rgba(178,34,34,.72); border-radius:6px;
+    font-family:"Caveat","Segoe Script",cursive; font-weight:600; font-size:1.05rem; letter-spacing:.02em; line-height:1.2;
+    color:rgba(178,34,34,.72); text-align:center; text-transform:uppercase;
+    transform:rotate(-8deg); pointer-events:none;
+  }
   .document .table-scroll{overflow-x:auto;}
   .document table{border-collapse:collapse; width:100%; min-width:760px;}
   .document th{
@@ -1303,6 +1321,12 @@ const ANREDEN = ["Herr","Frau"];
 
 function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 function pickN(arr,n){ const c=arr.slice(); const out=[]; n=Math.min(n,c.length); for(let i=0;i<n;i++){ out.push(c.splice(Math.floor(Math.random()*c.length),1)[0]); } return out; }
+function pickWeighted(arr){
+  const total = arr.reduce((s,x)=>s+x.weight,0);
+  let r = Math.random()*total;
+  for(const x of arr){ r -= x.weight; if(r<=0) return x; }
+  return arr[arr.length-1];
+}
 function randInt(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
 function euro(n){ return n.toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2})+" €"; }
 function fmtDate(d){ if(!(d instanceof Date)) d = new Date(d); return d.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"}); }
@@ -1396,6 +1420,21 @@ const HANDNOTIZEN = [
   "Danke im Voraus für die schnelle Erstattung!",
   "Bitte NICHT an die Praxis, sondern direkt an mich überweisen.",
   "Zur Info: Rechnung wurde bereits privat beglichen.",
+];
+/* Simulation realer Eingangsqualität: Layout ist eine Sache, aber Belege kommen in der Praxis
+   auch als schräg gescannte, verblasste, körnige oder gefaltete Kopien bzw. Handyfotos an — genau
+   die Störungen, an denen Extraktionsmodelle in der Realität scheitern. "sauber" bleibt der
+   Regelfall (höchstes Gewicht); der Beleg-Inhalt selbst wird durch keines dieser Profile verändert
+   oder unlesbar gemacht, nur die Wiedergabequalität. */
+const QUALITAETSPROFILE = [
+  {id:"sauber",    weight:44, label:"Sauber"},
+  {id:"schief",     weight:10, label:"Schräg gescannt", schief:true},
+  {id:"verblasst",  weight:9,  label:"Verblasster Druck/Kopie", verblasst:true},
+  {id:"rauschen",   weight:9,  label:"Körniger Scan", rauschen:true},
+  {id:"schatten",   weight:8,  label:"Ungleichmäßige Ausleuchtung", schatten:true},
+  {id:"knick",      weight:7,  label:"Gefaltet/Knick", knick:true},
+  {id:"stempel",    weight:7,  label:"Eingangsstempel", stempel:true},
+  {id:"handyfoto",  weight:6,  label:"Foto statt Scan", schief:true, schatten:true, vignette:true},
 ];
 /* §8 Abs. 1 GOÄneu: Wegegeld nach Entfernungsstufe, Tag-/Nachtsatz (Nacht = 20–8 Uhr) */
 function wegegeldBetrag(km, nacht){
@@ -1588,6 +1627,9 @@ function generateStil(){
     linien: pick(["fein","kraeftig"]),
     handnotiz: Math.random()<0.35 ? pick(HANDNOTIZEN) : null,
     handnotizRot: (Math.random()*5-2.5).toFixed(1)+"deg",
+    qualitaet: pickWeighted(QUALITAETSPROFILE),
+    qualitaetRot: (Math.random()*6-3).toFixed(1)+"deg",
+    qualitaetStempelTage: randInt(2,9),
   };
 }
 
@@ -2380,21 +2422,42 @@ function hexToRgbTriplet(hex){
 }
 
 const LAYOUT_RENDERERS = {a:renderLayoutA, b:renderLayoutB, c:renderLayoutC, d:renderLayoutD, e:renderLayoutE};
+function qualitaetOverlayHtml(b){
+  const q = b.stil.qualitaet;
+  if(!q || q.id==="sauber") return "";
+  let html = "";
+  if(q.verblasst) html += '<div class="qual-layer qual-layer-verblasst"></div>';
+  if(q.rauschen) html += '<div class="qual-layer qual-layer-rauschen"></div>';
+  if(q.schatten) html += '<div class="qual-layer qual-layer-schatten"></div>';
+  if(q.vignette) html += '<div class="qual-layer qual-layer-vignette"></div>';
+  if(q.knick) html += '<div class="qual-layer qual-layer-knick"></div>';
+  if(q.stempel){
+    const datum = fmtDate(addDays(b.rechnungsdatum, b.stil.qualitaetStempelTage));
+    html += '<div class="qual-stempel">Eingegangen<br>'+datum+'</div>';
+  }
+  return html;
+}
+
 function renderDocument(b){
   const el = document.getElementById("document");
+  const q = b.stil.qualitaet;
   const classes = ["document","lay-"+b.layout];
   if(b.stil.zebra) classes.push("zebra");
   if(b.stil.linien==="kraeftig") classes.push("linien-kraeftig");
+  if(q && q.schief) classes.push("qual-schief");
   el.className = classes.join(" ");
   el.style.setProperty("--doc-accent", b.stil.farbe);
   el.style.setProperty("--doc-accent-rgb", hexToRgbTriplet(b.stil.farbe));
   el.style.setProperty("--handnotiz-rot", b.stil.handnotizRot);
+  el.style.setProperty("--qual-rot", b.stil.qualitaetRot);
   let html = LAYOUT_RENDERERS[b.layout](b);
+  html += qualitaetOverlayHtml(b);
   if(b.stil.handnotiz) html += '<div class="handnotiz">'+esc(b.stil.handnotiz)+'</div>';
   el.innerHTML = html;
   document.getElementById("beleg-id").textContent = b.id;
   const layoutNames = {a:"Klassisch-tabellarisch", b:"PVS-Stil (Abrechnungsstelle)", c:"Brief-Stil", d:"Modern/kompakt", e:"Klinik-Kopfbogen"};
-  document.getElementById("layout-badge").innerHTML = "Kopf-Layout: <b>"+layoutNames[b.layout]+"</b> · Vergütungstabelle: fixe Feldnamen &amp; Reihenfolge lt. Formular";
+  document.getElementById("layout-badge").innerHTML = "Kopf-Layout: <b>"+layoutNames[b.layout]+"</b> · Vergütungstabelle: fixe Feldnamen &amp; Reihenfolge lt. Formular"+
+    (q && q.id!=="sauber" ? ' · Eingangsqualität: <b>'+esc(q.label)+'</b>' : '');
 }
 
 /* ========================= Rendering: Kategorien & Klassifikation ========================= */
