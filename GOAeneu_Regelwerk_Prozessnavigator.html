@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Regelwerk &amp; Prozessnavigator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --navy:#1e2d4e; --navy-2:#283c66; --navy-soft:#eef1f7;
+    --orange:#E8500A; --orange-soft:#fdece1;
+    --bg:#f4f6fa; --surface:#ffffff; --surface-2:#f8f9fc;
+    --ink:#182338; --ink-soft:#5b6579; --border:#dfe3ec; --border-strong:#c7cddc;
+    --c-regel:#2f6fb0; --c-regel-bg:#eaf1fb;
+    --c-ki:#E8500A; --c-ki-bg:#fdece1;
+    --c-mensch:#1f9d63; --c-mensch-bg:#e7f7ef;
+    --shadow-sm:0 1px 2px rgba(20,25,40,.06), 0 2px 8px rgba(20,25,40,.05);
+    --shadow-md:0 8px 24px rgba(20,25,40,.10);
+    --radius:14px; --radius-sm:9px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0c1220; --surface:#131b2c; --surface-2:#1a2338;
+      --ink:#eef1f8; --ink-soft:#a7b0c4; --border:#28324a; --border-strong:#37436199;
+      --navy:#16233d; --navy-2:#233254; --navy-soft:#1a2338;
+      --orange:#f26b28; --orange-soft:#3a2415;
+      --c-regel:#5b9bdb; --c-regel-bg:#182741;
+      --c-ki:#f26b28; --c-ki-bg:#3a2415;
+      --c-mensch:#3fc98a; --c-mensch-bg:#12301f;
+      --shadow-sm:0 1px 2px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.3);
+      --shadow-md:0 10px 30px rgba(0,0,0,.5);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0c1220; --surface:#131b2c; --surface-2:#1a2338;
+    --ink:#eef1f8; --ink-soft:#a7b0c4; --border:#28324a; --border-strong:#37436199;
+    --navy:#16233d; --navy-2:#233254; --navy-soft:#1a2338;
+    --orange:#f26b28; --orange-soft:#3a2415;
+    --c-regel:#5b9bdb; --c-regel-bg:#182741;
+    --c-ki:#f26b28; --c-ki-bg:#3a2415;
+    --c-mensch:#3fc98a; --c-mensch-bg:#12301f;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.3);
+    --shadow-md:0 10px 30px rgba(0,0,0,.5);
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0; padding:0;}
+  body{
+    font-family:"Source Sans 3",system-ui,sans-serif; background:var(--bg); color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  code, .mono{font-family:"IBM Plex Mono",ui-monospace,monospace;}
+  button{font-family:inherit;}
+  .app{display:flex; flex-direction:column; min-height:100vh;}
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    background:linear-gradient(135deg, var(--navy), var(--navy-2));
+    color:#eef2fb; padding:18px clamp(16px,3vw,32px);
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+  }
+  .topbar-brand{display:flex; align-items:center; gap:12px; margin-right:auto;}
+  .topbar-mark{
+    width:38px; height:38px; border-radius:10px; flex:none;
+    background:rgba(255,255,255,.12); display:flex; align-items:center; justify-content:center;
+  }
+  .topbar-mark svg{width:20px; height:20px; stroke:var(--orange);}
+  .topbar-title{font-size:1.05rem; font-weight:800; letter-spacing:-.01em;}
+  .topbar-sub{font-size:.76rem; color:#b9c3dc; margin-top:1px;}
+  .tabbar{display:flex; gap:4px; background:rgba(255,255,255,.08); padding:4px; border-radius:999px;}
+  .tab-btn{
+    appearance:none; border:0; background:none; color:#cfd8ee; font:inherit; font-weight:700; font-size:.82rem;
+    padding:9px 18px; border-radius:999px; cursor:pointer; transition:background .15s ease, color .15s ease;
+    display:flex; align-items:center; gap:7px;
+  }
+  .tab-btn svg{width:15px; height:15px;}
+  .tab-btn[data-active="true"]{background:var(--orange); color:#fff;}
+  .tab-btn:not([data-active="true"]):hover{background:rgba(255,255,255,.1); color:#fff;}
+  .theme-toggle{
+    appearance:none; border:1px solid rgba(255,255,255,.22); background:rgba(255,255,255,.06); color:#dbe2f3;
+    width:34px; height:34px; border-radius:9px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    flex:none;
+  }
+  .theme-toggle:hover{background:rgba(255,255,255,.14);}
+  .theme-toggle svg{width:16px; height:16px;}
+
+  /* ---------- Disclaimer ---------- */
+  .disclaimer{
+    background:var(--orange-soft); border-bottom:1px solid var(--border);
+    color:var(--ink); font-size:.78rem; line-height:1.55;
+    padding:9px clamp(16px,3vw,32px);
+  }
+  .disclaimer b{color:var(--orange);}
+
+  /* ---------- Stats bar ---------- */
+  .stats-bar{
+    display:flex; align-items:center; gap:28px; flex-wrap:wrap;
+    background:var(--surface); border-bottom:1px solid var(--border);
+    padding:16px clamp(16px,3vw,32px);
+  }
+  .stats-title{font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);}
+  .legend{display:flex; gap:16px; flex-wrap:wrap; align-items:center;}
+  .legend-item{display:flex; align-items:center; gap:7px; font-size:.82rem; font-weight:600;}
+  .legend-dot{width:10px; height:10px; border-radius:50%; flex:none;}
+  .legend-dot.regel{background:var(--c-regel);} .legend-dot.ki{background:var(--c-ki);} .legend-dot.mensch{background:var(--c-mensch);}
+  .stats-donut-wrap{display:flex; align-items:center; gap:14px; margin-left:auto;}
+  .stats-donut-wrap svg{width:64px; height:64px; flex:none;}
+  .stats-counts{display:flex; gap:16px;}
+  .stats-count{text-align:center;}
+  .stats-count .num{font-size:1.15rem; font-weight:800; font-variant-numeric:tabular-nums;}
+  .stats-count .lbl{font-size:.68rem; color:var(--ink-soft); font-weight:600;}
+  .stats-count.regel .num{color:var(--c-regel);} .stats-count.ki .num{color:var(--c-ki);} .stats-count.mensch .num{color:var(--c-mensch);}
+
+  /* ---------- Prozessflow layout ---------- */
+  .flow-layout{display:flex; align-items:flex-start; flex:1; min-height:0;}
+  .dokart-list{
+    width:270px; flex:none; background:var(--surface); border-right:1px solid var(--border);
+    padding:14px 10px; align-self:stretch; overflow-y:auto;
+  }
+  .dokart-list-label{font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); padding:6px 10px 10px;}
+  .dokart-item{
+    display:flex; align-items:center; gap:11px; width:100%; text-align:left; appearance:none; border:0;
+    background:none; color:var(--ink); font:inherit; font-size:.87rem; font-weight:600;
+    padding:11px 10px; border-radius:var(--radius-sm); cursor:pointer; margin-bottom:2px;
+    border-left:3px solid transparent; transition:background .15s ease;
+  }
+  .dokart-item:hover{background:var(--surface-2);}
+  .dokart-item[data-active="true"]{background:var(--navy-soft); border-left-color:var(--orange); color:var(--navy);}
+  :root[data-theme="dark"] .dokart-item[data-active="true"], @media (prefers-color-scheme:dark){ .dokart-item[data-active="true"]{color:#fff;} }
+  .dokart-icon{width:30px; height:30px; border-radius:8px; flex:none; background:var(--surface-2); display:flex; align-items:center; justify-content:center;}
+  .dokart-item[data-active="true"] .dokart-icon{background:var(--orange-soft);}
+  .dokart-icon svg{width:16px; height:16px; stroke:var(--ink-soft);}
+  .dokart-item[data-active="true"] .dokart-icon svg{stroke:var(--orange);}
+  .dokart-item-body{min-width:0;}
+  .dokart-item-name{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block;}
+  .dokart-item-meta{font-size:.72rem; font-weight:500; color:var(--ink-soft); margin-top:1px;}
+
+  .flow-main{flex:1; min-width:0; padding:24px clamp(16px,3vw,32px) 60px; max-width:920px;}
+  .flow-heading{margin-bottom:22px;}
+  .flow-heading h1{margin:0 0 6px; font-size:1.3rem; font-weight:800; color:var(--ink); letter-spacing:-.01em;}
+  .flow-heading p{margin:0; color:var(--ink-soft); font-size:.88rem; line-height:1.6; max-width:70ch;}
+
+  .timeline{position:relative;}
+  .tl-step{position:relative; padding-left:52px; padding-bottom:28px;}
+  .tl-step::before{ /* connector line */
+    content:""; position:absolute; left:17px; top:38px; bottom:-6px; width:2px; background:var(--border-strong);
+  }
+  .tl-step:last-child::before{display:none;}
+  .tl-node{
+    position:absolute; left:0; top:0; width:36px; height:36px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.85rem;
+    color:#fff; box-shadow:var(--shadow-sm); z-index:1;
+  }
+  .tl-node.regel{background:var(--c-regel);} .tl-node.ki{background:var(--c-ki);} .tl-node.mensch{background:var(--c-mensch);}
+  .tl-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:16px 18px; box-shadow:var(--shadow-sm);
+  }
+  .tl-card-head{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:10px; flex-wrap:wrap;}
+  .tl-card-head h3{margin:0; font-size:1rem; font-weight:700; color:var(--ink);}
+  .actor-badge{
+    display:inline-flex; align-items:center; gap:6px; padding:4px 10px 4px 8px; border-radius:999px;
+    font-size:.72rem; font-weight:700; flex:none; white-space:nowrap;
+  }
+  .actor-badge .dot{width:7px; height:7px; border-radius:50%;}
+  .actor-badge.regel{background:var(--c-regel-bg); color:var(--c-regel);} .actor-badge.regel .dot{background:var(--c-regel);}
+  .actor-badge.ki{background:var(--c-ki-bg); color:var(--c-ki);} .actor-badge.ki .dot{background:var(--c-ki);}
+  .actor-badge.mensch{background:var(--c-mensch-bg); color:var(--c-mensch);} .actor-badge.mensch .dot{background:var(--c-mensch);}
+  .tl-desc{font-size:.87rem; line-height:1.6; color:var(--ink-soft); margin:0 0 12px;}
+  .tl-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px 14px;}
+  @media (max-width:640px){ .tl-grid{grid-template-columns:1fr;} }
+  .tl-block{background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:10px 12px;}
+  .tl-block-label{font-size:.66rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:5px; display:flex; align-items:center; gap:6px;}
+  .tl-block-label svg{width:12px; height:12px;}
+  .tl-block-body{font-size:.82rem; line-height:1.55; color:var(--ink);}
+  .tl-rule{font-family:"IBM Plex Mono",monospace; font-size:.78rem; color:var(--navy);}
+  :root[data-theme="dark"] .tl-rule{color:#9fb4dd;}
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .tl-rule{color:#9fb4dd;} }
+  .tl-logic-if{color:var(--ink-soft);} .tl-logic-arrow{color:var(--orange); font-weight:800; margin:0 4px;}
+  .tl-output{grid-column:1/-1;}
+  .tl-output .tl-block{background:var(--c-mensch-bg); border-color:transparent;}
+  .tl-output .tl-block-label{color:var(--c-mensch);}
+
+  /* ---------- Katalog tab ---------- */
+  .katalog-view{padding:22px clamp(16px,3vw,32px) 60px; max-width:1180px; margin:0 auto; width:100%;}
+  .katalog-head h1{margin:0 0 6px; font-size:1.3rem; font-weight:800;}
+  .katalog-head p{margin:0 0 18px; color:var(--ink-soft); font-size:.88rem; max-width:75ch; line-height:1.6;}
+  .katalog-filters{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; align-items:center;}
+  .filter-group{display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:4px;}
+  .filter-chip{
+    appearance:none; border:0; background:none; font:inherit; font-size:.78rem; font-weight:600; color:var(--ink-soft);
+    padding:7px 13px; border-radius:999px; cursor:pointer; transition:background .15s ease, color .15s ease;
+  }
+  .filter-chip[data-active="true"]{background:var(--navy); color:#fff;}
+  .filter-chip.regel[data-active="true"]{background:var(--c-regel);}
+  .filter-chip.ki[data-active="true"]{background:var(--c-ki);}
+  .filter-chip.mensch[data-active="true"]{background:var(--c-mensch);}
+  select.filter-select{
+    appearance:none; border:1px solid var(--border); background:var(--surface) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="%235b6579" stroke-width="1.8"><path d="m5 8 5 5 5-5"/></svg>') no-repeat right 10px center/13px;
+    color:var(--ink); font:inherit; font-size:.8rem; font-weight:600; padding:9px 32px 9px 14px; border-radius:999px; cursor:pointer;
+  }
+  .katalog-count{margin-left:auto; font-size:.78rem; color:var(--ink-soft); font-weight:600;}
+  .katalog-table-wrap{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow-x:auto; box-shadow:var(--shadow-sm);}
+  table.katalog-table{width:100%; border-collapse:collapse; min-width:920px;}
+  .katalog-table thead th{
+    text-align:left; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);
+    padding:12px 14px; border-bottom:1px solid var(--border); background:var(--surface-2); white-space:nowrap;
+  }
+  .katalog-table tbody td{padding:13px 14px; border-bottom:1px solid var(--border); font-size:.83rem; vertical-align:top; line-height:1.5;}
+  .katalog-table tbody tr:last-child td{border-bottom:0;}
+  .katalog-table tbody tr:hover{background:var(--surface-2);}
+  .k-name{font-weight:700; color:var(--ink);}
+  .k-dokarten{display:flex; flex-wrap:wrap; gap:4px;}
+  .k-dokart-pill{background:var(--surface-2); border:1px solid var(--border); border-radius:999px; padding:2px 8px; font-size:.7rem; color:var(--ink-soft); white-space:nowrap;}
+  .k-konsequenz{color:var(--ink-soft);}
+  .katalog-empty{padding:40px 20px; text-align:center; color:var(--ink-soft); font-size:.88rem;}
+
+  @media (max-width:860px){
+    .flow-layout{flex-direction:column;}
+    .dokart-list{width:100%; border-right:0; border-bottom:1px solid var(--border); display:flex; overflow-x:auto; padding:10px;}
+    .dokart-list-label{display:none;}
+    .dokart-item{flex:none; width:auto; white-space:nowrap; margin-bottom:0;}
+    .stats-donut-wrap{margin-left:0; width:100%; justify-content:space-between;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="topbar-brand">
+      <span class="topbar-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l1 3h3v13H5V7h3l1-3Z"/><path d="M9 12h6M9 16h4"/></svg>
+      </span>
+      <div>
+        <div class="topbar-title">Regelwerk &amp; Prozessnavigator</div>
+        <div class="topbar-sub">GOÄneu Suite · Modul-Prototyp</div>
+      </div>
+    </div>
+    <div class="tabbar" role="tablist">
+      <button class="tab-btn" type="button" data-tab="flow" data-active="true" role="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg>
+        Prozessflow
+      </button>
+      <button class="tab-btn" type="button" data-tab="katalog" role="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></svg>
+        Regelwerk-Katalog
+      </button>
+    </div>
+    <button class="theme-toggle" id="btn-theme" type="button" title="Darstellung wechseln" aria-label="Darstellung wechseln">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.2M12 19.3v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>
+    </button>
+  </div>
+
+  <div class="disclaimer">
+    <b>Beispieldaten zur Veranschaulichung.</b> Regelwerke, Paragraphen und Prozessschritte basieren auf dem GOÄneu-Verordnungsentwurf (Inkrafttreten geplant 01.01.2028) und sind vereinfacht/illustrativ; sie ersetzen keine Rechtsberatung und keine endgültige Gesetzesfassung.
+  </div>
+
+  <!-- ================= PROZESSFLOW VIEW ================= -->
+  <section id="view-flow">
+    <div class="stats-bar">
+      <div>
+        <div class="stats-title">Akteur-Legende</div>
+        <div class="legend" style="margin-top:6px;">
+          <span class="legend-item"><span class="legend-dot regel"></span>Regelwerk</span>
+          <span class="legend-item"><span class="legend-dot ki"></span>KI</span>
+          <span class="legend-item"><span class="legend-dot mensch"></span>Mensch</span>
+        </div>
+      </div>
+      <div class="stats-donut-wrap">
+        <svg id="donut" viewBox="0 0 42 42" role="img" aria-label="Anteil Schritte je Akteur"></svg>
+        <div class="stats-counts" id="stats-counts"></div>
+      </div>
+    </div>
+
+    <div class="flow-layout">
+      <aside class="dokart-list" id="dokart-list">
+        <div class="dokart-list-label">Dokumentart wählen</div>
+      </aside>
+      <main class="flow-main">
+        <div class="flow-heading">
+          <h1 id="flow-title">—</h1>
+          <p id="flow-desc"></p>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </main>
+    </div>
+  </section>
+
+  <!-- ================= KATALOG VIEW ================= -->
+  <section id="view-katalog" hidden>
+    <div class="katalog-view">
+      <div class="katalog-head">
+        <h1>Regelwerk-Katalog</h1>
+        <p>Alle im Prozessnavigator hinterlegten Regelwerke im Überblick: Rechtsgrundlage, betroffene Dokumentarten, verantwortlicher Akteur, Auslöser und Konsequenz bei Verstoß.</p>
+      </div>
+      <div class="katalog-filters">
+        <div class="filter-group" id="filter-akteur">
+          <button class="filter-chip" type="button" data-akteur="alle" data-active="true">Alle Akteure</button>
+          <button class="filter-chip regel" type="button" data-akteur="regel">Regelwerk</button>
+          <button class="filter-chip ki" type="button" data-akteur="ki">KI</button>
+          <button class="filter-chip mensch" type="button" data-akteur="mensch">Mensch</button>
+        </div>
+        <select class="filter-select" id="filter-dokart">
+          <option value="alle">Dokumentart: alle</option>
+        </select>
+        <span class="katalog-count" id="katalog-count"></span>
+      </div>
+      <div class="katalog-table-wrap">
+        <table class="katalog-table">
+          <thead>
+            <tr>
+              <th>Regelwerk</th>
+              <th>Rechtsgrundlage</th>
+              <th>Dokumentarten</th>
+              <th>Akteur</th>
+              <th>Auslöser</th>
+              <th>Konsequenz bei Verstoß</th>
+            </tr>
+          </thead>
+          <tbody id="katalog-body"></tbody>
+        </table>
+        <div class="katalog-empty" id="katalog-empty" hidden>Keine Regelwerke für diese Filterkombination.</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   DATA
+   ============================================================ */
+
+const ICONS = {
+  document: '<path d="M6 3h9l3 3v15H6V3Z"/><path d="M9 8h6M9 11.5h6M9 15h3.5"/>',
+  hospital: '<path d="M4 21V7l8-4 8 4v14"/><path d="M9 21v-6h6v6"/><path d="M12 9v4M10 11h4"/>',
+  flask: '<path d="M9 3h6M10 3v6.2L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.2V3"/><path d="M8.5 14h7"/>',
+  shield: '<path d="M12 3l7 3v6c0 5-3 8.5-7 9-4-.5-7-4-7-9V6l7-3Z"/><path d="m9 12 2 2 4-4"/>',
+  tooth: '<path d="M8 3c-2.2 0-4 1.9-4 4.6 0 2.8 1 4.7 1.4 7.7.3 2.1.6 4.7 2.1 4.7 1.7 0 1.6-4.3 2.5-6 .3-.6 1.6-.6 2 0 .9 1.7.8 6 2.5 6 1.5 0 1.8-2.6 2.1-4.7.4-3 1.4-4.9 1.4-7.7C18 4.9 16.2 3 14 3c-1.3 0-1.8.7-2 .7C11.8 3.7 11.3 3 10 3H8Z"/>',
+  alert: '<path d="M10.3 4.6 2.9 17a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 4.6a2 2 0 0 0-3.4 0Z"/><path d="M12 9.5v4M12 17h.01"/>',
+  rule: '<circle cx="12" cy="12" r="9"/><path d="M9 12h6M12 9v6"/>',
+  ai: '<path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/><circle cx="12" cy="12" r="3.4"/>',
+  human: '<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.4-3.8 4.3-5.8 7.5-5.8s6.1 2 7.5 5.8"/>',
+  logic: '<path d="M4 6h6l3 5-3 5H4"/><path d="M14 11h6"/>',
+  output: '<path d="M5 12h11M12 5l7 7-7 7"/>',
+};
+function icon(name){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+ICONS[name]+'</svg>'; }
+
+const DOK_ARTEN = [
+  { id:'ambulant', label:'Ambulante Arztrechnung', icon:'document', meta:'Standardfall' },
+  { id:'stationaer', label:'Stationäre Rechnung', icon:'hospital', meta:'§6a Honorarminderung' },
+  { id:'analog', label:'Analogleistung', icon:'flask', meta:'§12 Abs.5' },
+  { id:'vorsorge', label:'Vorsorgeleistung', icon:'shield', meta:'F-Präfix' },
+  { id:'kombi', label:'Kombinationsleistung GOÄ/GOZ', icon:'tooth', meta:'§6 Abs.1' },
+  { id:'notfall', label:'Notfallbehandlung', icon:'alert', meta:'Beschleunigter Pfad' },
+];
+
+/* Each step: n, title, actor ('regel'|'ki'|'mensch'), desc, rule, ifText, thenText, output */
+const FLOWS = {
+  ambulant: {
+    desc:'Standardpfad einer ambulanten GOÄ-Rechnung von Belegeingang bis Erstattungsentscheidung.',
+    steps:[
+      { title:'Belegeingang &amp; Digitalisierung', actor:'ki',
+        desc:'OCR-Erkennung und Strukturierung des eingereichten Rechnungsbelegs (Papier, PDF oder Foto) in maschinenlesbare Felder.',
+        rule:'Internes Extraktionsregelwerk (kein Gesetzesbezug)',
+        ifText:'Beleg lesbar &amp; vollständig digitalisiert', thenText:'weiter zu Formularprüfung',
+        output:'Strukturierter Beleg-Datensatz (GOÄ-Nummern, Beträge, Faktoren, Präfixe, Diagnosen)' },
+      { title:'Formularprüfung &amp; Pflichtangaben', actor:'regel',
+        desc:'Abgleich der Rechnung gegen die auf dem GOÄneu-Rechnungsformular vorgeschriebenen Pflichtfelder je Position.',
+        rule:'§12 Abs.1–3 GOÄneu — Pflichtangaben je Rechnung und Leistungsposition',
+        ifText:'Pflichtangabe fehlt (z.B. Leistungsdatum, GOÄ-Nummer, Kurzbezeichnung)', thenText:'Beleg als unvollständig markieren → Rückfrage',
+        output:'Formularstatus: vollständig / unvollständig' },
+      { title:'Präfix-Prüfung', actor:'regel',
+        desc:'Prüft je abgerechneter Ziffer, ob ein vorgeschriebenes Präfix (V/F/E/W/R/A) gesetzt und zulässig kombiniert ist.',
+        rule:'§12 Abs.4 GOÄneu — Präfix-System (bis zu 3 Präfixe je Zeile)',
+        ifText:'Präfix-pflichtige Leistung ohne oder mit unzulässigem Präfix abgerechnet', thenText:'Position zur Klärung markieren',
+        output:'Präfix-Validierungsstatus je Zeile' },
+      { title:'Steigerungsfaktor-Plausibilisierung', actor:'ki',
+        desc:'Abgleich des angegebenen Faktors mit den nach §12 Abs.2 zulässigen Faktor-Gründen (HV/AB/BT/ST/NT).',
+        rule:'§5 GOÄneu i.V.m. §12 Abs.2 Nr.6 GOÄneu — fester Gebührensatz, Abweichung nur mit Faktorgrund',
+        ifText:'Faktor &gt; 1,0 ohne dokumentierten Faktorgrund', thenText:'automatische Kürzung auf zulässigen Satz',
+        output:'Geprüfter, ggf. gekürzter Zeilenbetrag' },
+      { title:'Kombinationsausschluss-Prüfung', actor:'regel',
+        desc:'Prüft, ob zwei oder mehr auf dem Beleg abgerechnete Ziffern sich gemäß Gebührenverzeichnis gegenseitig ausschließen.',
+        rule:'§5 Abs.3 GOÄneu — Kombinationsausschlüsse im Gebührenverzeichnis',
+        ifText:'Ausschluss-Kombination erkannt', thenText:'nachrangige Position kürzen/streichen',
+        output:'Bereinigte Leistungspositionsliste' },
+      { title:'Medizinische Plausibilitätsprüfung', actor:'mensch',
+        desc:'Sachbearbeitende prüfen Fälle, die die KI als auffällig markiert hat (z.B. untypische Leistungskombination, Diagnose-Ziffer-Mismatch).',
+        rule:'Internes Prüfregelwerk (Eskalationsschwelle)',
+        ifText:'Auffälligkeit bestätigt sich bei manueller Prüfung', thenText:'Rückfrage an Leistungserbringer/Versicherte:n',
+        output:'Freigabe- oder Rückfrage-Entscheidung' },
+      { title:'Erstattungsentscheidung &amp; Auszahlung', actor:'ki',
+        desc:'Berechnung des tariflichen Erstattungsbetrags auf Basis aller vorherigen Prüfschritte und automatisierte Auszahlungsanweisung.',
+        rule:'Tarifbedingungen des jeweiligen Versicherungsvertrags',
+        ifText:'Alle vorherigen Schritte ohne offene Klärung', thenText:'automatische Auszahlung auslösen',
+        output:'Erstattungsbescheid + Zahlungsanweisung' },
+    ]
+  },
+  stationaer: {
+    desc:'Stationäre Behandlung mit verpflichtender Honorarminderung nach §6a GOÄneu und Prüfung der Wahlarztvereinbarung.',
+    steps:[
+      { title:'Belegeingang &amp; Klassifikation', actor:'ki',
+        desc:'Erkennung als stationäre Rechnung anhand Formularart und Aufenthaltsangaben (vollstationär, teilstationär, vor-/nachstationär).',
+        rule:'Internes Klassifikationsregelwerk',
+        ifText:'Aufenthaltsart nicht eindeutig erkennbar', thenText:'Beleg zur manuellen Klassifikation vormerken',
+        output:'Belegklasse: stationär, mit Aufenthaltsart' },
+      { title:'Formularprüfung stationäres Rechnungsformular', actor:'regel',
+        desc:'Prüfung der Pflichtangaben des gesonderten stationären GOÄ-Formulars inkl. Aufnahme-/Entlassdatum.',
+        rule:'§12 Abs.1–3 GOÄneu — Pflichtangaben, Formularanlage „stationär"',
+        ifText:'Aufnahme- oder Entlassdatum fehlt', thenText:'Beleg unvollständig → Rückfrage',
+        output:'Formularstatus: vollständig / unvollständig' },
+      { title:'Honorarminderungsprüfung', actor:'regel',
+        desc:'Ermittelt, ob der abrechnende Arzt als Krankenhausarzt oder als Belegarzt tätig war, und wendet die entsprechende Pflichtminderung an.',
+        rule:'§6a GOÄneu — Honorarminderung bei stationärer Leistungserbringung',
+        ifText:'Krankenhausarzt ohne wirksame Wahlarztvereinbarung', thenText:'25% Minderung auf Gebührenbetrag',
+        output:'Geminderter Gebührenbetrag (25% Krankenhausarzt / 15% Belegarzt)' },
+      { title:'Wahlleistungsvereinbarung-Prüfung', actor:'mensch',
+        desc:'Prüft bei Krankenhausärzten, ob eine formwirksame Wahlarztvereinbarung vorliegt, die die Minderungshöhe beeinflusst.',
+        rule:'§6a GOÄneu i.V.m. Vereinbarung nach §17 KHEntgG',
+        ifText:'Vereinbarung fehlt, ist unvollständig oder nicht form­wirksam', thenText:'Regelminderung 25% bestätigen, sonst Sonderfallprüfung',
+        output:'Bestätigte Minderungsquote' },
+      { title:'Faktor- &amp; Kombinationsprüfung', actor:'ki',
+        desc:'Analog zur ambulanten Prüfung: Faktor-Plausibilisierung und Kombinationsausschlüsse auf den bereits geminderten Beträgen.',
+        rule:'§5 Abs.3 GOÄneu — Kombinationsausschlüsse',
+        ifText:'Ausschluss-Kombination oder unbegründeter Faktor erkannt', thenText:'weitere Kürzung der betroffenen Position',
+        output:'Endgültig geprüfte Leistungspositionsliste' },
+      { title:'Erstattungsentscheidung', actor:'ki',
+        desc:'Berechnung des finalen Erstattungsbetrags unter Berücksichtigung von §6a-Minderung, Faktor- und Kombinationsprüfung.',
+        rule:'Tarifbedingungen des jeweiligen Versicherungsvertrags',
+        ifText:'Alle Prüfschritte ohne offene Klärung', thenText:'automatische Auszahlung auslösen',
+        output:'Erstattungsbescheid + Zahlungsanweisung' },
+    ]
+  },
+  analog: {
+    desc:'Analogbewertung nach §12 Abs.5 GOÄneu: Bezugsziffer- und Begründungspflicht stehen im Zentrum der Prüfung.',
+    steps:[
+      { title:'Belegeingang &amp; Digitalisierung', actor:'ki',
+        desc:'Erfassung der Rechnung inkl. der als Analogleistung gekennzeichneten Position.',
+        rule:'Internes Extraktionsregelwerk',
+        ifText:'A-Präfix im Beleg erkannt', thenText:'Position für Analogprüfung markieren',
+        output:'Strukturierter Beleg-Datensatz mit markierter Analogposition' },
+      { title:'A-Präfix-Erkennung', actor:'regel',
+        desc:'Formale Prüfung, ob die Position korrekt mit dem Präfix „A" (Analogbewertung) gekennzeichnet ist.',
+        rule:'§12 Abs.4 GOÄneu — Präfix A: Analogbewertung nach §6 Abs.2 GOÄneu',
+        ifText:'Leistung erkennbar analog bewertet, aber ohne A-Präfix', thenText:'Beleg zur Klärung markieren',
+        output:'Bestätigter Analog-Status der Position' },
+      { title:'Bezugsziffer-Prüfung', actor:'regel',
+        desc:'Prüft, ob eine gültige Bezugsziffer aus dem Gebührenverzeichnis angegeben ist, deren Aufwand mit der erbrachten Leistung vergleichbar ist.',
+        rule:'§12 Abs.5 GOÄneu — Pflicht zur Angabe einer Bezugsziffer bei Analogbewertung',
+        ifText:'keine oder unplausible Bezugsziffer angegeben', thenText:'Ablehnung der Position',
+        output:'Validierte Bezugsziffer oder Ablehnungsvermerk' },
+      { title:'Begründungsprüfung', actor:'mensch',
+        desc:'Fachliche Prüfung, ob die schriftliche medizinische Begründung die Analogbewertung inhaltlich trägt — erfordert medizinische Einschätzung.',
+        rule:'§12 Abs.5 GOÄneu — Begründungspflicht bei Analogleistungen',
+        ifText:'Begründung unzureichend oder nicht nachvollziehbar', thenText:'Rückfrage an Leistungserbringer',
+        output:'Freigegebene oder zurückgewiesene Begründung' },
+      { title:'Plausibilitätsabgleich Bezugsziffer ↔ Leistung', actor:'ki',
+        desc:'Abgleich der freitextlichen Leistungsbeschreibung mit dem typischen Aufwandsprofil der gewählten Bezugsziffer.',
+        rule:'Internes Prüfregelwerk auf Basis des Gebührenverzeichnisses',
+        ifText:'Aufwandsprofil weicht deutlich von Bezugsziffer ab', thenText:'Fall an Sachbearbeitung eskalieren',
+        output:'Plausibilitäts-Score der Analogbewertung' },
+      { title:'Entscheidung bei Uneindeutigkeit', actor:'mensch',
+        desc:'Bei verbleibender Unsicherheit trifft ein:e Sachbearbeiter:in die abschließende Entscheidung über Anerkennung, Kürzung oder Ablehnung.',
+        rule:'Internes Eskalationsregelwerk',
+        ifText:'KI-Score unterhalb Freigabeschwelle', thenText:'manuelle Endentscheidung erforderlich',
+        output:'Endgültiger Erstattungsstatus der Analogposition' },
+    ]
+  },
+  vorsorge: {
+    desc:'Vorsorge-/Früherkennungsleistungen mit F-Präfix und Zuordnung zu gesetzlich anerkannten Programmen.',
+    steps:[
+      { title:'Belegeingang &amp; Digitalisierung', actor:'ki',
+        desc:'Erfassung der Rechnung inkl. Erkennung typischer Vorsorge-Leistungsbeschreibungen (Check-up, Früherkennung).',
+        rule:'Internes Extraktionsregelwerk',
+        ifText:'Leistungsbeschreibung passt zu Vorsorge-Mustern', thenText:'Position für F-Präfix-Prüfung markieren',
+        output:'Strukturierter Beleg-Datensatz mit markierter Vorsorgeposition' },
+      { title:'F-Präfix-Identifikation', actor:'regel',
+        desc:'Prüft, ob die Position korrekt mit dem Präfix „F" für gesetzlich eingeführte Früherkennungsprogramme gekennzeichnet ist.',
+        rule:'§12 Abs.4 GOÄneu — Präfix F: Leistung zur Früherkennung nach gesetzlich eingeführten Programmen',
+        ifText:'Vorsorgeleistung ohne F-Präfix abgerechnet', thenText:'Beleg zur Klärung markieren',
+        output:'Bestätigter Vorsorge-Status der Position' },
+      { title:'Programm-Zuordnungsprüfung', actor:'regel',
+        desc:'Prüft, ob die abgerechnete Leistung tatsächlich einem gesetzlich anerkannten Früherkennungsprogramm zugeordnet werden kann.',
+        rule:'Programmkatalog gemäß gesetzlicher Früherkennungsrichtlinien',
+        ifText:'Leistung keinem anerkannten Programm zuordenbar', thenText:'Einstufung als reguläre (nicht F-präfigierte) Leistung',
+        output:'Programmzuordnung bestätigt oder verworfen' },
+      { title:'Tarifliche Sonderregel-Prüfung', actor:'ki',
+        desc:'Prüft tarifabhängige Sonderregeln für Vorsorgeleistungen (z.B. abweichende Erstattungssätze, Altersgrenzen, Intervalle).',
+        rule:'Tarifbedingungen des jeweiligen Versicherungsvertrags',
+        ifText:'Intervall- oder Altersgrenze des Tarifs überschritten', thenText:'anteilige oder keine Erstattung',
+        output:'Tarifkonformer Erstattungsanspruch' },
+      { title:'Erstattungsentscheidung', actor:'ki',
+        desc:'Berechnung des Erstattungsbetrags unter Berücksichtigung von Programmzuordnung und Tarifregeln.',
+        rule:'Tarifbedingungen des jeweiligen Versicherungsvertrags',
+        ifText:'Alle Prüfschritte ohne offene Klärung', thenText:'automatische Auszahlung auslösen',
+        output:'Erstattungsbescheid + Zahlungsanweisung' },
+    ]
+  },
+  kombi: {
+    desc:'Kombinierte GOÄ-/GOZ-Leistungen (z.B. MKG-Chirurgie): Zuordnung je Position nach §6 Abs.1 GOÄneu ist zentral.',
+    steps:[
+      { title:'Belegeingang &amp; Dokumentklassifikation', actor:'ki',
+        desc:'Erkennt anhand der Fachrichtung und Leistungsbeschreibungen, dass der Beleg sowohl GOÄ- als auch GOZ-pflichtige Positionen enthält.',
+        rule:'Internes Klassifikationsregelwerk',
+        ifText:'zahnärztliche Leistungsbeschreibung auf GOÄ-Formular erkannt', thenText:'Beleg als Kombinationsleistung markieren',
+        output:'Beleg mit getrennt markierten GOÄ- und GOZ-Positionen' },
+      { title:'Zuordnungsprüfung GOÄ vs. GOZ je Position', actor:'regel',
+        desc:'Bestimmt für jede Position, ob sie nach den Gebührensätzen der GOÄ oder der GOZ abzurechnen ist — unabhängig vom verwendeten Formular.',
+        rule:'§6 Abs.1 GOÄneu — GOZ-Vergütungspflicht für zahnärztliche Leistungen bestimmter Fachgruppen (z.B. MKG-Chirurgie, HNO)',
+        ifText:'Position eindeutig zahnärztlich, aber auf GOÄ-Formular abgerechnet', thenText:'Vergütung nach GOZ-Regeln, Formular bleibt GOÄ-Anlage',
+        output:'Positionsliste mit Gebührenordnungs-Zuordnung (GOÄ/GOZ)' },
+      { title:'GOZ-Gebührenberechnung', actor:'regel',
+        desc:'Für GOZ-zugeordnete Positionen gilt kein fester Einfachsatz wie bei §5 GOÄneu — der Faktor bewegt sich innerhalb der GOZ-Ober-/Untergrenzen.',
+        rule:'Gebührenordnung für Zahnärzte (GOZ), insb. §5 GOZ (Bemessung)',
+        ifText:'GOZ-Faktor außerhalb der zulässigen Ober-/Untergrenze', thenText:'Kürzung auf zulässigen GOZ-Höchstsatz',
+        output:'Geprüfter GOZ-Zeilenbetrag' },
+      { title:'Kombinationsausschluss GOÄ ↔ GOZ', actor:'regel',
+        desc:'Prüft fachübergreifende Ausschlüsse zwischen GOÄ- und GOZ-Positionen auf demselben Beleg.',
+        rule:'§5 Abs.3 GOÄneu analog i.V.m. GOZ-Ausschlusskatalog',
+        ifText:'GOÄ- und GOZ-Position schließen sich gegenseitig aus', thenText:'nachrangige Position kürzen/streichen',
+        output:'Bereinigte, fachübergreifend geprüfte Positionsliste' },
+      { title:'Zahnärztliche Plausibilitätsprüfung', actor:'mensch',
+        desc:'Bei komplexen MKG-chirurgischen Fällen prüft ein:e zahnmedizinische:r Gutachter:in die fachliche Zuordnung und Begründung.',
+        rule:'Internes Prüfregelwerk (fachliche Eskalation)',
+        ifText:'Zuordnung GOÄ/GOZ fachlich strittig', thenText:'Gutachterliche Klärung anfordern',
+        output:'Bestätigte fachliche Zuordnung' },
+      { title:'Erstattungsentscheidung', actor:'ki',
+        desc:'Zusammenführung von GOÄ- und GOZ-Teilbeträgen zu einem Gesamterstattungsbetrag.',
+        rule:'Tarifbedingungen des jeweiligen Versicherungsvertrags',
+        ifText:'Alle Prüfschritte ohne offene Klärung', thenText:'automatische Auszahlung auslösen',
+        output:'Erstattungsbescheid + Zahlungsanweisung' },
+    ]
+  },
+  notfall: {
+    desc:'Notfallbehandlungen durchlaufen einen beschleunigten Prüfpfad mit priorisierter, teils nachgelagerter Prüfung.',
+    steps:[
+      { title:'Belegeingang mit Prioritätskennzeichnung', actor:'ki',
+        desc:'Erkennt Notfallmerkmale (Leistungsziffern für Notfallbehandlung, Uhrzeitangaben außerhalb der Regelsprechzeit) und priorisiert den Beleg.',
+        rule:'Internes Priorisierungsregelwerk',
+        ifText:'Notfallmerkmale erkannt', thenText:'beschleunigte Vorabprüfung, Auszahlung ggf. vor Vollprüfung',
+        output:'Priorisierter Beleg-Datensatz' },
+      { title:'Formularprüfung mit Kulanzschwelle', actor:'regel',
+        desc:'Pflichtangabenprüfung wie im Standardpfad, jedoch mit höherer Toleranz für nachträgliche Ergänzung einzelner Angaben.',
+        rule:'§12 Abs.1–3 GOÄneu — Pflichtangaben, angewendet mit Kulanzregel für Notfälle',
+        ifText:'nicht sicherheitsrelevante Pflichtangabe fehlt', thenText:'vorläufige Freigabe, Nacherfassung angefordert',
+        output:'Vorläufiger Formularstatus' },
+      { title:'Präfix- &amp; Faktorprüfung', actor:'regel',
+        desc:'Prüfung von Präfixen und Steigerungsfaktoren wie im Standardpfad — Notfallcharakter kann als Faktorgrund relevant sein.',
+        rule:'§12 Abs.4 GOÄneu (Präfixe) i.V.m. §12 Abs.2 GOÄneu (Faktorgründe)',
+        ifText:'erhöhter Faktor durch dokumentierte Notfall-/Nachtsituation begründet', thenText:'Faktor als plausibel bestätigen',
+        output:'Geprüfte Faktor- und Präfixangaben' },
+      { title:'Beschleunigte Erstattung', actor:'ki',
+        desc:'Berechnung und Auszahlung eines vorläufigen Erstattungsbetrags, um die finanzielle Belastung im Notfall gering zu halten.',
+        rule:'Internes Vorab-Erstattungsregelwerk',
+        ifText:'Vorabprüfung ohne kritische Auffälligkeit', thenText:'vorläufige Auszahlung auslösen',
+        output:'Vorläufiger Erstattungsbescheid' },
+      { title:'Nachgelagerte Vollprüfung', actor:'mensch',
+        desc:'Nach Abschluss der Akutsituation erfolgt eine reguläre Vollprüfung des Belegs inkl. aller Standardprüfschritte.',
+        rule:'Internes Nachprüfungsregelwerk',
+        ifText:'Abweichung zwischen Vorab- und Vollprüfung festgestellt', thenText:'Korrekturbescheid / Rückforderung',
+        output:'Endgültiger, vollständig geprüfter Erstattungsstatus' },
+    ]
+  },
+};
+
+/* Regelwerk-Katalog: name, rechtsgrundlage, dokarten[], akteur, ausloeser, konsequenz */
+const KATALOG = [
+  { name:'Pflichtangaben Rechnungsformular', rechtsgrundlage:'§12 Abs.1–3 GOÄneu', dokarten:['ambulant','stationaer','analog','vorsorge','kombi','notfall'], akteur:'regel',
+    ausloeser:'Rechnungseingang, unabhängig von Dokumentart', konsequenz:'Beleg als unvollständig markiert, Rückfrage an Leistungserbringer' },
+  { name:'Präfix-Pflicht (V/F/E/W/R/A)', rechtsgrundlage:'§12 Abs.4 GOÄneu', dokarten:['ambulant','analog','vorsorge','notfall'], akteur:'regel',
+    ausloeser:'präfixpflichtige Leistung ohne oder mit unzulässigem Präfix abgerechnet', konsequenz:'Position zur Klärung markiert, ggf. Ablehnung' },
+  { name:'Kombinationsausschluss im Gebührenverzeichnis', rechtsgrundlage:'§5 Abs.3 GOÄneu', dokarten:['ambulant','stationaer','kombi'], akteur:'regel',
+    ausloeser:'zwei sich ausschließende Ziffern auf einem Beleg', konsequenz:'Kürzung/Streichung der nachrangigen Position' },
+  { name:'Honorarminderung stationär', rechtsgrundlage:'§6a GOÄneu', dokarten:['stationaer'], akteur:'regel',
+    ausloeser:'stationäre Leistungserbringung durch Krankenhaus- oder Belegarzt', konsequenz:'automatische Minderung 25% (Krankenhausarzt) bzw. 15% (Belegarzt)' },
+  { name:'Bezugsziffer-Pflicht bei Analogbewertung', rechtsgrundlage:'§12 Abs.5 GOÄneu', dokarten:['analog'], akteur:'regel',
+    ausloeser:'Leistung mit A-Präfix ohne gültige Bezugsziffer', konsequenz:'Ablehnung der Position' },
+  { name:'Begründungsprüfung Analogleistung', rechtsgrundlage:'§12 Abs.5 GOÄneu', dokarten:['analog'], akteur:'mensch',
+    ausloeser:'medizinische Begründung zur Analogbewertung eingereicht', konsequenz:'Rückfrage bei unzureichender Begründung, sonst Freigabe' },
+  { name:'F-Präfix-Identifikation Vorsorgeleistungen', rechtsgrundlage:'§12 Abs.4 GOÄneu', dokarten:['vorsorge'], akteur:'regel',
+    ausloeser:'gesetzliches Früherkennungsprogramm abgerechnet', konsequenz:'Prüfung der Programmzugehörigkeit, sonst Einstufung als reguläre Leistung' },
+  { name:'GOZ-Zuordnung bei Kombinationsleistungen', rechtsgrundlage:'§6 Abs.1 GOÄneu', dokarten:['kombi'], akteur:'regel',
+    ausloeser:'zahnärztliche Leistung auf GOÄ-Formular (z.B. MKG-Chirurgie)', konsequenz:'Vergütung nach GOZ-Regeln trotz GOÄ-Formular' },
+  { name:'Steigerungsfaktor-Plausibilisierung', rechtsgrundlage:'§5 GOÄneu i.V.m. §12 Abs.2 GOÄneu', dokarten:['ambulant','stationaer','notfall'], akteur:'ki',
+    ausloeser:'abweichender Faktor ohne dokumentierten Faktorgrund (HV/AB/BT/ST/NT)', konsequenz:'automatische Kürzung auf zulässigen Gebührensatz' },
+  { name:'Medizinische Auffälligkeitsprüfung', rechtsgrundlage:'Internes Prüfregelwerk (kein Gesetzesbezug)', dokarten:['ambulant','stationaer','kombi'], akteur:'mensch',
+    ausloeser:'KI-Plausibilitäts-Score unterhalb Freigabeschwelle', konsequenz:'manuelle Einzelfallprüfung, ggf. Rückfrage' },
+  { name:'Wahlleistungsvereinbarung-Prüfung', rechtsgrundlage:'§6a GOÄneu i.V.m. §17 KHEntgG', dokarten:['stationaer'], akteur:'mensch',
+    ausloeser:'Krankenhausarzt rechnet mit reduzierter Minderung ab', konsequenz:'Regelminderung 25% wird angesetzt, falls Vereinbarung nicht nachgewiesen' },
+  { name:'Priorisierung &amp; Kulanzschwelle Notfall', rechtsgrundlage:'Internes Priorisierungsregelwerk', dokarten:['notfall'], akteur:'ki',
+    ausloeser:'Notfallmerkmale im Beleg erkannt', konsequenz:'beschleunigte Vorabprüfung und -erstattung vor Vollprüfung' },
+];
+
+const ACTOR_LABEL = { regel:'Regelwerk', ki:'KI', mensch:'Mensch' };
+
+/* ============================================================
+   RENDER: Prozessflow
+   ============================================================ */
+
+let activeDok = DOK_ARTEN[0].id;
+
+function renderDokartList(){
+  const host = document.getElementById('dokart-list');
+  DOK_ARTEN.forEach(d=>{
+    const btn = document.createElement('button');
+    btn.className = 'dokart-item';
+    btn.type = 'button';
+    btn.dataset.dok = d.id;
+    btn.dataset.active = (d.id===activeDok) ? 'true':'false';
+    btn.innerHTML = '<span class="dokart-icon">'+icon(d.icon)+'</span>'
+      + '<span class="dokart-item-body"><span class="dokart-item-name">'+d.label+'</span>'
+      + '<span class="dokart-item-meta">'+d.meta+'</span></span>';
+    btn.addEventListener('click', ()=>{ activeDok = d.id; renderAll(); });
+    host.appendChild(btn);
+  });
+}
+
+function renderTimeline(){
+  const flow = FLOWS[activeDok];
+  const dok = DOK_ARTEN.find(d=>d.id===activeDok);
+  document.getElementById('flow-title').textContent = dok.label;
+  document.getElementById('flow-desc').textContent = flow.desc;
+
+  const host = document.getElementById('timeline');
+  host.innerHTML = '';
+  flow.steps.forEach((s,i)=>{
+    const n = i+1;
+    const step = document.createElement('div');
+    step.className = 'tl-step';
+    step.innerHTML = ''
+      + '<div class="tl-node '+s.actor+'">'+n+'</div>'
+      + '<div class="tl-card">'
+      +   '<div class="tl-card-head">'
+      +     '<h3>Schritt '+n+': '+s.title+'</h3>'
+      +     '<span class="actor-badge '+s.actor+'"><span class="dot"></span>'+ACTOR_LABEL[s.actor]+'</span>'
+      +   '</div>'
+      +   '<p class="tl-desc">'+s.desc+'</p>'
+      +   '<div class="tl-grid">'
+      +     '<div class="tl-block"><div class="tl-block-label">'+icon('rule')+'Angewendetes Regelwerk</div><div class="tl-block-body tl-rule">'+s.rule+'</div></div>'
+      +     '<div class="tl-block"><div class="tl-block-label">'+icon('logic')+'Entscheidungslogik</div><div class="tl-block-body"><span class="tl-logic-if">Wenn: '+s.ifText+'</span><span class="tl-logic-arrow">→</span>'+s.thenText+'</div></div>'
+      +     '<div class="tl-output"><div class="tl-block"><div class="tl-block-label">'+icon('output')+'Ausgabe</div><div class="tl-block-body">'+s.output+'</div></div></div>'
+      +   '</div>'
+      + '</div>';
+    host.appendChild(step);
+  });
+}
+
+function renderStats(){
+  const flow = FLOWS[activeDok];
+  const counts = { regel:0, ki:0, mensch:0 };
+  flow.steps.forEach(s=>counts[s.actor]++);
+  const total = flow.steps.length;
+
+  const countsHost = document.getElementById('stats-counts');
+  countsHost.innerHTML = ['regel','ki','mensch'].map(a=>
+    '<div class="stats-count '+a+'"><div class="num">'+counts[a]+'</div><div class="lbl">'+ACTOR_LABEL[a]+'</div></div>'
+  ).join('');
+
+  // ring donut via stroke-dasharray segments
+  const donut = document.getElementById('donut');
+  const r = 15.9155, circ = 2*Math.PI*r;
+  const colors = { regel:'var(--c-regel)', ki:'var(--c-ki)', mensch:'var(--c-mensch)' };
+  let offset = 0;
+  const parts = ['<circle cx="21" cy="21" r="'+r+'" fill="none" stroke="var(--border)" stroke-width="6"></circle>'];
+  ['regel','ki','mensch'].forEach(a=>{
+    const frac = total ? counts[a]/total : 0;
+    const len = frac*circ;
+    if(len>0){
+      parts.push('<circle cx="21" cy="21" r="'+r+'" fill="none" stroke="'+colors[a]+'" stroke-width="6" '
+        + 'stroke-dasharray="'+len.toFixed(2)+' '+(circ-len).toFixed(2)+'" stroke-dashoffset="'+(-offset).toFixed(2)+'" '
+        + 'transform="rotate(-90 21 21)" stroke-linecap="butt"><title>'+ACTOR_LABEL[a]+': '+counts[a]+' von '+total+'</title></circle>');
+      offset += len;
+    }
+  });
+  parts.push('<text x="21" y="24" text-anchor="middle" font-size="10" font-weight="800" fill="var(--ink)">'+total+'</text>');
+  donut.innerHTML = parts.join('');
+}
+
+function renderAll(){
+  document.querySelectorAll('.dokart-item').forEach(el=>{
+    el.dataset.active = (el.dataset.dok===activeDok) ? 'true':'false';
+  });
+  renderTimeline();
+  renderStats();
+}
+
+/* ============================================================
+   RENDER: Katalog
+   ============================================================ */
+
+let katalogAkteur = 'alle';
+let katalogDok = 'alle';
+
+function renderDokartFilterOptions(){
+  const sel = document.getElementById('filter-dokart');
+  DOK_ARTEN.forEach(d=>{
+    const opt = document.createElement('option');
+    opt.value = d.id; opt.textContent = d.label;
+    sel.appendChild(opt);
+  });
+}
+
+function dokLabel(id){ const d = DOK_ARTEN.find(x=>x.id===id); return d ? d.label : id; }
+
+function renderKatalog(){
+  const rows = KATALOG.filter(k=>{
+    if(katalogAkteur!=='alle' && k.akteur!==katalogAkteur) return false;
+    if(katalogDok!=='alle' && k.dokarten.indexOf(katalogDok)===-1) return false;
+    return true;
+  });
+
+  const body = document.getElementById('katalog-body');
+  const empty = document.getElementById('katalog-empty');
+  document.getElementById('katalog-count').textContent = rows.length+' von '+KATALOG.length+' Regelwerken';
+
+  if(rows.length===0){
+    body.innerHTML = '';
+    empty.hidden = false;
+    return;
+  }
+  empty.hidden = true;
+
+  body.innerHTML = rows.map(k=>
+    '<tr>'
+    + '<td class="k-name">'+k.name+'</td>'
+    + '<td class="mono">'+k.rechtsgrundlage+'</td>'
+    + '<td><div class="k-dokarten">'+k.dokarten.map(d=>'<span class="k-dokart-pill">'+dokLabel(d)+'</span>').join('')+'</div></td>'
+    + '<td><span class="actor-badge '+k.akteur+'"><span class="dot"></span>'+ACTOR_LABEL[k.akteur]+'</span></td>'
+    + '<td>'+k.ausloeser+'</td>'
+    + '<td class="k-konsequenz">'+k.konsequenz+'</td>'
+    + '</tr>'
+  ).join('');
+}
+
+/* ============================================================
+   INIT / EVENTS
+   ============================================================ */
+
+renderDokartList();
+renderDokartFilterOptions();
+renderAll();
+renderKatalog();
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.dataset.active = (b===btn) ? 'true':'false');
+    const tab = btn.dataset.tab;
+    document.getElementById('view-flow').hidden = (tab!=='flow');
+    document.getElementById('view-katalog').hidden = (tab!=='katalog');
+  });
+});
+
+document.getElementById('filter-akteur').querySelectorAll('.filter-chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    katalogAkteur = chip.dataset.akteur;
+    document.querySelectorAll('#filter-akteur .filter-chip').forEach(c=>c.dataset.active = (c===chip) ? 'true':'false');
+    renderKatalog();
+  });
+});
+document.getElementById('filter-dokart').addEventListener('change', e=>{
+  katalogDok = e.target.value;
+  renderKatalog();
+});
+
+/* Theme toggle: cycles system -> light -> dark -> system */
+const root = document.documentElement;
+function currentThemeState(){ return root.getAttribute('data-theme'); }
+document.getElementById('btn-theme').addEventListener('click', ()=>{
+  const cur = currentThemeState();
+  if(cur==='dark'){ root.removeAttribute('data-theme'); }
+  else if(cur==='light'){ root.setAttribute('data-theme','dark'); }
+  else { root.setAttribute('data-theme','light'); }
+  renderStats();
+});
+
+})();
+</script>
+</body>
+</html>
