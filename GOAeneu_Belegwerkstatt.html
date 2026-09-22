@@ -1,6 +1,4 @@
 <!DOCTYPE html><html lang="de"><head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GOÄneu Suite</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -938,23 +936,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   .module-rail .back-link:hover{color:var(--rail-text); border-color:rgba(255,255,255,.3);}
   .module-rail .back-link svg{width:13px; height:13px;}
 
-  /* Zweispaltige Modul-Ansicht: Liste links, Detail rechts */
-  .module-split{display:grid; grid-template-columns:300px 1fr; gap:18px; align-items:start;}
-  @media (max-width:820px){.module-split{grid-template-columns:1fr;}}
-  .doc-list{display:flex; flex-direction:column; gap:8px;}
-  .doc-list-item{
-    display:block; width:100%; text-align:left; background:var(--card-bg); border:1px solid var(--card-border); border-radius:10px;
-    padding:12px 14px; cursor:pointer; font-family:"Source Sans 3",sans-serif;
-  }
-  .doc-list-item:hover{border-color:var(--accent);}
-  .doc-list-item[data-active="true"]{border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 20%, transparent);}
-  .doc-list-item .dtitle{font-weight:700; font-size:.86rem; color:var(--ink); margin-bottom:5px; line-height:1.35;}
-  .doc-list-item .dmeta{font-size:.72rem; color:var(--ink-soft);}
-  .status-chip{display:inline-flex; align-items:center; gap:4px; font:700 .64rem "Source Sans 3"; text-transform:uppercase; letter-spacing:.03em; padding:3px 8px; border-radius:999px; margin-top:7px;}
-  .status-chip.relevant{background:var(--cat-boundary-bg); color:var(--cat-boundary);}
-  .status-chip.neu{background:var(--cat-conflict-bg); color:var(--cat-conflict);}
-  .status-chip.ok{background:var(--cat-ok-bg); color:var(--cat-ok);}
-
   .finding-card{background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:16px 18px; margin-bottom:14px;}
   .finding-head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px; flex-wrap:wrap;}
   .finding-loc{font:700 .68rem "IBM Plex Mono",monospace; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.03em;}
@@ -968,12 +949,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   .diff-col .diff-label{display:block; font:700 .62rem "Source Sans 3"; text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px;}
   .diff-col.old .diff-label{color:var(--cat-violation);}
   .diff-col.new .diff-label{color:var(--cat-ok);}
-  .finding-actions{display:flex; align-items:center; gap:10px; margin-top:12px;}
-  .apply-toggle{
-    font:600 .76rem "Source Sans 3"; padding:7px 13px; border-radius:999px; border:1px solid var(--card-border);
-    background:transparent; color:var(--ink-soft); cursor:pointer;
-  }
-  .apply-toggle[data-done="true"]{background:var(--cat-ok-bg); color:var(--cat-ok); border-color:transparent;}
   .tarif-note{display:inline-flex; align-items:center; gap:5px; font-size:.74rem; color:var(--ink-soft);}
   .tarif-note svg{width:13px; height:13px; color:var(--accent-strong);}
 
@@ -1068,6 +1043,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   .pr-prio-hoch{background:var(--cat-violation-bg); color:var(--cat-violation);}
   .pr-prio-mittel{background:var(--cat-boundary-bg); color:var(--cat-boundary);}
   .pr-prio-niedrig{background:var(--bg); color:var(--ink-soft);}
+  .pr-status-neu{background:var(--cat-conflict-bg); color:var(--cat-conflict);}
   .pr-status-offen{background:var(--bg); color:var(--ink-soft);}
   .pr-status-in-pruefung{background:var(--cat-conflict-bg); color:var(--cat-conflict);}
   .pr-status-uebernommen{background:var(--cat-ok-bg); color:var(--cat-ok);}
@@ -1092,10 +1068,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     <button class="suite-nav-item" type="button" data-view="kundentexte">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 15a3 3 0 0 1-3 3H8l-4 3V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v9Z"/><path d="M8 9h8M8 12.5h5"/></svg>
       Kundentexte
-    </button>
-    <button class="suite-nav-item" type="button" data-view="handbuecher">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.2A2.2 2.2 0 0 1 6.2 3H20v15.2H6.2A2.2 2.2 0 0 0 4 20.4V5.2Z"/><path d="M4 18.4A2.2 2.2 0 0 1 6.2 16.2H20"/><path d="M8 7.5h8M8 10.5h8"/></svg>
-      Handbücher &amp; Schulungen
     </button>
     <button class="suite-nav-item" type="button" data-view="pruefung">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6"/></svg>
@@ -1125,7 +1097,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     <section id="view-uebersicht" class="suite-view">
       <div class="hero-card">
         <h1>GOÄneu Suite</h1>
-        <p>Eine Anwendung für die KI-gestützten Anforderungen aus der GOÄneu-Anfrage: synthetische Testdaten mit Kundenkommunikation, die Aktualisierung von Handbüchern &amp; Schulungen sowie die Prüfung bestehender Inhalte auf GOÄ-Bezug — gebündelt statt als Einzellösungen.</p>
+        <p>Eine Anwendung für die KI-gestützten Anforderungen aus der GOÄneu-Anfrage: synthetische Testdaten mit Kundenkommunikation sowie die Prüfung von ConNet, Continentale-Domains, PDF-Druckstücken, Tabellen und Handbüchern/Kundendienstregelungen auf GOÄ-Bezug — gebündelt statt als Einzellösungen.</p>
       </div>
 
       <div class="section-block">
@@ -1147,20 +1119,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
               <p>Übersetzt die geprüften Rechnungsinhalte des aktuellen Testfalls in zweisprachige Kundentexte (DE/EN) und erzeugt bei Verstoß-Belegen vollständige Ablehnungs-/Kürzungsschreiben.</p>
             </span>
           </button>
-          <button class="capability-card" type="button" data-view="handbuecher">
-            <span class="capability-badge">Aktiv</span>
-            <span class="capability-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.2A2.2 2.2 0 0 1 6.2 3H20v15.2H6.2A2.2 2.2 0 0 0 4 20.4V5.2Z"/><path d="M4 18.4A2.2 2.2 0 0 1 6.2 16.2H20"/><path d="M8 7.5h8M8 10.5h8"/></svg></span>
-            <span class="capability-body">
-              <h3>Handbücher &amp; Schulungen</h3>
-              <p>Prüft Kundendienstregelungen und Leitfäden auf GOÄneu-Bezug, formuliert neue Arbeitsanweisungen und bereitet bisher nicht relevante Themen wie Komplexleistungen als Schulungsunterlage auf.</p>
-            </span>
-          </button>
           <button class="capability-card" type="button" data-view="pruefung">
             <span class="capability-badge">Aktiv</span>
             <span class="capability-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6"/></svg></span>
             <span class="capability-body">
               <h3>Prüfung GOÄ-Bezug</h3>
-              <p>Durchsucht ConNet, Continentale-Domains, PDF-Druckstücke und Tabellen nach GOÄ-Bezug, zeigt Fundstellen und schlägt neue Formulierungen inkl. aktueller tariflicher Leistungen vor.</p>
+              <p>Durchsucht ConNet, Continentale-Domains, PDF-Druckstücke, Tabellen sowie Handbücher, Kundendienstregelungen und Leitfäden nach GOÄ-Bezug, zeigt Fundstellen und schlägt neue Formulierungen bzw. Arbeitsanweisungen inkl. aktueller tariflicher Leistungen vor.</p>
             </span>
           </button>
           <div class="capability-card" style="cursor:default; border-left-color:var(--card-border);">
@@ -1178,8 +1142,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         <div class="section-label">Übersicht</div>
         <div class="stat-row">
           <div class="stat-tile"><div class="num" id="stat-testfaelle">5</div><div class="label">Testfall-Kategorien mit Kundentexten DE/EN</div></div>
-          <div class="stat-tile"><div class="num" id="stat-handbuecher">–</div><div class="label">Handbuch-Fundstellen mit GOÄneu-Bezug (Beispieldaten)</div></div>
-          <div class="stat-tile"><div class="num" id="stat-quellen">4</div><div class="label">Quellenbereiche für die GOÄ-Bezugsprüfung eingebunden</div></div>
+          <div class="stat-tile"><div class="num" id="stat-fundstellen">–</div><div class="label">Fundstellen mit GOÄneu-Bezug über alle Quellen (Beispieldaten)</div></div>
+          <div class="stat-tile"><div class="num" id="stat-quellen">5</div><div class="label">Quellenbereiche für die GOÄ-Bezugsprüfung eingebunden</div></div>
         </div>
       </div>
     </section>
@@ -1321,23 +1285,68 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           Zur Übersicht
         </button>
         <h1>Kundentexte</h1>
-        <p>Jeder Prüfpunkt des aktuellen Testfalls aus der Testdatengenerierung erzeugt einen kundenorientierten Text in Deutsch und Englisch — aus dem technischen Regeltext übersetzt in eine für Versicherte verständliche Formulierung, gedacht für den Druck auf der Leistungsabrechnung. Bei Verstoß-Belegen lassen sich daraus über „Ablehnen“ bzw. „Kürzen“ zusätzlich vollständige, zweisprachige Schreiben erzeugen: „Ablehnen“ weist die Rechnung insgesamt zur Korrektur zurück, „Kürzen“ berechnet den erstattungsfähigen Betrag anhand der einzelnen Beanstandungen neu und stellt beide Beträge gegenüber.</p>
+        <p>Erzeugt kundenorientierte Texte in Deutsch und Englisch aus dem technischen GOÄneu-Regeltext — entweder unabhängig für eine frei wählbare oder beschriebene Konstellation, oder gebündelt für jeden Prüfpunkt des aktuellen Testfalls aus der Testdatengenerierung. Bei Verstoß-Belegen lassen sich aus Letzterem über „Ablehnen“ bzw. „Kürzen“ zusätzlich vollständige, zweisprachige Schreiben erzeugen.</p>
       </div>
-      <section class="classification-panel" id="classification-panel" hidden></section>
-    </section>
 
-    <section id="view-handbuecher" class="suite-view" hidden>
-      <div class="module-rail">
-        <button class="back-link" type="button" data-view="uebersicht">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 4 12l7 7M4 12h16"/></svg>
-          Zur Übersicht
-        </button>
-        <h1>Handbücher &amp; Schulungen</h1>
-        <p>Prüft bestehende Kundendienstregelungen und Leitfäden auf GOÄneu-Bezug, schlägt neue Arbeitsanweisungen für betroffene Abschnitte vor und bereitet bisher nicht relevante Themen — z.&nbsp;B. Komplexleistungen — als eigenständige Schulungsunterlage mit Checkliste und Schaubild auf. Dokumente, Fundstellen und Formulierungsvorschläge unten sind Beispieldaten zur Veranschaulichung.</p>
+      <div class="section-block">
+        <div class="section-label">Kundentext für eine einzelne Konstellation</div>
+        <p style="margin:0 0 16px;color:var(--ink-soft);font-size:.86rem;max-width:760px;">Unabhängig vom aktuellen Testfall: Konstellation wählen oder eine konkrete Situation im Freitext beschreiben — z.&nbsp;B. eine Ziffernkombination, die nicht nebeneinander abgerechnet werden darf.</p>
+        <details class="input-mask" id="kt-input-mask" open>
+          <summary class="input-mask-summary">
+            <span>Einstellungen</span>
+            <svg class="input-mask-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </summary>
+          <div class="input-mask-body">
+            <div class="input-mask-field">
+              <label class="section-label" for="sel-kt-szenario">Konstellation</label>
+              <select class="select-field" id="sel-kt-szenario">
+                <option value="zufaellig" selected>Zufällig</option>
+                <optgroup label="Korrekter Fall">
+                  <option value="korrekt_standard">Fester Gebührensatz ohne Zuschlag</option>
+                  <option value="korrekt_vorsorge">Vorsorge-/Früherkennungsleistung (Präfix „F“)</option>
+                </optgroup>
+                <optgroup label="Grenzfall">
+                  <option value="grenz_wegegeld25">Wegegeld exakt auf der 25-km-Grenze</option>
+                  <option value="grenz_bmi">Sonographie: BMI-Zuschlag am Schwellenwert</option>
+                  <option value="grenz_psycho">Psychotherapie: Sitzungsdauer exakt 50 Minuten</option>
+                </optgroup>
+                <optgroup label="Verstoß">
+                  <option value="verstoss_analog">Fehlendes Präfix „A“ bei Analogleistung</option>
+                  <option value="verstoss_titel">Titel der Leistungslegende fehlt</option>
+                  <option value="verstoss_minderung">Pflichtminderung bei stationärer Behandlung fehlt</option>
+                </optgroup>
+                <optgroup label="Ausnahmefall">
+                  <option value="ausnahme_notfall">Notfallbehandlung ohne Honorarvereinbarung</option>
+                  <option value="ausnahme_verlangen">Verlangensleistung (Präfix „V“)</option>
+                  <option value="ausnahme_schutzwuerdig">Diagnoseangabe entfällt (schutzwürdige Interessen)</option>
+                </optgroup>
+                <optgroup label="Konfliktfall">
+                  <option value="konflikt_wegereise">Wegegeld und Reiseentschädigung gleichzeitig</option>
+                  <option value="konflikt_analogeigen">Analogkennzeichnung trotz eigener GOÄ-Nummer</option>
+                  <option value="konflikt_hvab">Honorarvereinbarung mit zusätzlicher Faktor-Multiplikation</option>
+                  <option value="konflikt_kombiausschluss">Kombinationsausschluss zweier Ziffern</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="input-mask-field">
+              <label class="section-label" for="kt-freitext">Konkrete Situation beschreiben <span class="optional-tag">optional</span></label>
+              <textarea class="textarea-field" id="kt-freitext" rows="3" placeholder="z. B. 1200 darf nicht neben 1201 abgerechnet werden, oder: Fehlendes A-Präfix bei Analogleistung"></textarea>
+              <p class="input-mask-hint">Passt der Text zu einer bekannten Konstellation oder nennt er zwei Ziffern, die nicht nebeneinander abgerechnet werden dürfen, wird der passende Kundentext erzeugt — sonst gilt die Auswahl oben.</p>
+            </div>
+            <div class="input-mask-actions">
+              <button class="btn btn-primary" id="btn-kt-generieren" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.36"/><path d="M21 4v5h-5"/></svg>
+                Kundentext generieren
+              </button>
+            </div>
+          </div>
+        </details>
+        <div class="cp-grid" id="kt-generator-result" hidden></div>
       </div>
-      <div class="module-split">
-        <div class="doc-list" id="hb-doc-list"></div>
-        <div id="hb-detail"></div>
+
+      <div class="section-block">
+        <div class="section-label">Kundentexte zum aktuellen Testfall</div>
+        <section class="classification-panel" id="classification-panel" hidden></section>
       </div>
     </section>
 
@@ -1348,7 +1357,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           Zur Übersicht
         </button>
         <h1>Prüfung definierter Bereiche auf GOÄ-Bezug</h1>
-        <p>Durchsucht die festgelegten Quellenbereiche — ConNet, von der Continentale verantwortete Internetdomänen, PDF-Druckstücke und Tabellen, die die Basis von Programmen bilden — nach GOÄ-Bezug, zeigt die Fundstellen an und schlägt plausible neue Formulierungen vor, die bei Relevanz die neuen tariflichen Leistungen berücksichtigen. Quellen, Fundstellen und Textvorschläge unten sind Beispieldaten zur Veranschaulichung.</p>
+        <p>Durchsucht die festgelegten Quellenbereiche — ConNet, von der Continentale verantwortete Internetdomänen, PDF-Druckstücke, Tabellen, die die Basis von Programmen bilden, sowie Handbücher, Kundendienstregelungen und Leitfäden des Kundendienstes — nach GOÄ-Bezug, zeigt die Fundstellen an und schlägt plausible neue Formulierungen bzw. Arbeitsanweisungen vor, die bei Relevanz die neuen tariflichen Leistungen berücksichtigen. Quellen, Fundstellen und Textvorschläge unten sind Beispieldaten zur Veranschaulichung.</p>
       </div>
       <div class="pr-shell">
         <aside class="pr-sidebar" id="pr-sidebar"></aside>
@@ -2788,6 +2797,125 @@ function renderLetter(mode){
 }
 
 document.getElementById("btn-new").addEventListener("click", generateTestfall);
+
+/* ========================= Kundentexte: unabhängiger Generator für einzelne Konstellationen =========================
+   Läuft unabhängig vom Testfall der Testdatengenerierung. Erzeugt intern einen minimalen Beleg über
+   generateBeleg()/classify() und greift damit auf dieselben Regeltexte zurück wie die Testdatengenerierung —
+   ohne Inhalte zu duplizieren. */
+const KT_SZENARIEN = {
+  korrekt_standard:      {kategorie:"korrekt", match:p=>p.rule==="§5 GOÄneu" || /Faktor-Grund/.test(p.rule)},
+  korrekt_vorsorge:      {kategorie:"korrekt", forceVorsorge:true, match:p=>/Präfix „F"/.test(p.rule) || p.title==="Früherkennung korrekt gekennzeichnet"},
+  grenz_wegegeld25:      {kategorie:"grenzfall", forcedSubtype:"wegegeld_25km"},
+  grenz_bmi:             {kategorie:"grenzfall", forcedSubtype:"bmi_grenzwert_prosa"},
+  grenz_psycho:          {kategorie:"grenzfall", forcedSubtype:"psycho_dauer_grenze"},
+  verstoss_analog:       {kategorie:"verstoss", forcedSubtype:["analog_ohne_praefix"]},
+  verstoss_titel:        {kategorie:"verstoss", forcedSubtype:["titel_fehlt"]},
+  verstoss_minderung:    {kategorie:"verstoss", forcedSubtype:["minderung_fehlt"]},
+  ausnahme_notfall:      {kategorie:"ausnahme", forcedSubtype:"notfall_ohne_hv"},
+  ausnahme_verlangen:    {kategorie:"ausnahme", forcedSubtype:"verlangensleistung"},
+  ausnahme_schutzwuerdig:{kategorie:"ausnahme", forcedSubtype:"diagnose_schutzwuerdig"},
+  konflikt_wegereise:    {kategorie:"konflikt", forcedSubtype:"wegegeld_und_reise"},
+  konflikt_analogeigen:  {kategorie:"konflikt", forcedSubtype:"analog_trotz_eigennummer"},
+  konflikt_hvab:         {kategorie:"konflikt", forcedSubtype:"hv_und_ab"},
+};
+
+function ktKatalogGenerate(entry){
+  const genOpts = {};
+  if(entry.forceVorsorge){
+    genOpts.forceVorsorge = true;
+    const kandidaten = FACHRICHTUNGEN.filter(f=>f.frueherkennung);
+    if(kandidaten.length) genOpts.fach = pick(kandidaten);
+  }
+  const base = generateBeleg(genOpts);
+  const result = classify(base, entry.kategorie, entry.forcedSubtype || null);
+  let items = entry.match ? result.pp.filter(entry.match) : result.pp;
+  if(!items.length) items = result.pp.filter(p=>p.status!=="ok") ;
+  if(!items.length) items = result.pp.slice(0,1);
+  return items;
+}
+
+/* Erkennt Freitext-Formulierungen wie "1200 darf nicht neben 1201 abgerechnet werden" und erzeugt
+   dafür einen generischen Kundentext zum Kombinationsausschluss (§5 Abs.3 GOÄneu) — unabhängig
+   davon, ob die genannten Ziffern im Katalog dieser Anwendung geführt werden. */
+function parseKombinationsausschluss(freitext){
+  if(!freitext) return null;
+  let m = freitext.match(/(\d{1,4})\D{1,25}?(?:nicht|nie)\D{1,20}?neben\D{1,20}?(\d{1,4})/i);
+  if(!m) m = freitext.match(/(\d{1,4})\s*(?:und|,|\/)\s*(\d{1,4})\D{1,30}?(?:nicht|nie)\D{1,25}?(?:zusammen|gemeinsam|nebeneinander)/i);
+  if(!m) return null;
+  return {a:m[1], b:m[2]};
+}
+function kombinationsausschlussText(a,b){
+  return {status:"conflict", rule:"§5 Abs. 3 GOÄneu · Kombinationsausschluss",
+    title:"Ziffer "+a+" und Ziffer "+b+" gleichzeitig abgerechnet",
+    detail:"Beide Gebührenziffern erscheinen im selben Beleg für dieselbe Behandlung. §5 Abs.3 GOÄneu schließt für bestimmte Ziffernkombinationen eine gleichzeitige Berechnung aus — in einem solchen Fall ist nur eine der beiden Positionen erstattungsfähig.",
+    kundentext:kt("Die Gebührenziffern "+a+" und "+b+" dürfen nach § 5 Abs. 3 GOÄneu wegen des dort geregelten Kombinationsausschlusses nicht nebeneinander für dieselbe Behandlung abgerechnet werden. Wir prüfen, welche der beiden Positionen erstattungsfähig ist, und klären dies bei Bedarf mit der behandelnden Praxis.",
+      "Under §5(3) GOÄneu, fee items "+a+" and "+b+" are subject to a combination exclusion and cannot both be billed for the same treatment. We are checking which of the two items is reimbursable and will clarify this with the practice if needed.")};
+}
+
+const KT_FREITEXT_HINTS = [
+  {re:/25\s*[- ]?km/i, id:"grenz_wegegeld25"},
+  {re:/bmi/i, id:"grenz_bmi"},
+  {re:/50\s*minuten|psychotherap/i, id:"grenz_psycho"},
+  {re:/a-?präfix.*(fehlt|fehlend)|fehlend\w*\s+a-?präfix|analogleistung.*(fehlt|fehlend|ohne präfix)/i, id:"verstoss_analog"},
+  {re:/titel.*(fehlt|fehlend)/i, id:"verstoss_titel"},
+  {re:/minderung.*fehlt/i, id:"verstoss_minderung"},
+  {re:/notfall|dringend/i, id:"ausnahme_notfall"},
+  {re:/verlangensleistung|v-?präfix/i, id:"ausnahme_verlangen"},
+  {re:/schutzwürdig|schwangerschaft|arbeitsmedizin/i, id:"ausnahme_schutzwuerdig"},
+  {re:/wegegeld.*reiseentschädigung|reiseentschädigung.*wegegeld/i, id:"konflikt_wegereise"},
+  {re:/eigennummer|eigene nummer/i, id:"konflikt_analogeigen"},
+  {re:/honorarvereinbarung.*(zuschlag|zusätzlich)/i, id:"konflikt_hvab"},
+  {re:/vorsorge|früherkennung|f-?präfix/i, id:"korrekt_vorsorge"},
+];
+function ktFreitextHint(freitext){
+  if(!freitext) return null;
+  const hit = KT_FREITEXT_HINTS.find(h=>h.re.test(freitext));
+  return hit ? hit.id : null;
+}
+
+function renderKtGeneratorResult(items){
+  const box = document.getElementById("kt-generator-result");
+  box.hidden = false;
+  box.innerHTML = items.map(p=>{
+    const colorVar = p.status==="ok"?"--cat-ok":p.status==="boundary"?"--cat-boundary":p.status==="violation"?"--cat-violation":p.status==="exception"?"--cat-exception":"--cat-conflict";
+    const ktHtml = p.kundentext ? (
+      '<div class="kt-block">'+
+        '<div class="kt-col"><span class="kt-lang">Kundentext DE</span>'+esc(p.kundentext.de)+'</div>'+
+        '<div class="kt-col"><span class="kt-lang">Customer text EN</span>'+esc(p.kundentext.en)+'</div>'+
+      '</div>'
+    ) : "";
+    return '<div class="cp-item" style="--item-color:var('+colorVar+')">'+
+      '<span class="icon">'+ICONS[p.status]+'</span>'+
+      '<div><div class="rule">'+esc(p.rule)+'</div><div class="title">'+esc(p.title)+'</div><div class="detail">'+esc(p.detail)+'</div>'+ktHtml+'</div>'+
+    '</div>';
+  }).join("");
+  box.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function generateKundentextStandalone(){
+  const sel = document.getElementById("sel-kt-szenario");
+  const freitext = document.getElementById("kt-freitext").value.trim();
+  let id = sel.value;
+
+  const komb = parseKombinationsausschluss(freitext);
+  if(komb){
+    renderKtGeneratorResult([kombinationsausschlussText(komb.a, komb.b)]);
+    return;
+  }
+  const hint = ktFreitextHint(freitext);
+  if(hint) id = hint;
+  if(id==="konflikt_kombiausschluss"){
+    renderKtGeneratorResult([kombinationsausschlussText("1200","1201")]);
+    return;
+  }
+  if(id==="zufaellig"){
+    const keys = Object.keys(KT_SZENARIEN);
+    id = pick(keys);
+  }
+  renderKtGeneratorResult(ktKatalogGenerate(KT_SZENARIEN[id]));
+}
+document.getElementById("btn-kt-generieren").addEventListener("click", generateKundentextStandalone);
+
 function printFallback(belegId){
   const originalTitle = document.title;
   document.title = "GOAeneu_Beleg_" + belegId.replace(/[^A-Za-z0-9-]+/g, "_");
@@ -2887,86 +3015,24 @@ try{
 generateTestfall();
 
 /* ========================= Suite-Router ========================= */
-const SUITE_VIEWS = ["uebersicht","testdatengenerierung","kundentexte","handbuecher","pruefung"];
-const SUITE_LABELS = {uebersicht:"Übersicht", testdatengenerierung:"Testdatengenerierung", kundentexte:"Kundentexte", handbuecher:"Handbücher & Schulungen", pruefung:"Prüfung GOÄ-Bezug"};
-let hbInitialized = false, prInitialized = false;
+const SUITE_VIEWS = ["uebersicht","testdatengenerierung","kundentexte","pruefung"];
+const SUITE_LABELS = {uebersicht:"Übersicht", testdatengenerierung:"Testdatengenerierung", kundentexte:"Kundentexte", pruefung:"Prüfung GOÄ-Bezug"};
+let prInitialized = false;
 function showSuiteView(name){
   SUITE_VIEWS.forEach(v=>{ const el = document.getElementById("view-"+v); if(el) el.hidden = (v!==name); });
   document.querySelectorAll(".suite-nav-item[data-view]").forEach(el=>{ el.dataset.active = (el.dataset.view===name) ? "true":"false"; });
   const cur = document.getElementById("suite-topbar-current");
   if(cur) cur.textContent = SUITE_LABELS[name];
   window.scrollTo(0,0);
-  if(name==="handbuecher" && !hbInitialized){ initHandbuecher(); hbInitialized = true; }
   if(name==="pruefung" && !prInitialized){ initPruefung(); prInitialized = true; }
 }
 document.querySelectorAll("[data-view]").forEach(el=>{
   el.addEventListener("click", ()=>showSuiteView(el.dataset.view));
 });
 
-/* ========================= Modul: Handbücher & Schulungen ========================= */
-const HB_DOCUMENTS = [
-  {
-    id:"leistungsabrechnung", typ:"Arbeitsanweisung", seiten:12, stand:"03/2024", status:"relevant",
-    titel:"Arbeitsanweisung Leistungsabrechnung Privat — Kap. 4: Steigerungssatz & Begründungspflicht",
-    findings:[
-      {abschnitt:"Kap. 4.2", seite:7,
-        alt:"„Bei Überschreitung des 2,3-fachen (bzw. 1,8-fachen) Regelhöchstsatzes ist zu prüfen, ob eine schriftliche Begründung des Arztes vorliegt.“",
-        grund:"GOÄneu (§5) kennt keinen Steigerungsfaktor mit Schwellenwert mehr — der Gebührensatz ist ein fester Eurobetrag je Ziffer. Abweichungen sind nur über die geregelten Faktor-Gründe HV/AB/BT/ST/NT möglich.",
-        neu:"„Prüfen Sie bei jeder Position mit Faktor ≠ 1,0, ob einer der zulässigen Faktor-Gründe (HV, AB, BT, ST, NT) angegeben und nachvollziehbar begründet ist. Einen allgemeinen Schwellenwert gibt es unter GOÄneu nicht mehr.“"},
-      {abschnitt:"Kap. 4.5", seite:9,
-        alt:"„Analogziffern werden mit dem Zusatz ‚Analog-Berechnung‘ im Freitext gekennzeichnet.“",
-        grund:"§12 Abs.4 Nr.6 GOÄneu schreibt für Analogleistungen das Präfix „A“ als verbindliche Kennzeichnung vor.",
-        neu:"„Analogleistungen erkennen Sie am Präfix „A“ in der Vergütungstabelle. Die Begründung muss zusätzlich Nummer und Bezeichnung der herangezogenen Basisleistung nennen (§12 Abs.5 GOÄneu).“"}
-    ]
-  },
-  {
-    id:"ablehnungen", typ:"Leitfaden", seiten:8, stand:"11/2023", status:"relevant",
-    titel:"Kundendienstleitfaden: Ablehnung von Rechnungspositionen",
-    findings:[
-      {abschnitt:"Abschnitt 2", seite:3,
-        alt:"„Fehlt die Diagnose auf der Rechnung, ist die Position grundsätzlich abzulehnen.“",
-        grund:"§12 Abs.2 Nr.1 GOÄneu sieht ausdrücklich Ausnahmen vor (schutzwürdige Interessen, z. B. Schwangerschaftsabbruch, arbeitsmedizinische Untersuchung). Eine pauschale Ablehnung ist nicht mehr korrekt.",
-        neu:"„Fehlt die Diagnose, prüfen Sie zunächst, ob ein zulässiger Ausnahmegrund erkennbar oder vom Zahlungspflichtigen glaubhaft gemacht ist (§12 Abs.2 Nr.1 GOÄneu). Nur wenn kein Ausnahmegrund vorliegt, ist die Position abzulehnen.“"}
-    ]
-  },
-  {
-    id:"sachkosten", typ:"Handbuch", seiten:15, stand:"06/2022", status:"relevant",
-    titel:"Handbuch Abrechnungstechnik — Abschnitt Sachkosten & Auslagenersatz",
-    findings:[
-      {abschnitt:"Abschnitt 5.1", seite:11,
-        alt:"„Einmalspritzen, Kanülen und Verbandmaterial sind als Sachkosten gesondert erstattungsfähig, sofern sie einzeln aufgeführt sind.“",
-        grund:"§10 Abs.2 GOÄneu schließt genau diese Positionen (Einmalspritzen, -kanülen, -handschuhe, Schnellverbandmaterial u. a.) ausdrücklich von der gesonderten Berechnung aus — sie gelten als mit der Gebühr abgegolten.",
-        neu:"„Einmalspritzen, -kanülen, -handschuhe und Schnellverbandmaterial sind nach §10 Abs.2 GOÄneu NICHT gesondert erstattungsfähig, auch wenn sie einzeln aufgeführt sind. Weisen Sie entsprechende Positionen zurück.“"}
-    ]
-  },
-  {
-    id:"telefonservice", typ:"Leitfaden", seiten:6, stand:"01/2025", status:"ok",
-    titel:"Leitfaden Telefonservice: Gesprächsstandards Kundenservice",
-    findings:[]
-  },
-  {
-    id:"komplexleistungen", typ:"Neues Thema", status:"neu",
-    titel:"Komplexleistungen",
-    training:{
-      titel:"Komplexleistungen in der GOÄneu",
-      untertitel:"Neue Schulungsunterlage — bisher kein eigenständiges Thema in den Kundendienstunterlagen",
-      merksatz:"Eine Komplexleistung bündelt mehrere ärztliche Einzelschritte zu einer Gebührenposition. Teilschritte, die bereits in der Komplexleistung enthalten sind, dürfen daneben nicht zusätzlich abgerechnet werden.",
-      punkte:[
-        "In der Leistungslegende einzelner Ziffern findet sich häufig der Zusatz „soweit nicht in Komplexleistungen enthalten“ (z. B. Nr. 721 „Messung des arteriellen Drucks“).",
-        "Ist im selben Behandlungszeitraum eine Komplexleistung abgerechnet, die diesen Teilschritt bereits einschließt, ist die Einzelziffer daneben nicht berechnungsfähig.",
-        "Die Prüfung ist unabhängig vom Steigerungsfaktor — sie betrifft die Frage, OB eine Position überhaupt neben einer anderen abrechenbar ist, nicht WIE hoch sie bewertet wird."
-      ],
-      schritte:["Einzelposition identifizieren","Trägt sie den Zusatz „soweit nicht in Komplexleistungen enthalten“?","Wurde im selben Zeitraum eine Komplexleistung abgerechnet?","Ja → nicht gesondert erstattungsfähig / Nein → regulär weiterprüfen"],
-      checkliste:[
-        "Betroffene Ziffer auf den Zusatz „soweit nicht in Komplexleistungen enthalten“ prüfen",
-        "Prüfen, ob im gleichen Behandlungszeitraum eine Komplexleistung abgerechnet wurde",
-        "Bei Überschneidung: Einzelposition kürzen/ablehnen und Kundentext mit Verweis auf die Komplexleistung versenden",
-        "Bei Unsicherheit: Rücksprache mit der Fachabteilung GOÄneu"
-      ]
-    }
-  }
-];
-
+/* ========================= Modul: Prüfung definierter Bereiche auf GOÄ-Bezug =========================
+   Handbücher, Kundendienstregelungen und Leitfäden sind hier als eigene Quelle ("handbuecher")
+   in PR_SOURCES eingebunden statt in einem separaten Modul — siehe dort. */
 function renderTrainingDoc(t){
   const arrow = '<span class="flow-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>';
   return '<div class="training-doc">'+
@@ -2983,61 +3049,9 @@ function renderTrainingDoc(t){
   '</div>';
 }
 
-function initHandbuecher(){
-  const list = document.getElementById("hb-doc-list");
-  list.innerHTML = HB_DOCUMENTS.map(d=>{
-    const n = d.findings ? d.findings.length : 0;
-    const label = d.status==="relevant" ? n+" Fundstelle"+(n===1?"":"n")+" · GOÄneu-relevant"
-      : d.status==="neu" ? "Neues Thema · Schulung empfohlen" : "Kein GOÄneu-Bezug";
-    return '<button class="doc-list-item" type="button" data-doc="'+d.id+'" data-active="false">'+
-      '<div class="dtitle">'+esc(d.titel)+'</div>'+
-      '<div class="dmeta">'+esc(d.typ)+(d.seiten?" · "+d.seiten+" Seiten":"")+(d.stand?" · Stand "+d.stand:"")+'</div>'+
-      '<span class="status-chip '+d.status+'">'+esc(label)+'</span>'+
-    '</button>';
-  }).join("");
-  list.querySelectorAll(".doc-list-item").forEach(btn=>{
-    btn.addEventListener("click", ()=>selectHbDoc(btn.dataset.doc));
-  });
-  const statEl = document.getElementById("stat-handbuecher");
-  if(statEl) statEl.textContent = HB_DOCUMENTS.reduce((s,d)=>s+(d.findings?d.findings.length:0),0);
-  selectHbDoc(HB_DOCUMENTS[0].id);
-}
-
-function selectHbDoc(id){
-  document.querySelectorAll("#hb-doc-list .doc-list-item").forEach(b=>{ b.dataset.active = (b.dataset.doc===id) ? "true":"false"; });
-  const d = HB_DOCUMENTS.find(x=>x.id===id);
-  const detail = document.getElementById("hb-detail");
-  if(d.status==="neu"){ detail.innerHTML = renderTrainingDoc(d.training); return; }
-  if(d.status==="ok"){
-    detail.innerHTML = '<div class="finding-card"><span class="status-chip ok">Kein GOÄneu-Bezug</span>'+
-      '<p class="finding-reason" style="margin-top:10px;">Dieses Dokument wurde geprüft und enthält keine Inhalte mit Bezug zur GOÄneu-Reform. Es ist keine Aktualisierung erforderlich.</p></div>';
-    return;
-  }
-  detail.innerHTML = '<h2 style="margin:0 0 4px;font-size:1.05rem;">'+esc(d.titel)+'</h2>'+
-    '<p style="margin:0 0 18px;color:var(--ink-soft);font-size:.86rem;">'+d.findings.length+' Fundstelle(n) mit GOÄneu-Bezug identifiziert.</p>'+
-    d.findings.map(f=>
-      '<div class="finding-card">'+
-        '<div class="finding-head"><span class="finding-loc">'+esc(f.abschnitt)+' · Seite '+f.seite+'</span></div>'+
-        '<div class="finding-reason"><b>Warum GOÄneu-relevant:</b> '+esc(f.grund)+'</div>'+
-        '<div class="diff-block">'+
-          '<div class="diff-col old"><span class="diff-label">Bisherige Formulierung</span>'+esc(f.alt)+'</div>'+
-          '<div class="diff-col new"><span class="diff-label">Vorgeschlagene neue Arbeitsanweisung</span>'+esc(f.neu)+'</div>'+
-        '</div>'+
-        '<div class="finding-actions"><button class="apply-toggle" type="button" data-done="false">Als übernommen markieren</button></div>'+
-      '</div>'
-    ).join("");
-  detail.querySelectorAll(".apply-toggle").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const done = btn.dataset.done==="true";
-      btn.dataset.done = done ? "false" : "true";
-      btn.textContent = done ? "Als übernommen markieren" : "Übernommen — rückgängig machen";
-    });
-  });
-}
-
-/* ========================= Modul: Prüfung definierter Bereiche auf GOÄ-Bezug ========================= */
 const PR_ICONS = {
   connet:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>',
+  handbuecher:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.2A2.2 2.2 0 0 1 6.2 3H20v15.2H6.2A2.2 2.2 0 0 0 4 20.4V5.2Z"/><path d="M4 18.4A2.2 2.2 0 0 1 6.2 16.2H20"/><path d="M8 7.5h8M8 10.5h8"/></svg>',
   webdomains:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.4 3.8 5.4 3.8 8.5s-1.3 6.1-3.8 8.5c-2.5-2.4-3.8-5.4-3.8-8.5S9.5 5.9 12 3.5Z"/></svg>',
   pdf:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5h9l3.5 3.5V21H6z"/><path d="M15 2.5V6h3.5M9 13h6M9 16.5h6"/></svg>',
   tabellen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M3.5 10h17M3.5 15h17M10 4v16"/></svg>',
@@ -3105,6 +3119,53 @@ const PR_SOURCES = [
         vorschlag:"Prüfregel ergänzen: Einzelposition mit Zusatz „soweit nicht in Komplexleistungen enthalten“ gegen im selben Behandlungszeitraum abgerechnete Komplexleistungen abgleichen und bei Überschneidung automatisch kürzen/markieren.",
         tarifBezug:false, goaBezug:"direkt", prioritaet:"hoch", status:"offen"}
     ]},
+  {id:"handbuecher", titel:"Handbücher & Kundendienstregelungen", desc:"Kundendienstregelungen, Leitfäden und Arbeitsanweisungen des Kundendienstes", seitenGeprueft:41,
+    fundstellen:[
+      {pfad:"Arbeitsanweisung Leistungsabrechnung Privat · Kap. 4.2, Seite 7", kategorie:"Steigerungsfaktor",
+        auszug:"„Bei Überschreitung des 2,3-fachen (bzw. 1,8-fachen) Regelhöchstsatzes ist zu prüfen, ob eine schriftliche Begründung des Arztes vorliegt.“",
+        grund:"GOÄneu (§5) kennt keinen Steigerungsfaktor mit Schwellenwert mehr — der Gebührensatz ist ein fester Eurobetrag je Ziffer. Abweichungen sind nur über die geregelten Faktor-Gründe HV/AB/BT/ST/NT möglich.",
+        vorschlag:"„Prüfen Sie bei jeder Position mit Faktor ≠ 1,0, ob einer der zulässigen Faktor-Gründe (HV, AB, BT, ST, NT) angegeben und nachvollziehbar begründet ist. Einen allgemeinen Schwellenwert gibt es unter GOÄneu nicht mehr.“",
+        tarifBezug:false, goaBezug:"direkt", prioritaet:"hoch", status:"in Prüfung"},
+      {pfad:"Arbeitsanweisung Leistungsabrechnung Privat · Kap. 4.5, Seite 9", kategorie:"Präfixe",
+        auszug:"„Analogziffern werden mit dem Zusatz ‚Analog-Berechnung‘ im Freitext gekennzeichnet.“",
+        grund:"§12 Abs.4 Nr.6 GOÄneu schreibt für Analogleistungen das Präfix „A“ als verbindliche Kennzeichnung vor.",
+        vorschlag:"„Analogleistungen erkennen Sie am Präfix „A“ in der Vergütungstabelle. Die Begründung muss zusätzlich Nummer und Bezeichnung der herangezogenen Basisleistung nennen (§12 Abs.5 GOÄneu).“",
+        tarifBezug:false, goaBezug:"direkt", prioritaet:"mittel", status:"offen"},
+      {pfad:"Kundendienstleitfaden Vorsorgeuntersuchungen · Abschnitt 3", kategorie:"Präfixe",
+        auszug:"„Vorsorgeuntersuchungen (z. B. Nr. 116, 117) werden wie reguläre ärztliche Leistungen ohne besondere Kennzeichnung abgerechnet.“",
+        grund:"Leistungen im Rahmen einer gesetzlichen Früherkennungs-/Vorsorgemaßnahme sind mit dem Präfix „F“ zu kennzeichnen (Kap. 3.9). Ohne diese Kennzeichnung lässt sich eine Vorsorgeleistung nicht von einer kurativen Behandlung unterscheiden, was bei tariflichen Regelungen zu Vorsorgeleistungen zu Fehlzuordnungen führen kann.",
+        vorschlag:"„Vorsorge- und Früherkennungsuntersuchungen (z. B. Nr. 116, 117) sind mit dem Präfix „F“ zu kennzeichnen. Prüfen Sie bei Rückfragen zur Erstattung, ob die Position das Präfix „F“ trägt — nur dann handelt es sich um eine gesetzlich vorgesehene Vorsorgemaßnahme im Sinne der tariflichen Regelungen.“",
+        tarifBezug:true, goaBezug:"direkt", prioritaet:"mittel", status:"offen"},
+      {pfad:"Kundendienstleitfaden: Ablehnung von Rechnungspositionen · Abschnitt 2, Seite 3", kategorie:"Diagnoseangabe",
+        auszug:"„Fehlt die Diagnose auf der Rechnung, ist die Position grundsätzlich abzulehnen.“",
+        grund:"§12 Abs.2 Nr.1 GOÄneu sieht ausdrücklich Ausnahmen vor (schutzwürdige Interessen, z. B. Schwangerschaftsabbruch, arbeitsmedizinische Untersuchung). Eine pauschale Ablehnung ist nicht mehr korrekt.",
+        vorschlag:"„Fehlt die Diagnose, prüfen Sie zunächst, ob ein zulässiger Ausnahmegrund erkennbar oder vom Zahlungspflichtigen glaubhaft gemacht ist (§12 Abs.2 Nr.1 GOÄneu). Nur wenn kein Ausnahmegrund vorliegt, ist die Position abzulehnen.“",
+        tarifBezug:false, goaBezug:"direkt", prioritaet:"hoch", status:"in Prüfung"},
+      {pfad:"Handbuch Abrechnungstechnik — Sachkosten & Auslagenersatz · Abschnitt 5.1, Seite 11", kategorie:"Sachkosten",
+        auszug:"„Einmalspritzen, Kanülen und Verbandmaterial sind als Sachkosten gesondert erstattungsfähig, sofern sie einzeln aufgeführt sind.“",
+        grund:"§10 Abs.2 GOÄneu schließt genau diese Positionen (Einmalspritzen, -kanülen, -handschuhe, Schnellverbandmaterial u. a.) ausdrücklich von der gesonderten Berechnung aus — sie gelten als mit der Gebühr abgegolten.",
+        vorschlag:"„Einmalspritzen, -kanülen, -handschuhe und Schnellverbandmaterial sind nach §10 Abs.2 GOÄneu NICHT gesondert erstattungsfähig, auch wenn sie einzeln aufgeführt sind. Weisen Sie entsprechende Positionen zurück.“",
+        tarifBezug:false, goaBezug:"direkt", prioritaet:"mittel", status:"offen"},
+      {pfad:"Neue Schulungsunterlage — noch keine Kundendienstunterlage vorhanden", kategorie:"Komplexleistungen",
+        tarifBezug:false, goaBezug:"direkt", prioritaet:"hoch", status:"neu",
+        training:{
+          titel:"Komplexleistungen in der GOÄneu",
+          untertitel:"Neue Schulungsunterlage — bisher kein eigenständiges Thema in den Kundendienstunterlagen",
+          merksatz:"Eine Komplexleistung bündelt mehrere ärztliche Einzelschritte zu einer Gebührenposition. Teilschritte, die bereits in der Komplexleistung enthalten sind, dürfen daneben nicht zusätzlich abgerechnet werden.",
+          punkte:[
+            "In der Leistungslegende einzelner Ziffern findet sich häufig der Zusatz „soweit nicht in Komplexleistungen enthalten“ (z. B. Nr. 721 „Messung des arteriellen Drucks“).",
+            "Ist im selben Behandlungszeitraum eine Komplexleistung abgerechnet, die diesen Teilschritt bereits einschließt, ist die Einzelziffer daneben nicht berechnungsfähig.",
+            "Die Prüfung ist unabhängig vom Steigerungsfaktor — sie betrifft die Frage, OB eine Position überhaupt neben einer anderen abrechenbar ist, nicht WIE hoch sie bewertet wird."
+          ],
+          schritte:["Einzelposition identifizieren","Trägt sie den Zusatz „soweit nicht in Komplexleistungen enthalten“?","Wurde im selben Zeitraum eine Komplexleistung abgerechnet?","Ja → nicht gesondert erstattungsfähig / Nein → regulär weiterprüfen"],
+          checkliste:[
+            "Betroffene Ziffer auf den Zusatz „soweit nicht in Komplexleistungen enthalten“ prüfen",
+            "Prüfen, ob im gleichen Behandlungszeitraum eine Komplexleistung abgerechnet wurde",
+            "Bei Überschneidung: Einzelposition kürzen/ablehnen und Kundentext mit Verweis auf die Komplexleistung versenden",
+            "Bei Unsicherheit: Rücksprache mit der Fachabteilung GOÄneu"
+          ]
+        }}
+    ]},
 ];
 
 const PR_ROWS = [];
@@ -3112,8 +3173,8 @@ PR_SOURCES.forEach(s=>{ s.fundstellen.forEach(f=>{ PR_ROWS.push(Object.assign({s
 
 const PR_PRIO_ORDER = {hoch:0, mittel:1, niedrig:2};
 const PR_PRIO_LABEL = {hoch:"Hoch", mittel:"Mittel", niedrig:"Niedrig"};
-const PR_STATUS_LABEL = {"offen":"Offen", "in Prüfung":"In Prüfung", "übernommen":"Übernommen"};
-const PR_STATUS_CLASS = {"offen":"offen", "in Prüfung":"in-pruefung", "übernommen":"uebernommen"};
+const PR_STATUS_LABEL = {"neu":"Neues Thema", "offen":"Offen", "in Prüfung":"In Prüfung", "übernommen":"Übernommen"};
+const PR_STATUS_CLASS = {"neu":"neu", "offen":"offen", "in Prüfung":"in-pruefung", "übernommen":"uebernommen"};
 
 const prState = {sourceId:null, goaBezug:null, prioritaet:null, status:null, search:"", selected:PR_ROWS.length?0:null};
 
@@ -3144,7 +3205,7 @@ function renderPrSidebar(){
     prFacetGroupHtml("sourceId","Quelle", PR_SOURCES.map(s=>s.id), sourceLabelMap)+
     prFacetGroupHtml("goaBezug","GOÄ-Bezug", ["direkt","mittelbar"], {direkt:"Direkt", mittelbar:"Mittelbar"})+
     prFacetGroupHtml("prioritaet","Priorität", ["hoch","mittel","niedrig"], PR_PRIO_LABEL)+
-    prFacetGroupHtml("status","Status", ["offen","in Prüfung","übernommen"], PR_STATUS_LABEL);
+    prFacetGroupHtml("status","Status", ["neu","offen","in Prüfung","übernommen"], PR_STATUS_LABEL);
   sidebar.querySelectorAll(".pr-facet-item").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       const field = btn.dataset.field, value = btn.dataset.value;
@@ -3212,6 +3273,7 @@ function renderPrDetail(){
   const detail = document.getElementById("pr-detail");
   const f = PR_ROWS.find(r=>r.id===prState.selected);
   if(!f){ detail.innerHTML = ""; return; }
+  if(f.training){ detail.innerHTML = renderTrainingDoc(f.training); return; }
   detail.innerHTML =
     '<div class="finding-card">'+
       '<div class="finding-head"><span class="finding-loc">'+esc(f.pfad)+'</span>'+
@@ -3251,8 +3313,8 @@ function initPruefung(){
   if(exportBtn) exportBtn.addEventListener("click", ()=>exportPrCsv());
 }
 
-const hbStatEl = document.getElementById("stat-handbuecher");
-if(hbStatEl) hbStatEl.textContent = HB_DOCUMENTS.reduce((s,d)=>s+(d.findings?d.findings.length:0),0);
+const fundstellenStatEl = document.getElementById("stat-fundstellen");
+if(fundstellenStatEl) fundstellenStatEl.textContent = PR_ROWS.length;
 
 })();
 </script>
