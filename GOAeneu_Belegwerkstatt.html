@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
+<!DOCTYPE html><html lang="de"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GOÄneu Suite</title>
@@ -711,30 +709,50 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   .lay-e .meta-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:8px;}
   .lay-e .meta-box{border:1px solid var(--paper-rule); border-radius:8px; padding:12px 14px;}
 
-  /* ---------- Category picker ---------- */
-  .category-picker{margin-top:34px;}
-  .category-picker > h2{margin:0 0 4px; font-size:1.05rem;}
-  .category-picker > p{margin:0 0 16px; color:var(--ink-soft); font-size:.9rem; max-width:64ch;}
-  .category-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:10px;}
-  @media (max-width:900px){.category-grid{grid-template-columns:repeat(2,1fr);}}
-  @media (max-width:520px){.category-grid{grid-template-columns:1fr;}}
-  .cat-btn{
-    text-align:left; padding:14px 14px 13px; border-radius:12px; cursor:pointer;
-    background:var(--card-bg); border:1.5px solid var(--card-border); color:var(--ink);
-    display:flex; flex-direction:column; gap:8px; transition:border-color .12s ease, transform .12s ease;
+  /* ---------- Input mask (Testdatengenerierung) ---------- */
+  .input-mask{
+    margin-top:22px; background:var(--bg); border:1px solid var(--card-border); border-radius:14px;
+    padding:20px 22px 22px;
   }
-  .cat-btn:hover{transform:translateY(-1px);}
-  .cat-icon{width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center;}
-  .cat-icon svg{width:16px; height:16px;}
-  .cat-btn .cat-label{font-weight:700; font-size:.88rem;}
-  .cat-btn .cat-desc{font-size:.75rem; color:var(--ink-soft); line-height:1.45;}
-  .cat-btn[data-active="true"]{border-color:var(--cat-color); box-shadow:0 0 0 3px color-mix(in srgb, var(--cat-color) 18%, transparent);}
-  .cat-btn[data-cat="korrekt"]{--cat-color:var(--cat-ok);}
-  .cat-btn[data-cat="grenzfall"]{--cat-color:var(--cat-boundary);}
-  .cat-btn[data-cat="verstoss"]{--cat-color:var(--cat-violation);}
-  .cat-btn[data-cat="ausnahme"]{--cat-color:var(--cat-exception);}
-  .cat-btn[data-cat="konflikt"]{--cat-color:var(--cat-conflict);}
-  .cat-btn .cat-icon{background:color-mix(in srgb, var(--cat-color) 16%, transparent); color:var(--cat-color);}
+  .input-mask-summary{
+    display:none; list-style:none; cursor:default;
+  }
+  .input-mask-summary::-webkit-details-marker{display:none;}
+  .input-mask-caret{width:16px; height:16px; color:var(--ink-soft); transition:transform .15s ease; flex:none;}
+  .input-mask-row{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;}
+  .input-mask-field{display:flex; flex-direction:column; margin-bottom:16px;}
+  .input-mask-field:last-of-type{margin-bottom:0;}
+  .input-mask-field label{margin-bottom:8px;}
+  .optional-tag{
+    text-transform:none; letter-spacing:0; font-weight:500; color:var(--ink-soft);
+    font-size:.72rem; background:var(--card-bg); border:1px solid var(--card-border);
+    padding:1px 7px; border-radius:999px; margin-left:6px; display:inline-block; vertical-align:middle;
+  }
+  .select-field, .textarea-field{
+    font:500 .88rem/1.4 "Source Sans 3",sans-serif; color:var(--ink);
+    background:var(--card-bg); border:1px solid var(--card-border); border-radius:9px;
+    padding:10px 12px; width:100%;
+  }
+  .select-field{
+    appearance:none; cursor:pointer; padding-right:34px;
+    background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="%23495b70" stroke-width="1.8"><path d="m5 8 5 5 5-5"/></svg>');
+    background-repeat:no-repeat; background-position:right 10px center; background-size:14px;
+  }
+  .select-field:focus, .textarea-field:focus{outline:2px solid var(--focus); outline-offset:1px; border-color:var(--focus);}
+  .textarea-field{resize:vertical; font-family:"Source Sans 3",sans-serif;}
+  .input-mask-hint{margin:7px 0 0; font-size:.78rem; color:var(--ink-soft); line-height:1.5;}
+  .input-mask-actions{margin-top:18px;}
+  @media (max-width:640px){.input-mask-row{grid-template-columns:1fr;}}
+  @media (max-width:720px){
+    .input-mask{padding:14px 16px 16px;}
+    .input-mask-summary{
+      display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer;
+      font:700 .92rem "Source Sans 3",sans-serif; color:var(--ink); padding:2px 0;
+    }
+    .input-mask:not([open]) .input-mask-summary{margin-bottom:0;}
+    .input-mask[open] .input-mask-summary{margin-bottom:16px;}
+    .input-mask[open] .input-mask-caret{transform:rotate(180deg);}
+  }
 
   /* ---------- Classification panel ---------- */
   .classification-panel{margin-top:26px;}
@@ -825,13 +843,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     }
     html, body{background:#fff !important;}
     .suite-sidebar, .suite-topbar,
-    #view-testdaten > header.rail,
-    #view-testdaten .stage-controls,
-    #view-testdaten .legend,
-    #view-testdaten .doc-toolbar,
-    #view-testdaten .category-picker,
-    #view-testdaten .classification-panel,
-    #view-testdaten footer{
+    #view-testdatengenerierung > header.rail,
+    #view-testdatengenerierung .stage-controls,
+    #view-testdatengenerierung .input-mask,
+    #view-testdatengenerierung .legend,
+    #view-testdatengenerierung .doc-toolbar,
+    #view-testdatengenerierung footer{
       display:none !important;
     }
     .suite-main{padding:0 !important;}
@@ -1056,9 +1073,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   .pr-status-uebernommen{background:var(--cat-ok-bg); color:var(--cat-ok);}
 </style>
 
-
-</head>
-<body>
+</head><body>
 <div class="suite-shell">
   <aside class="suite-sidebar">
     <div class="sidebar-brand">
@@ -1070,9 +1085,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       Übersicht
     </button>
     <div class="nav-section-label">Capabilities</div>
-    <button class="suite-nav-item" type="button" data-view="testdaten">
+    <button class="suite-nav-item" type="button" data-view="testdatengenerierung">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3V3Z"/><path d="M9 8h6M9 11.5h6M9 15h3.5"/></svg>
-      Testdaten &amp; Kommunikation
+      Testdatengenerierung
+    </button>
+    <button class="suite-nav-item" type="button" data-view="kundentexte">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 15a3 3 0 0 1-3 3H8l-4 3V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v9Z"/><path d="M8 9h8M8 12.5h5"/></svg>
+      Kundentexte
     </button>
     <button class="suite-nav-item" type="button" data-view="handbuecher">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.2A2.2 2.2 0 0 1 6.2 3H20v15.2H6.2A2.2 2.2 0 0 0 4 20.4V5.2Z"/><path d="M4 18.4A2.2 2.2 0 0 1 6.2 16.2H20"/><path d="M8 7.5h8M8 10.5h8"/></svg>
@@ -1112,12 +1131,20 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       <div class="section-block">
         <div class="section-label">Capabilities</div>
         <div class="capability-grid">
-          <button class="capability-card" type="button" data-view="testdaten">
+          <button class="capability-card" type="button" data-view="testdatengenerierung">
             <span class="capability-badge">Aktiv</span>
             <span class="capability-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3V3Z"/><path d="M9 8h6M9 11.5h6M9 15h3.5"/></svg></span>
             <span class="capability-body">
-              <h3>Testdaten &amp; Kommunikation</h3>
-              <p>Erzeugt echte Beispielbelege nach GOÄneu, ordnet sie in fünf Testfallklassen ein und generiert zweisprachige Kundentexte sowie Ablehnungs-/Kürzungsschreiben.</p>
+              <h3>Testdatengenerierung</h3>
+              <p>Erzeugt echte Beispielbelege nach GOÄneu für gezielt wählbare Belegarten und ordnet sie in fünf Testfallklassen ein — inkl. steuerbarer Eingabemaske für Belegart, Testkategorie und Freitextangaben.</p>
+            </span>
+          </button>
+          <button class="capability-card" type="button" data-view="kundentexte">
+            <span class="capability-badge">Aktiv</span>
+            <span class="capability-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 15a3 3 0 0 1-3 3H8l-4 3V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v9Z"/><path d="M8 9h8M8 12.5h5"/></svg></span>
+            <span class="capability-body">
+              <h3>Kundentexte</h3>
+              <p>Übersetzt die geprüften Rechnungsinhalte des aktuellen Testfalls in zweisprachige Kundentexte (DE/EN) und erzeugt bei Verstoß-Belegen vollständige Ablehnungs-/Kürzungsschreiben.</p>
             </span>
           </button>
           <button class="capability-card" type="button" data-view="handbuecher">
@@ -1157,7 +1184,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       </div>
     </section>
 
-    <section id="view-testdaten" class="suite-view" hidden>
+    <section id="view-testdatengenerierung" class="suite-view" hidden>
   <header class="rail">
     <div class="rail-top">
       <div class="brand">
@@ -1209,12 +1236,57 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         <button class="btn btn-ghost" id="btn-theme" type="button" title="Theme umschalten" aria-label="Theme umschalten">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.4 4.4l1.7 1.7M17.9 17.9l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.4 19.6l1.7-1.7M17.9 6.1l1.7-1.7"/></svg>
         </button>
-        <button class="btn btn-primary" id="btn-new" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.36"/><path d="M21 4v5h-5"/></svg>
-          Neuen Beleg generieren
-        </button>
       </div>
     </section>
+
+    <details class="input-mask" id="input-mask" open>
+      <summary class="input-mask-summary">
+        <span>Einstellungen</span>
+        <svg class="input-mask-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </summary>
+      <div class="input-mask-body">
+        <div class="input-mask-row">
+          <div class="input-mask-field">
+            <label class="section-label" for="sel-belegart">Belegart</label>
+            <select class="select-field" id="sel-belegart" required>
+              <option value="zufaellig" selected>Zufällig</option>
+              <option value="ambulant">Ambulante Arztrechnung</option>
+              <option value="stationaer">Stationäre Arztrechnung</option>
+              <option value="mkg">MKG-Chirurg (Mund-Kiefer-Gesichts-Chirurgie)</option>
+              <option value="labor">Laborrechnung</option>
+              <option value="radiologie">Radiologie / Bildgebung</option>
+              <option value="psychotherapie">Psychotherapie</option>
+              <option value="notfall">Notfallbehandlung</option>
+              <option value="vorsorge">Vorsorgeleistung (F-Präfix)</option>
+              <option value="analog">Analogleistung (A-Präfix)</option>
+              <option value="kombination">GOÄ/GOZ-Kombination</option>
+            </select>
+          </div>
+          <div class="input-mask-field">
+            <label class="section-label" for="sel-testkategorie">Testkategorie</label>
+            <select class="select-field" id="sel-testkategorie" required>
+              <option value="korrekt" selected>Korrekter Fall</option>
+              <option value="grenzfall">Grenzfall</option>
+              <option value="verstoss">Verstoß</option>
+              <option value="ausnahme">Ausnahmefall</option>
+              <option value="konflikt">Konfliktfall</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-mask-field">
+          <label class="section-label" for="freitext-angaben">Spezifische Angaben <span class="optional-tag">optional</span></label>
+          <textarea class="textarea-field" id="freitext-angaben" rows="3" placeholder="z.B. Diagnose: Schulterarthrose, GOÄ-Ziffern: 5, 6, 435, oder: Rechnung mit fehlendem A-Präfix bei Analogleistung"></textarea>
+          <p class="input-mask-hint">Gib GOÄ-Ziffern, Diagnosen oder besondere Merkmale an — der Beleg wird entsprechend generiert.</p>
+        </div>
+        <div class="input-mask-actions">
+          <button class="btn btn-primary" id="btn-new" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.36"/><path d="M21 4v5h-5"/></svg>
+            Beleg generieren
+          </button>
+        </div>
+      </div>
+    </details>
+
     <div class="legend">
       <span><i class="lp"></i> Pflichtangabe</span>
       <span><i class="lg"></i> ggf. Pflichtangabe (falls einschlägig)</span>
@@ -1234,22 +1306,24 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       </div>
       <div class="document" id="document" aria-live="polite"></div>
     </div>
-
-    <section class="category-picker">
-      <h2>Diesen Beleg als Testfall einordnen</h2>
-      <p>Der Beleg oben ist ein vollständig korrekter Ausgangsfall. Wähle eine Kategorie — die Rechnungsinhalte werden gezielt so verändert, dass sie exakt diese Testfallklasse abbilden; Formularfelder, Spalten und Kopf-Layout bleiben unverändert.</p>
-      <div class="category-grid" id="category-grid"></div>
-    </section>
-
-    <section class="classification-panel" id="classification-panel" hidden></section>
   </main>
 
   <footer>
     <h4>Zu den Kategorien</h4>
-    <p>Die fünf Kategorien greifen die Continentale-Anforderung an die automatisierte Testfallerzeugung auf: <strong>korrekte Fälle</strong> (fehlerfrei), <strong>Grenzfälle</strong> (an definierten Auslegungsgrenzen des Formulars, z.&nbsp;B. Faktor-Grund-Multiplikation, 25-km-Grenze Wegegeld/Reiseentschädigung, Minderungssatz §6a), <strong>Verstöße</strong> (gezielte Verletzung einer im Formular als Pflicht- bzw. ggf.-Pflichtangabe definierten Vorgabe), <strong>Ausnahmefälle</strong> (im Formular selbst vorgesehene Abweichungen, z.&nbsp;B. entfallende Diagnoseangabe bei schutzwürdigen Interessen) und <strong>Konfliktfälle</strong> (widersprüchliche Kombinationen von Präfixen/Feldern, z.&nbsp;B. Wegegeld und Reiseentschädigung gleichzeitig). Jede Generierung würfelt Praxis, Fachrichtung, Diagnose, Leistungsziffern und Beleg-Kopf-Layout neu aus.</p>
-    <h4 style="margin-top:16px;">Zu den Kundentexten</h4>
-    <p>Jeder Prüfpunkt erzeugt zusätzlich einen kundenorientierten Text in Deutsch und Englisch — aus dem technischen Regeltext übersetzt in eine für Versicherte verständliche Formulierung, gedacht für den Druck auf der Leistungsabrechnung. Bei Verstoß-Belegen lassen sich daraus über „Ablehnen“ bzw. „Kürzen“ zusätzlich vollständige, zweisprachige Schreiben erzeugen: „Ablehnen“ weist die Rechnung insgesamt zur Korrektur zurück, „Kürzen“ berechnet den erstattungsfähigen Betrag anhand der einzelnen Beanstandungen neu und stellt beide Beträge gegenüber.</p>
+    <p>Die fünf Kategorien greifen die Continentale-Anforderung an die automatisierte Testfallerzeugung auf: <strong>korrekte Fälle</strong> (fehlerfrei), <strong>Grenzfälle</strong> (an definierten Auslegungsgrenzen des Formulars, z.&nbsp;B. Faktor-Grund-Multiplikation, 25-km-Grenze Wegegeld/Reiseentschädigung, Minderungssatz §6a), <strong>Verstöße</strong> (gezielte Verletzung einer im Formular als Pflicht- bzw. ggf.-Pflichtangabe definierten Vorgabe), <strong>Ausnahmefälle</strong> (im Formular selbst vorgesehene Abweichungen, z.&nbsp;B. entfallende Diagnoseangabe bei schutzwürdigen Interessen) und <strong>Konfliktfälle</strong> (widersprüchliche Kombinationen von Präfixen/Feldern, z.&nbsp;B. Wegegeld und Reiseentschädigung gleichzeitig). Wähle oben gezielt Belegart, Testkategorie und optional spezifische Angaben — für nicht gesondert hinterlegte Kombinationen würfelt der Generator Praxis, Fachrichtung, Diagnose, Leistungsziffern und Beleg-Kopf-Layout passend zur gewählten Belegart neu aus.</p>
   </footer>
+    </section>
+
+    <section id="view-kundentexte" class="suite-view" hidden>
+      <div class="module-rail">
+        <button class="back-link" type="button" data-view="uebersicht">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 4 12l7 7M4 12h16"/></svg>
+          Zur Übersicht
+        </button>
+        <h1>Kundentexte</h1>
+        <p>Jeder Prüfpunkt des aktuellen Testfalls aus der Testdatengenerierung erzeugt einen kundenorientierten Text in Deutsch und Englisch — aus dem technischen Regeltext übersetzt in eine für Versicherte verständliche Formulierung, gedacht für den Druck auf der Leistungsabrechnung. Bei Verstoß-Belegen lassen sich daraus über „Ablehnen“ bzw. „Kürzen“ zusätzlich vollständige, zweisprachige Schreiben erzeugen: „Ablehnen“ weist die Rechnung insgesamt zur Korrektur zurück, „Kürzen“ berechnet den erstattungsfähigen Betrag anhand der einzelnen Beanstandungen neu und stellt beide Beträge gegenüber.</p>
+      </div>
+      <section class="classification-panel" id="classification-panel" hidden></section>
     </section>
 
     <section id="view-handbuecher" class="suite-view" hidden>
@@ -1362,6 +1436,8 @@ const Z = {
   blutbild:         {nr:"11025",bez:"Blutbild, insgesamt",                                                      satz1:3.69},
   frueherkVorsorge: {nr:"116",  bez:"Erwachsenen-Vorsorgeuntersuchung zur Früherkennung von Herz-, Kreislauf-, Nieren-, Stoffwechsel- und rheumatischen Erkrankungen", satz1:94.53},
   frueherkHaut:     {nr:"117",  bez:"Untersuchung der Haut und der sichtbaren Schleimhäute zur Früherkennung von Krebserkrankungen", satz1:37.94},
+  psychoProbatorik: {nr:"845",  bez:"Probatorische Sitzung im Rahmen der Richtlinienpsychotherapie", satz1:55.20, dauer:"je Sitzung"},
+  psychoEinzel:     {nr:"849",  bez:"Einzeltherapeutisches Gespräch bei psychoreaktiven, psychosomatischen oder neurotischen Störungen bzw. Persönlichkeitsstörungen", satz1:70.35, dauer:"mind. 50 Minuten"},
 };
 /* Für Präfix „A“ (Analogleistung): neuartige, im Gebührenverzeichnis noch nicht eigenständig gelistete Leistung je Fachrichtung */
 const ANALOG = {
@@ -1369,6 +1445,7 @@ const ANALOG = {
   hautmapping:      {basisNr:"4118", basisBez:"Dermatoskopie mittels Auflichtmikroskopie (bei mehr als 5 Hautläsionen)", satz1:24.99, echt:"KI-gestützte Ganzkörper-Kartierung und Verlaufsvergleich von Pigmentmalen (3D-Totalkörperfotografie)"},
   rhythmusKI:       {basisNr:"2901", basisBez:"Elektrokardiographische Untersuchung mit mindestens zwölf Ableitungen in Ruhe", satz1:29.00, echt:"KI-gestützte Rhythmusanalyse von Smartwatch-EKG-Rohdaten (ärztlicher Over-read)"},
   mkgPlanungKI:     {basisNr:"18",   basisBez:"Vollständige körperliche Untersuchung eines Organsystems", satz1:25.44, echt:"KI-gestützte 3D-Volumentomographie-Planung für komplexe Kieferoperationen"},
+  psychoDigital:    {basisNr:"849",  basisBez:"Einzeltherapeutisches Gespräch bei psychoreaktiven, psychosomatischen oder neurotischen Störungen bzw. Persönlichkeitsstörungen", satz1:70.35, echt:"KI-gestützte digitale Verlaufsdokumentation und Rückfallrisiko-Analyse (Therapie-App-Auswertung)"},
 };
 
 const PRAEFIX_INFO = {
@@ -1503,6 +1580,14 @@ const FACHRICHTUNGEN = [
     analog: ANALOG.mkgPlanungKI,
     frueherkennung: null,
   },
+  {
+    name:"Psychotherapie", suffix:"Praxis für Psychotherapie",
+    diagnosen:["Rezidivierende depressive Störung, gegenwärtig mittelgradige Episode","Generalisierte Angststörung","Anpassungsstörung, längere depressive Reaktion"],
+    icd:{"Rezidivierende depressive Störung, gegenwärtig mittelgradige Episode":"F33.1","Generalisierte Angststörung":"F41.1","Anpassungsstörung, längere depressive Reaktion":"F43.21"},
+    ziffern:[Z.beratung,Z.psychoProbatorik,Z.psychoEinzel],
+    analog: ANALOG.psychoDigital,
+    frueherkennung: null,
+  },
 ];
 /* Faktor-Grund "HV" im Basis-Generator nur für Leistungen aus Kap. B (Grundleistungen) — §2 Abs.1 S.2 GOÄneu schließt Kap. E/M/N/O aus */
 const HV_FAEHIGE_ZIFFERN = [Z.beratung.nr, Z.einBeratung.nr, Z.organUntersuchung.nr, Z.ganzkoerper.nr];
@@ -1605,6 +1690,18 @@ function makeAnalogPos(a, opts){
     faktorGrund: opts.faktorGrund||[], faktor, betrag, arztNr:1, flags:[],
   };
 }
+/* Zahnärztliche Katalogleistung eines MKG-Chirurgen — Vergütung ausschließlich nach GOZ, Rechnungsstellung dennoch auf dem GOÄ-Formular (§6 Abs.1 GOÄneu) */
+function makeGozPos(opts){
+  opts = opts||{};
+  const betrag = opts.betrag!==undefined ? opts.betrag : round2(180 + Math.random()*140);
+  return {
+    id: Math.random().toString(36).slice(2,9), kind:"leistung",
+    anzahl:1, praefixe:[], goaeNr:"GOZ", titel: opts.titel || "Operative Entfernung eines retinierten und verlagerten Zahnes (GOZ-Leistung)",
+    dauer:null, satz1:betrag,
+    begruendung: opts.begruendung!==undefined ? opts.begruendung : "Abrechnung nach der Gebührenordnung für Zahnärzte (GOZ), § 6 Abs. 1 GOÄneu — Leistung ist im Gebührenverzeichnis für zahnärztliche Leistungen aufgeführt; die Rechnungsstellung erfolgt dennoch auf dem GOÄ-Formular (Anlage 2). Ziffer und Punktwert hier illustrativ, da kein GOZ-Gebührenverzeichnis vorliegt.",
+    faktorGrund:[], faktor:null, betrag, arztNr:1, flags:[],
+  };
+}
 
 /* Rein optische Varianz je Praxis (Akzentfarbe/Monogramm/Kopf-Typografie) — betrifft nur den Rechnungskopf, nie Feldnamen oder Vergütungstabelle */
 const PRAXIS_PALETTE = [
@@ -1633,23 +1730,25 @@ function generateStil(){
   };
 }
 
-function generateBeleg(){
-  const fach = pick(FACHRICHTUNGEN);
+function generateBeleg(opts){
+  opts = opts || {};
+  const fach = opts.fach || pick(FACHRICHTUNGEN);
   const arzt = generateArzt(fach);
   const patient = generatePatient();
-  const diagnoseName = pick(fach.diagnosen);
+  const diagnoseName = opts.diagnoseOverride || pick(fach.diagnosen);
 
   const heute = new Date();
   const leistungsdatum = addDays(heute, -randInt(1,9));
   const rechnungsdatum = addDays(leistungsdatum, randInt(1,6));
 
-  const gewaehlt = pickN(fach.ziffern, randInt(2,3));
+  const gewaehlt = (opts.ziffernOverride && opts.ziffernOverride.length) ? opts.ziffernOverride : pickN(fach.ziffern, randInt(2,3));
   const positionen = gewaehlt.map(z=>makeVergPos(z));
 
   /* §6a GOÄneu: vollstationäre/teilstationäre/vor-nachstationäre Behandlung — Pflichtminderung 25 % (Krankenhausarzt) bzw. 15 % (Belegarzt).
-     Allgemeinmedizin bleibt außen vor: Hausärzte behandeln praktisch nie im stationären Kontext nach §6a. */
+     Allgemeinmedizin bleibt außen vor: Hausärzte behandeln praktisch nie im stationären Kontext nach §6a.
+     opts.forceStationaer: true erzwingt den stationären Zweig, false unterdrückt ihn (ambulante Belegart). */
   let stationaer = null;
-  if(fach.name!=="Allgemeinmedizin" && Math.random()<0.28){
+  if(opts.forceStationaer===true || (opts.forceStationaer!==false && fach.name!=="Allgemeinmedizin" && Math.random()<0.28)){
     const rolle = pick(["Krankenhausarzt","Belegarzt"]);
     stationaer = {rolle, art: pick(["vollstationär","teilstationär","vor-/nachstationär","stationsäquivalent"])};
     if(rolle==="Krankenhausarzt"){
@@ -1676,6 +1775,17 @@ function generateBeleg(){
   /* Präfix A: korrekt gekennzeichnete Analogleistung */
   if(Math.random()<0.18){
     positionen.push(makeAnalogPos(fach.analog));
+  }
+  /* Belegart „Vorsorgeleistung“/„Analogleistung“: garantiert statt zufällig gesetzte Präfixe F/A, falls oben nicht schon zufällig getroffen */
+  if(opts.forceVorsorge && fach.frueherkennung && !positionen.some(p=>(p.praefixe||[]).includes("F"))){
+    positionen.push(makeVergPos(fach.frueherkennung, {praefixe:["F"]}));
+  }
+  if(opts.forceAnalog && !positionen.some(p=>(p.praefixe||[]).includes("A"))){
+    positionen.push(makeAnalogPos(fach.analog));
+  }
+  /* Belegart „GOÄ/GOZ-Kombination“: zusätzliche zahnärztliche Katalogleistung, nach GOZ vergütet, auf dem GOÄ-Formular ausgewiesen (§6 Abs.1 GOÄneu) */
+  if(opts.forceGoz){
+    positionen.push(makeGozPos());
   }
   /* Präfix W/R: Hausbesuch (entfällt bei stationärer Behandlung — kein Hausbesuch bei stationärem Aufenthalt) */
   if(!stationaer && Math.random()<0.18){
@@ -1718,12 +1828,12 @@ function generateBeleg(){
     fach, arzt, patient, tarif, stationaer,
     empfaenger: null, // null = identisch mit Patient
     verantwortlicheAerzte: [{lfdNr:1, anrede:arzt.anrede, titel:arzt.titel, name:arzt.vorname+" "+arzt.nachname, lanr:arzt.lanr}],
-    diagnose: { text: diagnoseName, icd: fach.icd[diagnoseName], kennzeichen:null, entfaellt:false, entfaelltGrund:null },
+    diagnose: { text: diagnoseName, icd: fach.icd[diagnoseName] || "—", kennzeichen:null, entfaellt:false, entfaelltGrund:null },
     leistungsdatum, rechnungsdatum,
     positionen,
     minderung, // {prozent, art, rolle}
     ustSatz: null,
-    weitereAngaben: null,
+    weitereAngaben: opts.weitereAngaben || null,
     abrechnungsstelle: stationaer ? false : abrechnungsstelle,
     stil: generateStil(),
     layout: pick(["a","b","c","d","e"]),
@@ -1823,11 +1933,11 @@ function applyKorrekt(b){
   return {pp, outcome:"Erwartetes Systemverhalten: Beleg wird ohne Beanstandung zur Erstattung angenommen."};
 }
 
-function applyGrenzfall(b){
+function applyGrenzfall(b, forcedSubtype){
   const pp = [];
   const grenzfallPool = ["hv_wahlleistung","analog_kapitel_m","wegegeld_25km","nachtbesuch_grenze","minderung_rolle","verdachtsdiagnose","bmi_grenzwert_prosa","gerinnung_grenzwertig"];
   if(b.fach.name==="Mund-Kiefer-Gesichtschirurgie") grenzfallPool.push("goz_pflicht_korrekt");
-  const subtype = pick(grenzfallPool);
+  const subtype = forcedSubtype || pick(grenzfallPool);
   if(subtype==="hv_wahlleistung"){
     const p = pick(b.positionen.filter(x=>x.kind==="leistung"));
     p.faktorGrund = ["HV"];
@@ -1891,6 +2001,13 @@ function applyGrenzfall(b){
     addFlag(goz,"boundary","§6 Abs. 1 GOÄneu","Zahnärztliche Katalogleistung eines MKG-Chirurgen — Vergütung ausschließlich nach GOZ, Rechnungsstellung dennoch auf dem GOÄ-Formular (Anlage 2).");
     pp.push({status:"boundary", rule:"§6 Abs. 1 GOÄneu", title:"Zahnärztliche Leistung korrekt nach GOZ abgerechnet", detail:"Der Mund-Kiefer-Gesichtschirurg erbringt mit „"+goz.titel+"“ eine Leistung aus dem Gebührenverzeichnis für zahnärztliche Leistungen (Anlage zur GOZ). §6 Abs.1 S.1 GOÄneu schreibt vor, dass solche Leistungen ausschließlich nach GOZ vergütet werden — die Rechnungsstellung selbst erfolgt aber weiterhin ausschließlich über das maschinenlesbare GOÄ-Formular (Anlage 2, §6 Abs.1 S.2). Beides ist hier korrekt umgesetzt; die Kombination „GOÄ-Formular, aber GOZ-Vergütung“ ist ein für automatisierte Prüfungen ungewöhnlicher Sonderfall.",
       kundentext:kt("Für diese zahnärztliche Leistung wurde korrekt die Gebührenordnung für Zahnärzte (GOZ) statt der GOÄ angewendet, wie es für diese Art von Behandlung vorgeschrieben ist.","For this dental service, the dental fee schedule (GOZ) was correctly applied instead of the GOÄ, as required for this type of treatment.")});
+  } else if(subtype==="psycho_dauer_grenze"){
+    let pos = b.positionen.find(p=>p.kind==="leistung" && p.goaeNr===Z.psychoEinzel.nr);
+    if(!pos){ pos = makeVergPos(Z.psychoEinzel); b.positionen.push(pos); }
+    pos.dauer = "50 Minuten (exakt dokumentiert)";
+    addFlag(pos,"boundary","Leistungslegende Nr. "+Z.psychoEinzel.nr+" GOÄneu","Sitzungsdauer liegt exakt auf der Mindestgrenze von 50 Minuten für diese Gebührenposition.");
+    pp.push({status:"boundary", rule:"Leistungslegende Nr. "+Z.psychoEinzel.nr+" GOÄneu", title:"Sitzungsdauer exakt auf der 50-Minuten-Grenze", detail:"Nr. "+Z.psychoEinzel.nr+" („"+Z.psychoEinzel.bez+"“) setzt eine Mindestdauer von 50 Minuten voraus. Die dokumentierte Sitzungsdauer liegt exakt bei 50 Minuten — ein Randfall, bei dem eine automatisierte Prüfung leicht die kürzere, geringer vergütete Leistungsziffer (Nr. "+Z.psychoProbatorik.nr+") ansetzt, obwohl die Mindestgrenze nach dem Wortlaut noch erfüllt ist.",
+      kundentext:kt("Für dieses Gespräch wurde der Satz für eine mindestens 50-minütige Sitzung berechnet. Bei einer Dauer von genau 50 Minuten prüfen wir, ob diese Grenze erreicht ist.","The rate for a session of at least 50 minutes was charged for this consultation. At a duration of exactly 50 minutes, we are checking whether this threshold has been met.")});
   } else {
     b.diagnose.kennzeichen = "VA";
     addFlag(b.positionen[0],"boundary","§12 Abs. 2 Nr. 1 GOÄneu","Verdachtsdiagnose (VA) kurz vor der eigentlichen Befundabklärung — laut Gesetz nur bis dahin zulässig.");
@@ -1900,7 +2017,7 @@ function applyGrenzfall(b){
   return {pp, outcome:"Erwartetes Systemverhalten: gesetzlich zulässig, aber auslegungsbedürftig — zur manuellen Prüfung markieren, nicht automatisiert ablehnen."};
 }
 
-function applyVerstoss(b){
+function applyVerstoss(b, forcedSubtype){
   const pp = [];
   const pool = ["titel_fehlt","analog_ohne_praefix","diagnose_fehlt_unbegruendet","ab_ohne_konkretisierung","rechenfehler","sachkosten_unzulaessig","hv_verbotenes_kapitel","bmi_unter_schwelle","bmi_pflichtangabe_fehlt","gerinnung_ohne_begruendung","mehrfacheingriff_kein_abschlag","minderung_fehlt","stationaer_sachkosten"];
   if(b.fach.name==="Mund-Kiefer-Gesichtschirurgie") pool.push("goz_pflicht_verstoss");
@@ -1908,7 +2025,7 @@ function applyVerstoss(b){
      Durchlauf angefassten Positionen kennt — verhindert, dass zwei Verstoß-Texte sich auf dieselbe
      Position widersprechend beziehen (z.B. "Titel fehlt" auf einer Position, deren Titel ein anderer
      Text im selben Schreiben gerade zitiert). */
-  const subtypes = pickN(pool, randInt(1,2)).sort((a)=> a==="titel_fehlt" ? 1 : -1);
+  const subtypes = (forcedSubtype ? (Array.isArray(forcedSubtype) ? forcedSubtype : [forcedSubtype]) : pickN(pool, randInt(1,2))).sort((a)=> a==="titel_fehlt" ? 1 : -1);
   const touchedIds = new Set();
   subtypes.forEach(subtype=>{
     if(subtype==="titel_fehlt"){
@@ -2044,9 +2161,9 @@ function applyVerstoss(b){
   return {pp, outcome:"Erwartetes Systemverhalten: Beleg wird zurückgewiesen bzw. es wird eine Nachforderung an die Praxis ausgelöst."};
 }
 
-function applyAusnahme(b){
+function applyAusnahme(b, forcedSubtype){
   const pp = [];
-  const subtype = pick(["diagnose_schutzwuerdig","verlangensleistung","notfall_ohne_hv"]);
+  const subtype = forcedSubtype || pick(["diagnose_schutzwuerdig","verlangensleistung","notfall_ohne_hv"]);
   if(subtype==="notfall_ohne_hv"){
     const nachtbesuch = makeWegegeldPos({praefix:"W", km:6, nacht:true, begruendung:"Notfallbesuch, Entfernung 6 km, Nachtbesuch (20–8 Uhr) — dringende Behandlung ohne vorherige Honorarvereinbarung (§ 8 GOÄneu)"});
     b.positionen.push(nachtbesuch);
@@ -2078,9 +2195,9 @@ function applyAusnahme(b){
   return {pp, outcome:"Erwartetes Systemverhalten: abweichende Bearbeitung ist zulässig, sofern der im Formular vorgesehene Ausnahmetatbestand (hier: Präfix bzw. dokumentierter Grund) erkennbar ist — keine automatische Ablehnung."};
 }
 
-function applyKonflikt(b){
+function applyKonflikt(b, forcedSubtype){
   const pp = [];
-  const subtype = pick(["wegegeld_und_reise","unbekannter_arzt","analog_trotz_eigennummer","hv_und_ab"]);
+  const subtype = forcedSubtype || pick(["wegegeld_und_reise","unbekannter_arzt","analog_trotz_eigennummer","hv_und_ab"]);
   if(subtype==="wegegeld_und_reise"){
     const w = makeWegegeldPos({praefix:"W", km:12});
     const r = makeWegegeldPos({praefix:"R", km:38});
@@ -2115,17 +2232,17 @@ function applyKonflikt(b){
   return {pp, outcome:"Erwartetes Systemverhalten: automatisierte Prüfung markiert einen Regelkonflikt zur Entscheidung — weder automatische Annahme noch automatische Ablehnung."};
 }
 
-function classify(base, kategorie){
+function classify(base, kategorie, forcedSubtype){
   const b = cloneBeleg(base);
   b.kategorie = kategorie;
   b.summenFehler = 0;
   b.diagnoseFlag = false;
   let result;
   if(kategorie==="korrekt") result = applyKorrekt(b);
-  else if(kategorie==="grenzfall") result = applyGrenzfall(b);
-  else if(kategorie==="verstoss") result = applyVerstoss(b);
-  else if(kategorie==="ausnahme") result = applyAusnahme(b);
-  else result = applyKonflikt(b);
+  else if(kategorie==="grenzfall") result = applyGrenzfall(b, forcedSubtype);
+  else if(kategorie==="verstoss") result = applyVerstoss(b, forcedSubtype);
+  else if(kategorie==="ausnahme") result = applyAusnahme(b, forcedSubtype);
+  else result = applyKonflikt(b, forcedSubtype);
   return {beleg:b, pp:result.pp, outcome:result.outcome};
 }
 
@@ -2460,22 +2577,7 @@ function renderDocument(b){
     (q && q.id!=="sauber" ? ' · Eingangsqualität: <b>'+esc(q.label)+'</b>' : '');
 }
 
-/* ========================= Rendering: Kategorien & Klassifikation ========================= */
-function renderCategoryGrid(){
-  const grid = document.getElementById("category-grid");
-  grid.innerHTML = Object.keys(CATEGORY_META).map(key=>{
-    const m = CATEGORY_META[key];
-    return '<button class="cat-btn" type="button" data-cat="'+key+'" data-active="false">'+
-      '<span class="cat-icon">'+m.icon+'</span>'+
-      '<span class="cat-label">'+m.label+'</span>'+
-      '<span class="cat-desc">'+m.desc+'</span>'+
-    '</button>';
-  }).join("");
-  grid.querySelectorAll(".cat-btn").forEach(btn=>{
-    btn.addEventListener("click", ()=>selectCategory(btn.dataset.cat));
-  });
-}
-
+/* ========================= Rendering: Klassifikation ========================= */
 function renderClassification(kategorie, result){
   const m = CATEGORY_META[kategorie];
   const panel = document.getElementById("classification-panel");
@@ -2523,24 +2625,138 @@ let baseBeleg = null;
 let currentBeleg = null;
 let currentPP = null;
 
-function newBeleg(){
-  baseBeleg = generateBeleg();
-  renderDocument(baseBeleg);
-  document.getElementById("step-pill").textContent = "Schritt 1 · Beispielbeleg";
-  document.getElementById("stage-heading-text").textContent = "Echter Beispielbeleg";
-  document.querySelectorAll(".cat-btn").forEach(b=>b.dataset.active="false");
-  document.getElementById("classification-panel").hidden = true;
+const Z_BY_NR = {};
+Object.values(Z).forEach(z=>{ if(!Z_BY_NR[z.nr]) Z_BY_NR[z.nr] = z; });
+
+/* Belegart-Auswahl -> generateBeleg()-Optionen. Fachrichtungen ohne eigenes FACHRICHTUNGEN-Profil
+   (Labor, Radiologie) leihen sich Ziffern/Diagnosen einer bestehenden Fachrichtung und überschreiben
+   nur die Praxisbezeichnung — bewusst schlank gehalten, da nur 3 Kombinationen (siehe forcedSubtypeFor)
+   eigene, vollständig ausgearbeitete Testfälle benötigen. */
+const BELEGART_CONFIG = {
+  zufaellig:      { label:"Zufällig" },
+  ambulant:       { label:"Ambulante Arztrechnung", forceStationaer:false },
+  stationaer:     { label:"Stationäre Arztrechnung", forceStationaer:true },
+  mkg:            { label:"MKG-Chirurg", fachName:"Mund-Kiefer-Gesichtschirurgie" },
+  labor:          { label:"Laborrechnung", fachName:"Allgemeinmedizin", praxisSuffix:"Labor", ziffernPool:[Z.blutentnahme, Z.blutbild] },
+  radiologie:     { label:"Radiologie / Bildgebung", fachName:"Kardiologie", praxisSuffix:"Radiologische Praxis", ziffernPool:[Z.sonoOrgan, Z.dopplerEcho] },
+  psychotherapie: { label:"Psychotherapie", fachName:"Psychotherapie" },
+  notfall:        { label:"Notfallbehandlung", forceStationaer:false },
+  vorsorge:       { label:"Vorsorgeleistung (F-Präfix)", forceVorsorge:true },
+  analog:         { label:"Analogleistung (A-Präfix)", forceAnalog:true },
+  kombination:    { label:"GOÄ/GOZ-Kombination", fachName:"Mund-Kiefer-Gesichtschirurgie", forceGoz:true },
+};
+
+/* Drei deterministische Belegart-x-Testkategorie-Kombinationen mit eigens ausgearbeitetem Testfall */
+function forcedSubtypeFor(belegartKey, kategorieKey){
+  if(belegartKey==="mkg" && kategorieKey==="verstoss") return ["goz_pflicht_verstoss"];
+  if(belegartKey==="notfall" && kategorieKey==="ausnahme") return "notfall_ohne_hv";
+  if(belegartKey==="psychotherapie" && kategorieKey==="grenzfall") return "psycho_dauer_grenze";
+  return null;
 }
 
-function selectCategory(cat){
-  document.querySelectorAll(".cat-btn").forEach(b=>b.dataset.active = (b.dataset.cat===cat) ? "true" : "false");
-  const result = classify(baseBeleg, cat);
+/* Stichwort-Erkennung im Freitextfeld: greift nur, wenn der erkannte Subtyp zur gewählten
+   Testkategorie passt (z.B. "fehlendes A-Präfix" wirkt nur bei Testkategorie "Verstoß"). Alles
+   andere im Freitext bleibt wirkungslos auf die Generierung, statt geraten zu werden. */
+const FREITEXT_KEYWORD_HINTS = {
+  grenzfall: [
+    { re:/25\s*[- ]?km/i, subtype:"wegegeld_25km" },
+    { re:/nachtbesuch|20\s*uhr/i, subtype:"nachtbesuch_grenze" },
+    { re:/bmi/i, subtype:"bmi_grenzwert_prosa" },
+    { re:/gerinnung/i, subtype:"gerinnung_grenzwertig" },
+    { re:/verdachtsdiagnose|\bva\b/i, subtype:"verdachtsdiagnose" },
+    { re:/wahlleistung|wahlarzt/i, subtype:"hv_wahlleistung" },
+  ],
+  verstoss: [
+    { re:/a-?präfix.*(fehlt|fehlend)|fehlend\w*\s+a-?präfix|analogleistung.*(fehlt|fehlend|ohne präfix)/i, subtype:"analog_ohne_praefix" },
+    { re:/titel.*(fehlt|fehlend)|kurzbezeichnung.*(fehlt|fehlend)/i, subtype:"titel_fehlt" },
+    { re:/diagnose.*(fehlt|fehlend)/i, subtype:"diagnose_fehlt_unbegruendet" },
+    { re:/rechenfehler|summe.*stimmt nicht/i, subtype:"rechenfehler" },
+    { re:/unzulässige sachkosten|sachkosten.*unzulässig/i, subtype:"sachkosten_unzulaessig" },
+    { re:/minderung.*fehlt/i, subtype:"minderung_fehlt" },
+  ],
+  ausnahme: [
+    { re:/notfall|dringend/i, subtype:"notfall_ohne_hv" },
+    { re:/schutzwürdig|schwangerschaft|arbeitsmedizin/i, subtype:"diagnose_schutzwuerdig" },
+    { re:/verlangensleistung|v-?präfix/i, subtype:"verlangensleistung" },
+  ],
+  konflikt: [
+    { re:/wegegeld.*reiseentschädigung|reiseentschädigung.*wegegeld/i, subtype:"wegegeld_und_reise" },
+    { re:/unbekannt\w*\s+arzt/i, subtype:"unbekannter_arzt" },
+    { re:/eigennummer|eigene nummer/i, subtype:"analog_trotz_eigennummer" },
+  ],
+};
+function freitextSubtypeHint(kategorieKey, freitext){
+  const hints = FREITEXT_KEYWORD_HINTS[kategorieKey];
+  if(!hints || !freitext) return null;
+  const hit = hints.find(h=>h.re.test(freitext));
+  return hit ? hit.subtype : null;
+}
+
+/* Erkennt "GOÄ-Ziffern: 5, 6, 435" bzw. "Diagnose: …" im Freitext und übersetzt sie in
+   generateBeleg()-Overrides. Alles darüber hinaus wird nicht strukturiert ausgewertet — der
+   Rohtext bleibt aber über die Stichwort-Erkennung oben nutzbar. */
+function parseFreitext(freitext){
+  const out = {};
+  if(!freitext) return out;
+  const zifMatch = freitext.match(/GOÄ[- ]?(?:Ziffern|Nummern|Nr\.?)\s*:?\s*([0-9,\s]+)/i);
+  if(zifMatch){
+    const nrs = zifMatch[1].split(",").map(s=>s.trim()).filter(Boolean);
+    const gefunden = nrs.map(nr=>Z_BY_NR[nr]).filter(Boolean);
+    if(gefunden.length) out.ziffernOverride = gefunden;
+  }
+  const diagMatch = freitext.match(/Diagnose\s*:\s*([^,\n]+)/i);
+  if(diagMatch) out.diagnoseOverride = diagMatch[1].trim();
+  return out;
+}
+
+function belegartTitel(belegartKey, kategorieKey, result){
+  const cfg = BELEGART_CONFIG[belegartKey] || BELEGART_CONFIG.zufaellig;
+  const belegartLabel = belegartKey==="zufaellig" ? result.beleg.fach.name : cfg.label;
+  const katLabel = CATEGORY_META[kategorieKey].label;
+  if(kategorieKey==="korrekt") return belegartLabel+" — "+katLabel;
+  const erste = result.pp.find(p=>p.status!=="ok");
+  const kurz = erste ? erste.title : katLabel;
+  return belegartLabel+" — "+katLabel+": "+kurz;
+}
+
+function generateTestfall(){
+  const belegartKey = document.getElementById("sel-belegart").value;
+  const kategorieKey = document.getElementById("sel-testkategorie").value;
+  const freitext = document.getElementById("freitext-angaben").value.trim();
+
+  const cfg = BELEGART_CONFIG[belegartKey] || BELEGART_CONFIG.zufaellig;
+  const genOpts = {};
+  if(cfg.fachName) genOpts.fach = FACHRICHTUNGEN.find(f=>f.name===cfg.fachName);
+  if(cfg.forceStationaer!==undefined) genOpts.forceStationaer = cfg.forceStationaer;
+  if(cfg.forceVorsorge) genOpts.forceVorsorge = true;
+  if(cfg.forceAnalog) genOpts.forceAnalog = true;
+  if(cfg.forceGoz) genOpts.forceGoz = true;
+  if(cfg.ziffernPool) genOpts.ziffernOverride = cfg.ziffernPool;
+  if(cfg.forceVorsorge && !genOpts.fach){
+    const kandidaten = FACHRICHTUNGEN.filter(f=>f.frueherkennung);
+    if(kandidaten.length) genOpts.fach = pick(kandidaten);
+  }
+
+  const parsed = parseFreitext(freitext);
+  if(parsed.ziffernOverride) genOpts.ziffernOverride = parsed.ziffernOverride;
+  if(parsed.diagnoseOverride) genOpts.diagnoseOverride = parsed.diagnoseOverride;
+
+  let forcedSubtype = forcedSubtypeFor(belegartKey, kategorieKey);
+  if(!forcedSubtype) forcedSubtype = freitextSubtypeHint(kategorieKey, freitext);
+
+  const base = generateBeleg(genOpts);
+  if(cfg.praxisSuffix) base.arzt.praxis = cfg.praxisSuffix+" "+base.arzt.nachname;
+
+  baseBeleg = base;
+  const result = classify(base, kategorieKey, forcedSubtype);
   currentBeleg = result.beleg;
   currentPP = result.pp;
   renderDocument(result.beleg);
-  document.getElementById("step-pill").textContent = "Schritt 2 · Einordnung";
-  document.getElementById("stage-heading-text").textContent = CATEGORY_META[cat].label;
-  renderClassification(cat, result);
+
+  document.getElementById("step-pill").textContent = "Schritt 1 · "+cfg.label;
+  document.getElementById("stage-heading-text").textContent = belegartTitel(belegartKey, kategorieKey, result);
+
+  renderClassification(kategorieKey, result);
 }
 
 function renderLetter(mode){
@@ -2571,7 +2787,7 @@ function renderLetter(mode){
   panel.scrollIntoView({behavior:"smooth", block:"nearest"});
 }
 
-document.getElementById("btn-new").addEventListener("click", newBeleg);
+document.getElementById("btn-new").addEventListener("click", generateTestfall);
 function printFallback(belegId){
   const originalTitle = document.title;
   document.title = "GOAeneu_Beleg_" + belegId.replace(/[^A-Za-z0-9-]+/g, "_");
@@ -2668,12 +2884,11 @@ try{
   if(saved) document.documentElement.setAttribute("data-theme", saved);
 }catch(e){}
 
-renderCategoryGrid();
-newBeleg();
+generateTestfall();
 
 /* ========================= Suite-Router ========================= */
-const SUITE_VIEWS = ["uebersicht","testdaten","handbuecher","pruefung"];
-const SUITE_LABELS = {uebersicht:"Übersicht", testdaten:"Testdaten & Kommunikation", handbuecher:"Handbücher & Schulungen", pruefung:"Prüfung GOÄ-Bezug"};
+const SUITE_VIEWS = ["uebersicht","testdatengenerierung","kundentexte","handbuecher","pruefung"];
+const SUITE_LABELS = {uebersicht:"Übersicht", testdatengenerierung:"Testdatengenerierung", kundentexte:"Kundentexte", handbuecher:"Handbücher & Schulungen", pruefung:"Prüfung GOÄ-Bezug"};
 let hbInitialized = false, prInitialized = false;
 function showSuiteView(name){
   SUITE_VIEWS.forEach(v=>{ const el = document.getElementById("view-"+v); if(el) el.hidden = (v!==name); });
@@ -3041,6 +3256,4 @@ if(hbStatEl) hbStatEl.textContent = HB_DOCUMENTS.reduce((s,d)=>s+(d.findings?d.f
 
 })();
 </script>
-
-</body>
-</html>
+</body></html>
