@@ -1188,7 +1188,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         </div>
         <div class="input-mask-field">
           <label class="section-label" for="freitext-angaben">Spezifische Angaben <span class="optional-tag">optional</span></label>
-          <textarea class="textarea-field" id="freitext-angaben" rows="3" placeholder="z.B. Diagnose: Schulterarthrose, GOÄ-Ziffern: 5, 6, 435, oder: Rechnung mit fehlendem A-Präfix bei Analogleistung"></textarea>
+          <textarea class="textarea-field" id="freitext-angaben" rows="3" placeholder="z.B. Diagnose: Schulterarthrose, GOÄ 1200, oder: Rechnung mit fehlendem A-Präfix bei Analogleistung"></textarea>
           <p class="input-mask-hint">Gib GOÄ-Ziffern, Diagnosen oder besondere Merkmale an — der Beleg wird entsprechend generiert.</p>
         </div>
         <div class="input-mask-actions">
@@ -2516,13 +2516,14 @@ function freitextSubtypeHint(kategorieKey, freitext){
   return hit ? hit.subtype : null;
 }
 
-/* Erkennt "GOÄ-Ziffern: 5, 6, 435" bzw. "Diagnose: …" im Freitext und übersetzt sie in
-   generateBeleg()-Overrides. Alles darüber hinaus wird nicht strukturiert ausgewertet — der
-   Rohtext bleibt aber über die Stichwort-Erkennung oben nutzbar. */
+/* Erkennt Ziffernangaben im Freitext — von "GOÄ-Ziffern: 5, 6, 435" über "GOÄ-Nr. 1200" bis
+   zur kurzen Form "GOÄ 1200" — sowie "Diagnose: …", und übersetzt sie in generateBeleg()-
+   Overrides. Alles darüber hinaus wird nicht strukturiert ausgewertet — der Rohtext bleibt
+   aber über die Stichwort-Erkennung oben nutzbar. */
 function parseFreitext(freitext){
   const out = {};
   if(!freitext) return out;
-  const zifMatch = freitext.match(/GOÄ[- ]?(?:Ziffern|Nummern|Nr\.?)\s*:?\s*([0-9,\s]+)/i);
+  const zifMatch = freitext.match(/GOÄ[- ]?(?:Ziffern|Nummern|Nr\.?)?\s*:?\s*((?:\d+\s*,\s*)*\d+)/i);
   if(zifMatch){
     const nrs = zifMatch[1].split(",").map(s=>s.trim()).filter(Boolean);
     const gefunden = nrs.map(nr=>Z_BY_NR[nr]).filter(Boolean);
