@@ -1188,8 +1188,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         </div>
         <div class="input-mask-field">
           <label class="section-label" for="freitext-angaben">Spezifische Angaben <span class="optional-tag">optional</span></label>
-          <textarea class="textarea-field" id="freitext-angaben" rows="3" placeholder="z.B. Diagnose: Schulterarthrose, GOÄ 1200, oder: Rechnung mit fehlendem A-Präfix bei Analogleistung"></textarea>
-          <p class="input-mask-hint">Gib GOÄ-Ziffern, Diagnosen oder besondere Merkmale an — der Beleg wird entsprechend generiert.</p>
+          <textarea class="textarea-field" id="freitext-angaben" rows="3" placeholder="z.B. Diagnose: Schulterarthrose, GOÄ 1200, stationäre Arztrechnung mit 10 unterschiedlichen Ziffern, oder: Rechnung mit fehlendem A-Präfix bei Analogleistung"></textarea>
+          <p class="input-mask-hint">Gib GOÄ-Ziffern, eine Positionsanzahl, Diagnosen, eine Belegart oder besondere Merkmale an — der Beleg wird entsprechend generiert. Steht „Belegart“ oben auf „Zufällig“, wirkt eine im Freitext erkannte Belegart wie „stationär“ oder „MKG“.</p>
         </div>
         <div class="input-mask-actions">
           <button class="btn btn-primary" id="btn-new" type="button">
@@ -1683,6 +1683,17 @@ function generateStil(){
   };
 }
 
+/* Für opts.anzahlOverride: liefert n Ziffern, bevorzugt aus dem Katalog der Fachrichtung.
+   Reicht deren eigener Katalog nicht aus (die Fachrichtungs-Kataloge haben nur 3-6 Einträge),
+   wird mit weiteren, fachfremden Ziffern aus dem Gesamtkatalog aufgefüllt statt die Anfrage
+   stillschweigend zu kappen. */
+function pickNFromPoolWithFallback(pool, n){
+  n = Math.max(1, Math.min(n, 12));
+  if(n <= pool.length) return pickN(pool, n);
+  const zusatzPool = Object.values(Z).filter(z=>!pool.includes(z));
+  return pool.concat(pickN(zusatzPool, Math.min(n-pool.length, zusatzPool.length)));
+}
+
 function generateBeleg(opts){
   opts = opts || {};
   const fach = opts.fach || pick(FACHRICHTUNGEN);
@@ -1694,7 +1705,9 @@ function generateBeleg(opts){
   const leistungsdatum = addDays(heute, -randInt(1,9));
   const rechnungsdatum = addDays(leistungsdatum, randInt(1,6));
 
-  const gewaehlt = (opts.ziffernOverride && opts.ziffernOverride.length) ? opts.ziffernOverride : pickN(fach.ziffern, randInt(2,3));
+  const gewaehlt = (opts.ziffernOverride && opts.ziffernOverride.length) ? opts.ziffernOverride
+    : opts.anzahlOverride ? pickNFromPoolWithFallback(fach.ziffern, opts.anzahlOverride)
+    : pickN(fach.ziffern, randInt(2,3));
   const positionen = gewaehlt.map(z=>makeVergPos(z));
 
   /* §6a GOÄneu: vollstationäre/teilstationäre/vor-nachstationäre Behandlung — Pflichtminderung 25 % (Krankenhausarzt) bzw. 15 % (Belegarzt).
@@ -2470,6 +2483,27 @@ const BELEGART_CONFIG = {
   kombination:    { label:"GOÄ/GOZ-Kombination", fachName:"Mund-Kiefer-Gesichtschirurgie", forceGoz:true },
 };
 
+/* Erkennt eine Belegart im Freitext ("…stationäre Arztrechnung…") und greift nur, wenn das
+   Belegart-Dropdown noch auf "Zufällig" steht — eine bewusste Dropdown-Auswahl hat immer Vorrang
+   vor einer zufällig im Freitext vorkommenden Formulierung. */
+const BELEGART_FREITEXT_HINTS = [
+  { re:/stationär/i, key:"stationaer" },
+  { re:/ambulant/i, key:"ambulant" },
+  { re:/mkg|mund-kiefer|kieferchirurg/i, key:"mkg" },
+  { re:/labor(rechnung)?/i, key:"labor" },
+  { re:/radiologie|bildgebung|röntgen/i, key:"radiologie" },
+  { re:/psychotherap/i, key:"psychotherapie" },
+  { re:/notfall/i, key:"notfall" },
+  { re:/vorsorge|früherkennung/i, key:"vorsorge" },
+  { re:/analogleistung/i, key:"analog" },
+  { re:/\bgoz\b|goä.?goz.?kombination/i, key:"kombination" },
+];
+function belegartFreitextHint(freitext){
+  if(!freitext) return null;
+  const hit = BELEGART_FREITEXT_HINTS.find(h=>h.re.test(freitext));
+  return hit ? hit.key : null;
+}
+
 /* Drei deterministische Belegart-x-Testkategorie-Kombinationen mit eigens ausgearbeitetem Testfall */
 function forcedSubtypeFor(belegartKey, kategorieKey){
   if(belegartKey==="mkg" && kategorieKey==="verstoss") return ["goz_pflicht_verstoss"];
@@ -2517,9 +2551,10 @@ function freitextSubtypeHint(kategorieKey, freitext){
 }
 
 /* Erkennt Ziffernangaben im Freitext — von "GOÄ-Ziffern: 5, 6, 435" über "GOÄ-Nr. 1200" bis
-   zur kurzen Form "GOÄ 1200" — sowie "Diagnose: …", und übersetzt sie in generateBeleg()-
-   Overrides. Alles darüber hinaus wird nicht strukturiert ausgewertet — der Rohtext bleibt
-   aber über die Stichwort-Erkennung oben nutzbar. */
+   zur kurzen Form "GOÄ 1200" —, eine gewünschte Positionsanzahl ("10 unterschiedliche Ziffern"),
+   sowie "Diagnose: …", und übersetzt sie in generateBeleg()-Overrides. Alles darüber hinaus wird
+   nicht strukturiert ausgewertet — der Rohtext bleibt aber über die Stichwort-Erkennung oben
+   nutzbar. */
 function parseFreitext(freitext){
   const out = {};
   if(!freitext) return out;
@@ -2528,6 +2563,10 @@ function parseFreitext(freitext){
     const nrs = zifMatch[1].split(",").map(s=>s.trim()).filter(Boolean);
     const gefunden = nrs.map(nr=>Z_BY_NR[nr]).filter(Boolean);
     if(gefunden.length) out.ziffernOverride = gefunden;
+  }
+  if(!out.ziffernOverride){
+    const anzahlMatch = freitext.match(/(\d{1,2})\s*(?:unterschiedliche[n]?|verschiedene[n]?)?\s*(?:go[äa]?-?)?\s*(?:ziffern|leistungen|positionen)\b/i);
+    if(anzahlMatch) out.anzahlOverride = parseInt(anzahlMatch[1], 10);
   }
   const diagMatch = freitext.match(/Diagnose\s*:\s*([^,\n]+)/i);
   if(diagMatch) out.diagnoseOverride = diagMatch[1].trim();
@@ -2549,7 +2588,12 @@ function generateTestfall(){
   const kategorieKey = document.getElementById("sel-testkategorie").value;
   const freitext = document.getElementById("freitext-angaben").value.trim();
 
-  const cfg = BELEGART_CONFIG[belegartKey] || BELEGART_CONFIG.zufaellig;
+  /* Ein im Dropdown bewusst gewählter Wert hat immer Vorrang; der Freitext darf die Belegart
+     nur ersetzen, solange das Dropdown noch auf "Zufällig" steht. */
+  const belegartHint = (belegartKey==="zufaellig") ? belegartFreitextHint(freitext) : null;
+  const effektiveBelegartKey = belegartHint || belegartKey;
+
+  const cfg = BELEGART_CONFIG[effektiveBelegartKey] || BELEGART_CONFIG.zufaellig;
   const genOpts = {};
   if(cfg.fachName) genOpts.fach = FACHRICHTUNGEN.find(f=>f.name===cfg.fachName);
   if(cfg.forceStationaer!==undefined) genOpts.forceStationaer = cfg.forceStationaer;
@@ -2565,8 +2609,9 @@ function generateTestfall(){
   const parsed = parseFreitext(freitext);
   if(parsed.ziffernOverride) genOpts.ziffernOverride = parsed.ziffernOverride;
   if(parsed.diagnoseOverride) genOpts.diagnoseOverride = parsed.diagnoseOverride;
+  if(parsed.anzahlOverride && !genOpts.ziffernOverride) genOpts.anzahlOverride = parsed.anzahlOverride;
 
-  let forcedSubtype = forcedSubtypeFor(belegartKey, kategorieKey);
+  let forcedSubtype = forcedSubtypeFor(effektiveBelegartKey, kategorieKey);
   if(!forcedSubtype) forcedSubtype = freitextSubtypeHint(kategorieKey, freitext);
 
   const base = generateBeleg(genOpts);
@@ -2577,7 +2622,7 @@ function generateTestfall(){
   renderDocument(result.beleg);
 
   document.getElementById("step-pill").textContent = "Schritt 1 · "+cfg.label;
-  document.getElementById("stage-heading-text").textContent = belegartTitel(belegartKey, kategorieKey, result);
+  document.getElementById("stage-heading-text").textContent = belegartTitel(effektiveBelegartKey, kategorieKey, result);
 }
 
 document.getElementById("btn-new").addEventListener("click", generateTestfall);
