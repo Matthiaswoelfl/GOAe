@@ -1,4 +1,6 @@
 <!DOCTYPE html><html lang="de"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GOÄneu Suite</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -752,18 +754,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     .input-mask[open] .input-mask-caret{transform:rotate(180deg);}
   }
 
-  /* ---------- Classification panel ---------- */
-  .classification-panel{margin-top:26px;}
-  .cp-head{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;}
-  .cp-badge{
-    display:inline-flex; align-items:center; gap:7px; padding:7px 13px; border-radius:999px;
-    font:700 .78rem/1 "Source Sans 3"; background:var(--cp-bg); color:var(--cp-fg);
-    border:1px solid color-mix(in srgb, var(--cp-fg) 35%, transparent);
-  }
-  .cp-badge svg{width:14px; height:14px;}
-  .cp-title{margin:0; font-size:1.05rem;}
-  .cp-sub{margin:2px 0 0; font-size:.86rem; color:var(--ink-soft);}
-
+  /* Kundentext-Ergebniskarten (Regeltext -> Kundentext DE/EN) */
   .cp-grid{display:grid; grid-template-columns:1fr; gap:10px; margin-top:14px;}
   .cp-item{
     display:flex; gap:12px; padding:13px 14px; border-radius:11px; background:var(--card-bg);
@@ -775,15 +766,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   .cp-item .title{font-weight:600; font-size:.9rem; margin-bottom:3px;}
   .cp-item .detail{font-size:.84rem; color:var(--ink-soft); line-height:1.55;}
 
-  .cp-outcome{
-    margin-top:14px; padding:14px 16px; border-radius:12px; background:var(--cp-bg); color:var(--cp-fg);
-    border:1px solid color-mix(in srgb, var(--cp-fg) 30%, transparent);
-    font-size:.88rem; line-height:1.55; display:flex; gap:10px; align-items:flex-start;
-  }
-  .cp-outcome svg{flex:none; width:17px; height:17px; margin-top:1px;}
-  .cp-outcome b{display:block; font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; margin-bottom:3px; opacity:.85;}
-
-  /* Kundentexte (Regeltext -> Kundentext DE/EN) */
   .kt-block{
     margin-top:10px; padding-top:10px; border-top:1px dashed var(--card-border);
     display:grid; grid-template-columns:1fr 1fr; gap:10px;
@@ -791,39 +773,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   @media (max-width:560px){.kt-block{grid-template-columns:1fr;}}
   .kt-col{font-size:.83rem; line-height:1.5; color:var(--ink);}
   .kt-lang{display:block; font:700 .62rem/1 "Source Sans 3"; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); margin-bottom:3px;}
-
-  /* Ablehnen/Kürzen Aktionen */
-  .cp-actions{
-    margin-top:16px; padding-top:16px; border-top:1px solid var(--card-border);
-    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-  }
-  .cp-actions-label{font-size:.84rem; color:var(--ink-soft); margin-right:2px;}
-  .btn-reject{background:var(--cat-violation); color:#fff;}
-  .btn-reject:hover{filter:brightness(0.92);}
-  .btn-reduce{background:var(--cat-boundary); color:#fff;}
-  .btn-reduce:hover{filter:brightness(0.92);}
-  .btn-reject svg, .btn-reduce svg{width:15px; height:15px;}
-
-  .letter-panel{
-    margin-top:16px; padding:18px; border-radius:12px; background:var(--card-bg);
-    border:1px solid var(--card-border);
-  }
-  .letter-head h3{margin:0 0 3px; font-size:1rem;}
-  .letter-sub{margin:0 0 14px; font-size:.82rem; color:var(--ink-soft);}
-  .letter-cols{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
-  @media (max-width:720px){.letter-cols{grid-template-columns:1fr;}}
-  .letter-col{background:var(--paper); border:1px solid var(--paper-edge); border-radius:10px; padding:14px; min-width:0;}
-  .letter-col-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
-  .letter-col-head span{font:700 .72rem/1 "Source Sans 3"; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-doc-soft);}
-  .btn-copy{
-    font:600 .72rem/1 "Source Sans 3"; padding:6px 10px; border-radius:7px; border:1px solid var(--paper-rule);
-    background:transparent; color:var(--ink-doc-soft); cursor:pointer;
-  }
-  .btn-copy:hover{border-color:var(--accent); color:var(--accent-strong);}
-  .letter-col pre{
-    margin:0; font-family:"Source Serif 4",Georgia,serif; font-size:.86rem; line-height:1.6;
-    color:var(--ink-doc); white-space:pre-wrap; word-wrap:break-word;
-  }
 
   footer{margin-top:40px; padding-top:18px; border-top:1px solid var(--card-border); font-size:.78rem; color:var(--ink-soft); line-height:1.7;}
   footer h4{margin:0 0 6px; font-size:.78rem; color:var(--ink); text-transform:uppercase; letter-spacing:.05em;}
@@ -1285,12 +1234,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           Zur Übersicht
         </button>
         <h1>Kundentexte</h1>
-        <p>Erzeugt kundenorientierte Texte in Deutsch und Englisch aus dem technischen GOÄneu-Regeltext — entweder unabhängig für eine frei wählbare oder beschriebene Konstellation, oder gebündelt für jeden Prüfpunkt des aktuellen Testfalls aus der Testdatengenerierung. Bei Verstoß-Belegen lassen sich aus Letzterem über „Ablehnen“ bzw. „Kürzen“ zusätzlich vollständige, zweisprachige Schreiben erzeugen.</p>
+        <p>Erzeugt kundenorientierte Texte in Deutsch und Englisch aus dem technischen GOÄneu-Regeltext für eine frei wählbare oder im Freitext beschriebene Konstellation — aus dem technischen Regeltext übersetzt in eine für Versicherte verständliche Formulierung.</p>
       </div>
 
       <div class="section-block">
         <div class="section-label">Kundentext für eine einzelne Konstellation</div>
-        <p style="margin:0 0 16px;color:var(--ink-soft);font-size:.86rem;max-width:760px;">Unabhängig vom aktuellen Testfall: Konstellation wählen oder eine konkrete Situation im Freitext beschreiben — z.&nbsp;B. eine Ziffernkombination, die nicht nebeneinander abgerechnet werden darf.</p>
+        <p style="margin:0 0 16px;color:var(--ink-soft);font-size:.86rem;max-width:760px;">Konstellation wählen oder eine konkrete Situation im Freitext beschreiben — z.&nbsp;B. eine Ziffernkombination, die nicht nebeneinander abgerechnet werden darf.</p>
         <details class="input-mask" id="kt-input-mask" open>
           <summary class="input-mask-summary">
             <span>Einstellungen</span>
@@ -1342,11 +1291,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           </div>
         </details>
         <div class="cp-grid" id="kt-generator-result" hidden></div>
-      </div>
-
-      <div class="section-block">
-        <div class="section-label">Kundentexte zum aktuellen Testfall</div>
-        <section class="classification-panel" id="classification-panel" hidden></section>
       </div>
     </section>
 
@@ -2255,90 +2199,6 @@ function classify(base, kategorie, forcedSubtype){
   return {beleg:b, pp:result.pp, outcome:result.outcome};
 }
 
-/* ========================= Kundentexte: Ablehnung / Kürzung ========================= */
-function anredeText(person){
-  if(!person || !person.nachname || person.vorname===""){
-    return {de:"Sehr geehrte Damen und Herren,", en:"Dear Sir or Madam,"};
-  }
-  const frau = person.anrede==="Frau";
-  return {
-    de: "Sehr geehrte"+(frau?" Frau ":"r Herr ")+person.nachname+",",
-    en: "Dear "+(frau?"Ms. ":"Mr. ")+person.nachname+",",
-  };
-}
-
-function berechneKuerzung(beleg, pp){
-  const positions = JSON.parse(JSON.stringify(beleg.positionen));
-  const zeilen = [];
-  let blockedAll = false;
-  let fehlendeMinderungProzent = 0;
-  pp.forEach(item=>{
-    if(!item.korrektur) return;
-    const k = item.korrektur;
-    if(k.typ==="gesamt"){ blockedAll = true; zeilen.push({titel:null, alt:null, neu:null, grundDe:item.kundentext.de, grundEn:item.kundentext.en, gesamt:true}); return; }
-    if(k.typ==="rechenfehler"){ zeilen.push({titel:null, alt:null, neu:null, grundDe:item.kundentext.de, grundEn:item.kundentext.en}); return; }
-    if(k.typ==="minderung"){ fehlendeMinderungProzent = k.prozent; zeilen.push({titel:null, alt:null, neu:null, grundDe:item.kundentext.de, grundEn:item.kundentext.en}); return; }
-    const pos = positions.find(x=>x.id===k.posId);
-    if(!pos) return;
-    const satz1 = pos.satz1!==undefined ? pos.satz1 : pos.betrag;
-    const neu = k.typ==="streichen" ? 0 : k.typ==="mehrfach" ? round2(satz1*k.faktor) : satz1;
-    zeilen.push({titel:pos.titel||("GOÄ-Nr. "+pos.goaeNr), alt:pos.betrag, neu, grundDe:item.kundentext.de, grundEn:item.kundentext.en});
-    pos.betrag = neu;
-  });
-  const altGesamt = round2(summen(beleg).gesamt - (beleg.summenFehler||0));
-  let neuGesamt;
-  if(blockedAll){ neuGesamt = 0; }
-  else {
-    const neuBeleg = Object.assign({}, beleg, {positionen:positions});
-    const s2 = summen(neuBeleg);
-    neuGesamt = fehlendeMinderungProzent ? round2(s2.gesamt - round2(s2.vergSum*fehlendeMinderungProzent/100)) : s2.gesamt;
-  }
-  return {zeilen, altGesamt, neuGesamt, diff: round2(altGesamt-neuGesamt)};
-}
-
-function buildAblehnungstext(beleg, pp){
-  const empf = beleg.empfaenger || beleg.patient;
-  const an = anredeText(empf);
-  const items = pp.filter(x=>x.status==="violation");
-  const gesamt = round2(summen(beleg).gesamt - (beleg.summenFehler||0));
-  const listDe = items.map(x=>"– "+x.kundentext.de).join("\n");
-  const listEn = items.map(x=>"– "+x.kundentext.en).join("\n");
-  const de = an.de+"\n\n"+
-    "vielen Dank für die Einreichung Ihrer Rechnung Nr. "+beleg.id+" vom "+fmtDate(beleg.rechnungsdatum)+" über "+euro(gesamt)+".\n\n"+
-    "Leider können wir die Rechnung in der eingereichten Form nicht erstatten:\n\n"+listDe+"\n\n"+
-    "Bitte reichen Sie uns eine korrigierte bzw. vervollständigte Rechnung ein. Nach Eingang prüfen wir den Vorgang umgehend erneut.\n\n"+
-    "Bei Rückfragen erreichen Sie uns über die auf Ihrer Police angegebenen Kontaktdaten.\n\n"+
-    "Mit freundlichen Grüßen\nIhre Continentale Krankenversicherung";
-  const en = an.en+"\n\n"+
-    "thank you for submitting your invoice no. "+beleg.id+" dated "+fmtDate(beleg.rechnungsdatum)+" for "+euro(gesamt)+".\n\n"+
-    "Unfortunately, we are unable to reimburse this invoice as submitted:\n\n"+listEn+"\n\n"+
-    "Please submit a corrected or completed invoice. We will review the matter again promptly upon receipt.\n\n"+
-    "If you have any questions, please contact us using the details shown on your policy.\n\n"+
-    "Kind regards,\nYour Continentale health insurance";
-  return {de, en, betreffDe:"Ablehnung der Rechnung Nr. "+beleg.id, betreffEn:"Rejection of invoice no. "+beleg.id};
-}
-
-function buildKuerzungstext(beleg, pp){
-  const empf = beleg.empfaenger || beleg.patient;
-  const an = anredeText(empf);
-  const {zeilen, altGesamt, neuGesamt, diff} = berechneKuerzung(beleg, pp);
-  const lineDe = z => z.gesamt ? "– "+z.grundDe : "– "+(z.alt!==null?euro(z.alt)+" → "+euro(z.neu)+" – ":"")+z.grundDe;
-  const lineEn = z => z.gesamt ? "– "+z.grundEn : "– "+(z.alt!==null?euro(z.alt)+" → "+euro(z.neu)+" – ":"")+z.grundEn;
-  const zeilenDe = zeilen.map(lineDe).join("\n");
-  const zeilenEn = zeilen.map(lineEn).join("\n");
-  const de = an.de+"\n\n"+
-    "wir haben Ihre Rechnung Nr. "+beleg.id+" vom "+fmtDate(beleg.rechnungsdatum)+" über "+euro(altGesamt)+" geprüft. Aus den folgenden Gründen mussten wir den erstattungsfähigen Betrag anpassen:\n\n"+zeilenDe+"\n\n"+
-    "Bisheriger Rechnungsbetrag: "+euro(altGesamt)+"\nErstattungsfähiger Betrag: "+euro(neuGesamt)+"\nDifferenz: "+euro(diff)+"\n\n"+
-    "Den erstattungsfähigen Betrag überweisen wir in Kürze auf das uns bekannte Konto. Für die Differenz können Sie uns bei Bedarf ergänzende Unterlagen nachreichen.\n\n"+
-    "Mit freundlichen Grüßen\nIhre Continentale Krankenversicherung";
-  const en = an.en+"\n\n"+
-    "we have reviewed your invoice no. "+beleg.id+" dated "+fmtDate(beleg.rechnungsdatum)+" for "+euro(altGesamt)+". For the reasons below, we had to adjust the reimbursable amount:\n\n"+zeilenEn+"\n\n"+
-    "Previous invoice amount: "+euro(altGesamt)+"\nReimbursable amount: "+euro(neuGesamt)+"\nDifference: "+euro(diff)+"\n\n"+
-    "We will transfer the reimbursable amount to the account on file shortly. If you wish, you may submit further documentation regarding the difference.\n\n"+
-    "Kind regards,\nYour Continentale health insurance";
-  return {de, en, betreffDe:"Kürzung der Rechnung Nr. "+beleg.id, betreffEn:"Reduction of invoice no. "+beleg.id};
-}
-
 /* ========================= Rendering: Beleg ========================= */
 function flagHtml(p){
   if(!p.flags || !p.flags.length) return "";
@@ -2586,53 +2446,8 @@ function renderDocument(b){
     (q && q.id!=="sauber" ? ' · Eingangsqualität: <b>'+esc(q.label)+'</b>' : '');
 }
 
-/* ========================= Rendering: Klassifikation ========================= */
-function renderClassification(kategorie, result){
-  const m = CATEGORY_META[kategorie];
-  const panel = document.getElementById("classification-panel");
-  panel.hidden = false;
-  panel.style.setProperty("--cp-fg","var("+m.colorVar+")");
-  panel.style.setProperty("--cp-bg","var("+m.bgVar+")");
-  const items = result.pp.map(p=>{
-    const colorVar = p.status==="ok"?"--cat-ok":p.status==="boundary"?"--cat-boundary":p.status==="violation"?"--cat-violation":p.status==="exception"?"--cat-exception":"--cat-conflict";
-    const ktHtml = p.kundentext ? (
-      '<div class="kt-block">'+
-        '<div class="kt-col"><span class="kt-lang">Kundentext DE</span>'+esc(p.kundentext.de)+'</div>'+
-        '<div class="kt-col"><span class="kt-lang">Customer text EN</span>'+esc(p.kundentext.en)+'</div>'+
-      '</div>'
-    ) : "";
-    return '<div class="cp-item" style="--item-color:var('+colorVar+')">'+
-      '<span class="icon">'+ICONS[p.status]+'</span>'+
-      '<div><div class="rule">'+esc(p.rule)+'</div><div class="title">'+esc(p.title)+'</div><div class="detail">'+esc(p.detail)+'</div>'+ktHtml+'</div>'+
-    '</div>';
-  }).join("");
-  const actionsHtml = kategorie==="verstoss" ?
-    '<div class="cp-actions">'+
-      '<span class="cp-actions-label">Empfohlene Aktion für diesen Beleg:</span>'+
-      '<button class="btn btn-reject" id="btn-ablehnen" type="button">'+ICONS.violation+'Ablehnen</button>'+
-      '<button class="btn btn-reduce" id="btn-kuerzen" type="button">'+ICONS.boundary+'Kürzen</button>'+
-    '</div>'+
-    '<div class="letter-panel" id="letter-panel" hidden></div>'
-    : "";
-  panel.innerHTML =
-    '<div class="cp-head">'+
-      '<span class="cp-badge" style="--cp-fg:var('+m.colorVar+');--cp-bg:var('+m.bgVar+')">'+m.icon+m.label+'</span>'+
-      '<div><h2 class="cp-title">Einordnung</h2><p class="cp-sub">Geprüfte Rechnungsinhalte für diesen Testfall</p></div>'+
-    '</div>'+
-    '<div class="cp-grid">'+items+'</div>'+
-    '<div class="cp-outcome" style="--cp-fg:var('+m.colorVar+');--cp-bg:var('+m.bgVar+')"><span>'+m.icon+'</span><div><b>Systemverhalten</b>'+esc(result.outcome)+'</div></div>'+
-    actionsHtml;
-  if(kategorie==="verstoss"){
-    document.getElementById("btn-ablehnen").addEventListener("click", ()=>renderLetter("ablehnen"));
-    document.getElementById("btn-kuerzen").addEventListener("click", ()=>renderLetter("kuerzen"));
-  }
-  panel.scrollIntoView({behavior:"smooth", block:"nearest"});
-}
-
 /* ========================= State & Wiring ========================= */
 let baseBeleg = null;
-let currentBeleg = null;
-let currentPP = null;
 
 const Z_BY_NR = {};
 Object.values(Z).forEach(z=>{ if(!Z_BY_NR[z.nr]) Z_BY_NR[z.nr] = z; });
@@ -2758,42 +2573,10 @@ function generateTestfall(){
 
   baseBeleg = base;
   const result = classify(base, kategorieKey, forcedSubtype);
-  currentBeleg = result.beleg;
-  currentPP = result.pp;
   renderDocument(result.beleg);
 
   document.getElementById("step-pill").textContent = "Schritt 1 · "+cfg.label;
   document.getElementById("stage-heading-text").textContent = belegartTitel(belegartKey, kategorieKey, result);
-
-  renderClassification(kategorieKey, result);
-}
-
-function renderLetter(mode){
-  const panel = document.getElementById("letter-panel");
-  if(!panel || !currentBeleg || !currentPP) return;
-  const letter = mode==="ablehnen" ? buildAblehnungstext(currentBeleg,currentPP) : buildKuerzungstext(currentBeleg,currentPP);
-  panel.hidden = false;
-  panel.innerHTML =
-    '<div class="letter-head">'+
-      '<h3>'+(mode==="ablehnen"?"Ablehnungsschreiben":"Kürzungsschreiben")+'</h3>'+
-      '<p class="letter-sub">Automatisch erzeugter Kundentext auf Basis der geprüften Rechnungsinhalte — bereit für Druck/Versand in der Leistungsabrechnung.</p>'+
-    '</div>'+
-    '<div class="letter-cols">'+
-      '<div class="letter-col"><div class="letter-col-head"><span>Deutsch</span><button class="btn-copy" data-copy-target="letter-de" data-confirm="Kopiert" type="button">Kopieren</button></div><pre id="letter-de">'+esc(letter.betreffDe+"\n\n"+letter.de)+'</pre></div>'+
-      '<div class="letter-col"><div class="letter-col-head"><span>English</span><button class="btn-copy" data-copy-target="letter-en" data-confirm="Copied" type="button">Copy</button></div><pre id="letter-en">'+esc(letter.betreffEn+"\n\n"+letter.en)+'</pre></div>'+
-    '</div>';
-  panel.querySelectorAll(".btn-copy").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const target = document.getElementById(btn.dataset.copyTarget);
-      const text = target ? target.textContent : "";
-      const orig = btn.textContent;
-      const done = ()=>{ btn.textContent = btn.dataset.confirm; setTimeout(()=>{ btn.textContent = orig; }, 1200); };
-      if(navigator.clipboard && navigator.clipboard.writeText){
-        navigator.clipboard.writeText(text).then(done).catch(()=>{});
-      }
-    });
-  });
-  panel.scrollIntoView({behavior:"smooth", block:"nearest"});
 }
 
 document.getElementById("btn-new").addEventListener("click", generateTestfall);
