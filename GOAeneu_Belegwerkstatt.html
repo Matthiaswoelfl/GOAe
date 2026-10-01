@@ -1389,7 +1389,6 @@ const Z = {
   blutbild:         {nr:"11025",bez:"Blutbild, insgesamt",                                                      satz1:3.69},
   frueherkVorsorge: {nr:"116",  bez:"Erwachsenen-Vorsorgeuntersuchung zur Früherkennung von Herz-, Kreislauf-, Nieren-, Stoffwechsel- und rheumatischen Erkrankungen", satz1:94.53},
   frueherkHaut:     {nr:"117",  bez:"Untersuchung der Haut und der sichtbaren Schleimhäute zur Früherkennung von Krebserkrankungen", satz1:37.94},
-  psychoProbatorik: {nr:"845",  bez:"Probatorische Sitzung im Rahmen der Richtlinienpsychotherapie", satz1:55.20, dauer:"je Sitzung"},
   psychoEinzel:     {nr:"4505", bez:"Tiefenpsychologisch fundierte Psychotherapie, Einzelbehandlung", satz1:145.00, dauer:"mind. 50 Minuten"},
 };
 /* Für Präfix „A“ (Analogleistung): neuartige, im Gebührenverzeichnis noch nicht eigenständig gelistete Leistung je Fachrichtung */
@@ -1537,7 +1536,7 @@ const FACHRICHTUNGEN = [
     name:"Psychotherapie", suffix:"Praxis für Psychotherapie",
     diagnosen:["Rezidivierende depressive Störung, gegenwärtig mittelgradige Episode","Generalisierte Angststörung","Anpassungsstörung, längere depressive Reaktion"],
     icd:{"Rezidivierende depressive Störung, gegenwärtig mittelgradige Episode":"F33.1","Generalisierte Angststörung":"F41.1","Anpassungsstörung, längere depressive Reaktion":"F43.21"},
-    ziffern:[Z.beratung,Z.psychoProbatorik,Z.psychoEinzel],
+    ziffern:[Z.beratung,Z.psychoEinzel],
     analog: ANALOG.psychoDigital,
     frueherkennung: null,
   },
@@ -1972,7 +1971,7 @@ function applyGrenzfall(b, forcedSubtype){
     if(!pos){ pos = makeVergPos(Z.psychoEinzel); b.positionen.push(pos); }
     pos.dauer = "50 Minuten (exakt dokumentiert)";
     addFlag(pos,"boundary","Leistungslegende Nr. "+Z.psychoEinzel.nr+" GOÄneu","Sitzungsdauer liegt exakt auf der Mindestgrenze von 50 Minuten für diese Gebührenposition.");
-    pp.push({status:"boundary", rule:"Leistungslegende Nr. "+Z.psychoEinzel.nr+" GOÄneu", title:"Sitzungsdauer exakt auf der 50-Minuten-Grenze", detail:"Nr. "+Z.psychoEinzel.nr+" („"+Z.psychoEinzel.bez+"“) setzt eine Mindestdauer von 50 Minuten voraus. Die dokumentierte Sitzungsdauer liegt exakt bei 50 Minuten — ein Randfall, bei dem eine automatisierte Prüfung leicht die kürzere, geringer vergütete Leistungsziffer (Nr. "+Z.psychoProbatorik.nr+") ansetzt, obwohl die Mindestgrenze nach dem Wortlaut noch erfüllt ist.",
+    pp.push({status:"boundary", rule:"Leistungslegende Nr. "+Z.psychoEinzel.nr+" GOÄneu", title:"Sitzungsdauer exakt auf der 50-Minuten-Grenze", detail:"Nr. "+Z.psychoEinzel.nr+" („"+Z.psychoEinzel.bez+"“) setzt eine Mindestdauer von 50 Minuten voraus. Die dokumentierte Sitzungsdauer liegt exakt bei 50 Minuten — ein Randfall, bei dem eine automatisierte Prüfung leicht einen zu kurzen Zeitansatz unterstellt, obwohl die Mindestgrenze nach dem Wortlaut noch erfüllt ist.",
       kundentext:kt("Für dieses Gespräch wurde der Satz für eine mindestens 50-minütige Sitzung berechnet. Bei einer Dauer von genau 50 Minuten prüfen wir, ob diese Grenze erreicht ist.","The rate for a session of at least 50 minutes was charged for this consultation. At a duration of exactly 50 minutes, we are checking whether this threshold has been met.")});
   } else {
     b.diagnose.kennzeichen = "VA";
