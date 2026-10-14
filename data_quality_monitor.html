@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Quality Monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --navy:#1e2d4e; --navy-2:#283c66; --navy-soft:#eef1f7;
+    --orange:#0f6fb8; --orange-soft:#e5f0fa;
+    --bg:#f4f6fa; --surface:#ffffff; --surface-2:#f8f9fc;
+    --ink:#182338; --ink-soft:#5b6579; --border:#dfe3ec; --border-strong:#c7cddc;
+    --c-neu:#1f9d63; --c-neu-bg:#e7f7ef;
+    --c-geaendert:#b3760f; --c-geaendert-bg:#faf0dd;
+    --c-entfernt:#c23b3b; --c-entfernt-bg:#fbe8e8;
+    --c-ok:#1f9d63; --c-ok-bg:#e7f7ef;
+    --c-warn:#b3760f; --c-warn-bg:#faf0dd;
+    --c-crit:#c23b3b; --c-crit-bg:#fbe8e8;
+    --c-offen:#5b6579; --c-offen-bg:#eceff4;
+    --c-info:#0f6fb8; --c-info-bg:#e5f0fa;
+    --shadow-sm:0 1px 2px rgba(20,25,40,.06), 0 2px 8px rgba(20,25,40,.05);
+    --shadow-md:0 8px 24px rgba(20,25,40,.10);
+    --radius:14px; --radius-sm:9px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0c1220; --surface:#131b2c; --surface-2:#1a2338;
+      --ink:#eef1f8; --ink-soft:#a7b0c4; --border:#28324a; --border-strong:#37436199;
+      --navy:#16233d; --navy-2:#233254; --navy-soft:#1a2338;
+      --orange:#5b9fe0; --orange-soft:#182741;
+      --c-neu:#3fc98a; --c-neu-bg:#12301f;
+      --c-geaendert:#e0a94f; --c-geaendert-bg:#2e2410;
+      --c-entfernt:#e86a6a; --c-entfernt-bg:#3a1616;
+      --c-ok:#3fc98a; --c-ok-bg:#12301f;
+      --c-warn:#e0a94f; --c-warn-bg:#2e2410;
+      --c-crit:#e86a6a; --c-crit-bg:#3a1616;
+      --c-offen:#a7b0c4; --c-offen-bg:#1a2338;
+      --c-info:#5b9fe0; --c-info-bg:#182741;
+      --shadow-sm:0 1px 2px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.3);
+      --shadow-md:0 10px 30px rgba(0,0,0,.5);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0c1220; --surface:#131b2c; --surface-2:#1a2338;
+    --ink:#eef1f8; --ink-soft:#a7b0c4; --border:#28324a; --border-strong:#37436199;
+    --navy:#16233d; --navy-2:#233254; --navy-soft:#1a2338;
+    --orange:#5b9fe0; --orange-soft:#182741;
+    --c-neu:#3fc98a; --c-neu-bg:#12301f;
+    --c-geaendert:#e0a94f; --c-geaendert-bg:#2e2410;
+    --c-entfernt:#e86a6a; --c-entfernt-bg:#3a1616;
+    --c-ok:#3fc98a; --c-ok-bg:#12301f;
+    --c-warn:#e0a94f; --c-warn-bg:#2e2410;
+    --c-crit:#e86a6a; --c-crit-bg:#3a1616;
+    --c-offen:#a7b0c4; --c-offen-bg:#1a2338;
+    --c-info:#5b9fe0; --c-info-bg:#182741;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.3);
+    --shadow-md:0 10px 30px rgba(0,0,0,.5);
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0; padding:0;}
+  body{
+    font-family:"Source Sans 3",system-ui,sans-serif; background:var(--bg); color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  code, .mono{font-family:"IBM Plex Mono",ui-monospace,monospace;}
+  button{font-family:inherit;}
+  .app{display:flex; flex-direction:column; min-height:100vh;}
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    background:linear-gradient(135deg, var(--navy), var(--navy-2));
+    color:#eef2fb; padding:18px clamp(16px,3vw,32px);
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+  }
+  .topbar-brand{display:flex; align-items:center; gap:12px; margin-right:auto;}
+  .topbar-mark{
+    width:38px; height:38px; border-radius:10px; flex:none;
+    background:rgba(255,255,255,.12); display:flex; align-items:center; justify-content:center;
+  }
+  .topbar-mark svg{width:20px; height:20px; stroke:var(--orange);}
+  .topbar-title{font-size:1.05rem; font-weight:800; letter-spacing:-.01em;}
+  .topbar-sub{font-size:.76rem; color:#b9c3dc; margin-top:1px;}
+  .tabbar{display:flex; gap:4px; background:rgba(255,255,255,.08); padding:4px; border-radius:999px; flex-wrap:wrap;}
+  .tab-btn{
+    appearance:none; border:0; background:none; color:#cfd8ee; font:inherit; font-weight:700; font-size:.8rem;
+    padding:9px 16px; border-radius:999px; cursor:pointer; transition:background .15s ease, color .15s ease;
+    display:flex; align-items:center; gap:7px; white-space:nowrap;
+  }
+  .tab-btn svg{width:15px; height:15px;}
+  .tab-btn[data-active="true"]{background:var(--orange); color:#fff;}
+  .tab-btn:not([data-active="true"]):hover{background:rgba(255,255,255,.1); color:#fff;}
+  .theme-toggle{
+    appearance:none; border:1px solid rgba(255,255,255,.22); background:rgba(255,255,255,.06); color:#dbe2f3;
+    width:34px; height:34px; border-radius:9px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    flex:none;
+  }
+  .theme-toggle:hover{background:rgba(255,255,255,.14);}
+  .theme-toggle svg{width:16px; height:16px;}
+
+  .disclaimer{
+    background:var(--orange-soft); border-bottom:1px solid var(--border);
+    color:var(--ink); font-size:.78rem; line-height:1.55;
+    padding:9px clamp(16px,3vw,32px);
+  }
+  .disclaimer b{color:var(--orange);}
+
+  .view-wrap{padding:22px clamp(16px,3vw,32px) 60px; max-width:1180px; margin:0 auto; width:100%;}
+  .view-head h1{margin:0 0 6px; font-size:1.3rem; font-weight:800;}
+  .view-head p{margin:0 0 18px; color:var(--ink-soft); font-size:.88rem; max-width:80ch; line-height:1.6;}
+
+  /* ---------- KPI tiles ---------- */
+  .kpi-row{display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px;}
+  .kpi-tile{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 18px; box-shadow:var(--shadow-sm); min-width:150px; flex:1 1 150px;}
+  .kpi-num{font-size:1.5rem; font-weight:800; font-variant-numeric:tabular-nums; line-height:1.15;}
+  .kpi-num.ok{color:var(--c-ok);} .kpi-num.warn{color:var(--c-warn);} .kpi-num.crit{color:var(--c-crit);} .kpi-num.info{color:var(--c-info);}
+  .kpi-label{font-size:.72rem; color:var(--ink-soft); font-weight:600; margin-top:4px; line-height:1.4;}
+
+  /* ---------- Given/When/Then scenario box ---------- */
+  .gwt-box{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; margin-bottom:20px; box-shadow:var(--shadow-sm);}
+  .gwt-row{display:flex; gap:12px; padding:6px 0; font-size:.85rem; line-height:1.55;}
+  .gwt-row + .gwt-row{border-top:1px dashed var(--border);}
+  .gwt-tag{flex:none; width:76px; font-weight:800; font-size:.7rem; text-transform:uppercase; letter-spacing:.04em; color:var(--orange); padding-top:2px;}
+  .gwt-then-list{margin:4px 0 0; padding-left:18px; columns:2; column-gap:22px;}
+  .gwt-then-list li{font-size:.82rem; color:var(--ink); line-height:1.55; break-inside:avoid; margin-bottom:3px;}
+  @media (max-width:760px){ .gwt-then-list{columns:1;} }
+
+  /* ---------- Pipeline flow (EM tab) ---------- */
+  .pipeline{display:flex; align-items:stretch; gap:0; margin-bottom:22px; overflow-x:auto; padding-bottom:4px;}
+  .pipe-stage{flex:1 1 150px; min-width:140px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:13px 15px; box-shadow:var(--shadow-sm); position:relative;}
+  .pipe-stage.is-pool{border-color:var(--orange); background:var(--orange-soft);}
+  .pipe-stage-label{font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);}
+  .pipe-stage-name{font-size:.95rem; font-weight:800; margin:3px 0 6px;}
+  .pipe-stage-num{font-size:1.25rem; font-weight:800; font-variant-numeric:tabular-nums;}
+  .pipe-stage-sub{font-size:.72rem; color:var(--ink-soft); margin-top:2px;}
+  .pipe-arrow{flex:none; width:34px; display:flex; align-items:center; justify-content:center; color:var(--border-strong);}
+  .pipe-arrow svg{width:20px; height:20px;}
+
+  /* ---------- Badges ---------- */
+  .badge{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-size:.72rem; font-weight:700; white-space:nowrap;}
+  .badge--sm{padding:2px 8px; font-size:.68rem; gap:0;}
+  .badge--sm .dot{display:none;}
+  .badge .dot{width:7px; height:7px; border-radius:50%; flex:none;}
+  .badge.ok{background:var(--c-ok-bg); color:var(--c-ok);} .badge.ok .dot{background:var(--c-ok);}
+  .badge.warn{background:var(--c-warn-bg); color:var(--c-warn);} .badge.warn .dot{background:var(--c-warn);}
+  .badge.crit{background:var(--c-crit-bg); color:var(--c-crit);} .badge.crit .dot{background:var(--c-crit);}
+  .badge.offen{background:var(--c-offen-bg); color:var(--c-offen);} .badge.offen .dot{background:var(--c-offen);}
+  .badge.info{background:var(--c-info-bg); color:var(--c-info);} .badge.info .dot{background:var(--c-info);}
+
+  /* ---------- Tables ---------- */
+  .table-wrap{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow-x:auto; box-shadow:var(--shadow-sm); margin-bottom:16px;}
+  table.data-table{width:100%; border-collapse:collapse; min-width:760px;}
+  .data-table thead th{
+    text-align:left; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);
+    padding:12px 14px; border-bottom:1px solid var(--border); background:var(--surface-2); white-space:nowrap;
+  }
+  .data-table tbody td{padding:12px 14px; border-bottom:1px solid var(--border); font-size:.83rem; vertical-align:top; line-height:1.5;}
+  .data-table tbody tr:last-child td{border-bottom:0;}
+  .data-table tbody tr:hover{background:var(--surface-2);}
+  .k-name{font-weight:700; color:var(--ink);}
+  .k-quelle{color:var(--ink-soft); white-space:nowrap;}
+  .data-table td.mono{font-family:"IBM Plex Mono",monospace; font-size:.78rem; white-space:nowrap;}
+  .cell-empty{color:var(--ink-soft); font-style:italic; text-align:center; padding:18px !important;}
+
+  .bar-track{background:var(--border); border-radius:999px; height:7px; width:84px; overflow:hidden; display:inline-block; vertical-align:middle; margin-right:8px;}
+  .bar-fill{height:100%; border-radius:999px; background:var(--c-ok);}
+  .bar-fill.warn{background:var(--c-warn);} .bar-fill.crit{background:var(--c-crit);}
+  .bar-pct{font:700 .78rem "IBM Plex Mono",monospace; vertical-align:middle;}
+
+  .filters{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; align-items:center;}
+  .filter-group{display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:4px; flex-wrap:wrap;}
+  .filter-chip{
+    appearance:none; border:0; background:none; font:inherit; font-size:.78rem; font-weight:600; color:var(--ink-soft);
+    padding:7px 13px; border-radius:999px; cursor:pointer; transition:background .15s ease, color .15s ease;
+  }
+  .filter-chip[data-active="true"]{background:var(--navy); color:#fff;}
+  .filter-count{margin-left:auto; font-size:.78rem; color:var(--ink-soft); font-weight:600;}
+  .filter-dim-label{font-size:.76rem; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.03em; flex:none;}
+  .filter-search{
+    flex:1 1 220px; min-width:180px; border:1px solid var(--border); border-radius:999px; background:var(--surface);
+    padding:9px 15px; font:inherit; font-size:.82rem; color:var(--ink);
+  }
+  .filter-search:focus{outline:2px solid var(--orange); outline-offset:1px;}
+
+  .subhead{font-size:1.02rem; font-weight:800; margin:26px 0 4px;}
+  .subhead-sub{font-size:.82rem; color:var(--ink-soft); margin:0 0 14px; max-width:80ch; line-height:1.6;}
+
+  /* ---------- Gesamtübersicht (Kategorie-Tabelle + Erläuterung) ---------- */
+  .ov-grid{display:grid; grid-template-columns:1.6fr 1fr; gap:20px; align-items:start; margin-bottom:8px;}
+  .ov-grid--wide{grid-template-columns:2.4fr 1fr;}
+  @media (max-width:900px){ .ov-grid, .ov-grid--wide{grid-template-columns:1fr;} }
+  table.ov-table{min-width:0;}
+  .ov-table th.num-col, .ov-table td.ov-num{text-align:center;}
+  .ov-table td.ov-num{font-weight:700; font-variant-numeric:tabular-nums;}
+  tr.ov-section td{background:var(--surface-2); font-weight:800; font-size:.8rem; color:var(--ink);}
+  tr.ov-total td{font-weight:800; background:var(--surface-2); border-top:2px solid var(--border-strong);}
+  tr.row-clickable{cursor:pointer; transition:background .12s;}
+  tr.row-clickable:hover{background:var(--surface-2);}
+  tr.row-fokus{background:var(--c-warn-bg);}
+  tr.row-fokus:hover{background:var(--c-warn-bg); filter:brightness(0.96);}
+  tr.row-selected td:first-child{box-shadow:inset 3px 0 0 var(--navy);}
+  .erl-box{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow-sm);}
+  .erl-head{font-weight:800; font-size:.85rem; margin-bottom:10px; color:var(--ink);}
+  .erl-box ul{margin:0; padding-left:18px;}
+  .erl-box li{font-size:.82rem; line-height:1.6; margin-bottom:10px; color:var(--ink);}
+  .erl-box li:last-child{margin-bottom:0;}
+  .erl-box li b{color:var(--navy);}
+  :root[data-theme="dark"] .erl-box li b{color:#9fb4dd;}
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .erl-box li b{color:#9fb4dd;} }
+
+  /* ---------- Prozessbeschreibung je NK-Stufe (Tab 1, aufklappbar) ---------- */
+  .nk-proc-details{margin:12px 0 22px; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); box-shadow:var(--shadow-sm);}
+  .nk-proc-details summary{cursor:pointer; list-style:none; padding:12px 16px; font-weight:800; font-size:.85rem; color:var(--ink); display:flex; align-items:center; gap:8px;}
+  .nk-proc-details summary::-webkit-details-marker{display:none;}
+  .nk-proc-details summary::before{content:"▸"; font-size:.72rem; color:var(--ink-soft); transition:transform .12s;}
+  .nk-proc-details[open] summary::before{transform:rotate(90deg);}
+  .nk-proc-body{padding:4px 16px 16px;}
+  .nk-proc-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  @media (max-width:900px){.nk-proc-grid{grid-template-columns:1fr;}}
+  .nk-proc-card{background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 16px;}
+  .nk-proc-head{display:flex; align-items:center; gap:8px; font-weight:800; font-size:.85rem; color:var(--ink); margin-bottom:9px;}
+  .nk-proc-tag{display:inline-flex; align-items:center; justify-content:center; font:800 .68rem/1 "Source Sans 3",sans-serif; padding:4px 9px; border-radius:999px; background:var(--orange); color:#fff; flex:none;}
+  .nk-proc-card ul{margin:0 0 9px; padding-left:17px;}
+  .nk-proc-card li{font-size:.8rem; line-height:1.55; margin-bottom:7px; color:var(--ink);}
+  .nk-proc-card li:last-child{margin-bottom:0;}
+  .nk-proc-ex{font-size:.76rem; color:var(--ink-soft); border-top:1px dashed var(--border); padding-top:8px; margin-top:2px; line-height:1.5;}
+  .nk-proc-ex b{color:var(--ink);}
+
+  .validity-filter-hint{font-size:.8rem; color:var(--navy); font-weight:700; margin:-4px 0 10px;}
+  :root[data-theme="dark"] .validity-filter-hint{color:#9fb4dd;}
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .validity-filter-hint{color:#9fb4dd;} }
+
+  /* ---------- Categorical palette (QSL charts) — validated, see dataviz skill ---------- */
+  :root{
+    --qsl-1:#2a78d6; --qsl-2:#eb6834; --qsl-3:#1baf7a; --qsl-4:#eda100; --qsl-5:#e87ba4; --qsl-6:#008300;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --qsl-1:#3987e5; --qsl-2:#d95926; --qsl-3:#199e70; --qsl-4:#c98500; --qsl-5:#d55181; --qsl-6:#008300;
+    }
+  }
+  :root[data-theme="dark"]{
+    --qsl-1:#3987e5; --qsl-2:#d95926; --qsl-3:#199e70; --qsl-4:#c98500; --qsl-5:#d55181; --qsl-6:#008300;
+  }
+
+  /* ---------- QSL trigger (clickable Vollständigkeit cell) ---------- */
+  .qsl-trigger{appearance:none; border:0; background:none; padding:4px 6px; margin:-4px -6px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font:inherit; color:inherit;}
+  .qsl-trigger:hover{background:var(--surface-2);}
+  .qsl-trigger .icon{width:14px; height:14px; color:var(--ink-soft); flex:none;}
+  .qsl-trigger:hover .icon{color:var(--navy);}
+
+  /* ---------- QSL modal ---------- */
+  .modal-backdrop{position:fixed; inset:0; background:rgba(10,14,26,.5); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50;}
+  .modal-backdrop[hidden]{display:none;}
+  .modal-card{background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow-md); max-width:680px; width:100%; max-height:88vh; overflow-y:auto; padding:22px 26px;}
+  .modal-head{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:4px;}
+  .modal-title{font-size:1.1rem; font-weight:800; margin:0;}
+  .modal-sub{font-size:.8rem; color:var(--ink-soft); margin:2px 0 0;}
+  .modal-close{appearance:none; border:0; background:var(--surface-2); width:30px; height:30px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex:none; color:var(--ink-soft);}
+  .modal-close:hover{color:var(--ink); background:var(--border);}
+  .modal-close .icon{width:15px; height:15px;}
+
+  .donut-wrap{display:flex; gap:26px; align-items:center; flex-wrap:wrap; margin-top:18px;}
+  .donut-svg{width:200px; height:200px; flex:none;}
+  .donut-center-num{font-size:1.3rem; font-weight:800; fill:var(--ink);}
+  .donut-center-lbl{font-size:.5rem; font-weight:700; fill:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em;}
+  .qsl-legend{flex:1 1 260px; min-width:220px; list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px;}
+  .qsl-legend li{display:flex; align-items:flex-start; gap:9px; font-size:.82rem; line-height:1.5;}
+  .qsl-swatch{width:11px; height:11px; border-radius:3px; flex:none; margin-top:3px;}
+  .qsl-legend-label{font-weight:700; color:var(--ink);}
+  .qsl-legend-val{font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; margin-left:6px;}
+  .qsl-legend-code{display:block; font-size:.72rem; color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; margin-top:1px;}
+
+  @media (max-width:860px){
+    .topbar{flex-wrap:wrap;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="topbar-brand">
+      <span class="topbar-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.66 3.58 3 8 3s8-1.34 8-3V6"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg>
+      </span>
+      <div>
+        <div class="topbar-title">Data Quality Monitor</div>
+        <div class="topbar-sub">GOÄneu Suite · Modul-Prototyp</div>
+      </div>
+    </div>
+    <div class="tabbar" role="tablist">
+      <button class="tab-btn" type="button" data-tab="em" data-active="true" role="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        EM-Datenqualität
+      </button>
+      <button class="tab-btn" type="button" data-tab="datenpool" role="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.66 3.58 3 8 3s8-1.34 8-3V6"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg>
+        Datenpool &amp; Auswertbarkeit
+      </button>
+      <button class="tab-btn" type="button" data-tab="smile-trace" role="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+        SMILE-Nachvollziehbarkeit
+      </button>
+      <button class="tab-btn" type="button" data-tab="smile-delta" role="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7 3 12l5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>
+        Anpassungen SMILE
+      </button>
+    </div>
+    <button class="theme-toggle" id="btn-theme" type="button" title="Darstellung wechseln" aria-label="Darstellung wechseln">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.2M12 19.3v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>
+    </button>
+  </div>
+
+  <div class="disclaimer">
+    <b>Beispieldaten zur Veranschaulichung.</b> Kennzahlen, Dokument-IDs, KLTB0570-Einträge und Delta-Werte sind illustrativ und ersetzen keine Anbindung an EM, Datenpool oder SMILE. Begriffe (NK1–NK3, QSL, Hellwerdegrund, KLTB0570) folgen der im Fachbereich verwendeten Terminologie.
+  </div>
+
+  <!-- ================= TAB 1: EM-DATENQUALITÄT ================= -->
+  <section id="view-em">
+    <div class="view-wrap">
+      <div class="view-head">
+        <h1>Prüfung der Datenqualität innerhalb des EM-Prozesses</h1>
+        <p>Überwachung der Datenqualität und Identifikation von Datenänderungen entlang der Verarbeitungsschritte zwischen den NK-Stufen im Eingangsmanagement (NK1, NK2, NK3) — bis zur Übergabe an den Datenpool.</p>
+        <p class="subhead-sub" style="margin-top:4px;"><b style="color:var(--ink);">NK1 klassifiziert ausschließlich Dokumentenart und VP</b> — es werden dabei noch keine Datenfelder ausgelesen. Allgemeine Datenfelder (ohne GOÄ/GOZ-Bezug, z. B. Diagnosetext) entstehen erst in NK2, GOÄ/GOZ-Tabellenfelder (z. B. GOÄ-Ziffer, Faktor-Grund) ausschließlich in NK3. Eine „Änderung" ist daher nur zwischen den Stufen möglich, in denen das jeweilige Feld tatsächlich existiert.</p>
+      </div>
+
+      <details class="nk-proc-details">
+        <summary>Prozessbeschreibung je NK-Stufe (Details)</summary>
+        <div class="nk-proc-body">
+          <div class="nk-proc-grid">
+            <div class="nk-proc-card">
+              <div class="nk-proc-head"><span class="nk-proc-tag">NK1</span>Klassifikation (ICR/OCR Stufe 1)</div>
+              <ul>
+                <li>Bei <b>allen</b> eingehenden Akten — nicht nur gescannten — werden in der ICR/OCR Stufe 1 automatisch Rahmendaten erkannt: Versicherungsnummer (VNR), versicherte Person (VP) und Seitentyp/Dokumentenart je Beleg.</li>
+                <li>Bei nicht zweifelsfreier (d. h. unsicherer) Erkennung oder nicht möglicher technischer Klassifikation/Indizierung werden diese Sachverhalte manuell nacherfasst bzw. bestätigt.</li>
+                <li><b>Alle</b> Akten — nicht nur die digitalen — durchlaufen den Bereich Klassifizierung und Soforterledigung (EKSA).</li>
+                <li>Kann die VNR nicht ermittelt werden, erfolgt <b>keine</b> Rücksendung des Belegs durch EKSA — hierfür gibt es den Clearing-Prozess, der bei EPL liegt.</li>
+              </ul>
+              <div class="nk-proc-ex"><b>Beispiele:</b> Seitentyp, Versicherte Person, Versicherungsnummer (Abgleich mit Partnerdatei).</div>
+            </div>
+            <div class="nk-proc-card">
+              <div class="nk-proc-head"><span class="nk-proc-tag">NK2</span>Datenextraktion ohne GOÄ/GOZ-Tabellen (ICR/OCR Stufe 2)</div>
+              <ul>
+                <li>Nach der Klassifizierung in Stufe 1 durchlaufen die Belege die automatisierte Erkennung ICR/OCR Stufe 2, in der die Daten maschinell fachlich extrahiert werden.</li>
+                <li>Neben den bereits erkannten NK1-Daten werden — je nach Dokumentenart — alle abrechnungsrelevanten Daten gelesen; es wird versucht, die festgelegten erforderlichen Felder auszulesen. Gelingt dies nicht, erfolgt Bestätigung bzw. Ergänzung.</li>
+                <li>Bei nicht zweifelsfreier oder nicht möglicher technischer Ergänzung der Daten werden diese Sachverhalte manuell korrigiert/nacherfasst.</li>
+                <li>In EKSA werden die Daten erfasst, kontrolliert und ggf. korrigiert.</li>
+              </ul>
+              <div class="nk-proc-ex"><b>Beispiele:</b> Leistungserbringer, Rechnungsbetrag, Behandlungsdaten.</div>
+            </div>
+            <div class="nk-proc-card">
+              <div class="nk-proc-head"><span class="nk-proc-tag">NK3</span>Tabellenextraktion GOÄ/GOZ-Tabellen (ICR/OCR Stufe 3)</div>
+              <ul>
+                <li>Nach Stufe 2 durchlaufen <b>einige</b> Dokumentenarten (ambulante und stationäre Arztrechnung sowie Zahnarztbelege inkl. HKP) die automatisierte Erkennung ICR/OCR Stufe 3, in der die GO-Tabellendaten maschinell fachlich extrahiert werden (Datum, Anzahl, GO-Ziffer, Faktor, Betrag, ggf. Zähne).</li>
+                <li>Bei nicht zweifelsfreier oder nicht möglicher technischer Ergänzung der Daten werden diese Sachverhalte manuell erarbeitet.</li>
+                <li>In T32 (jetzt GBS, Polen) werden die Daten kontrolliert, bestätigt, geändert oder nacherfasst.</li>
+                <li>Zur Priorisierung dieser Tätigkeiten wird im Prokey nach folgenden Filtern unterschieden: GOZ, GOÄ, Ambulant, Stationär.</li>
+              </ul>
+              <div class="nk-proc-ex"><b>Beispiele:</b> Datum, Anzahl, GO-Ziffer, Faktor, Betrag.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <div class="pipeline" id="em-pipeline"></div>
+
+      <div class="kpi-row" id="em-kpi"></div>
+
+      <div class="filters">
+        <div class="filter-group" id="em-filter">
+          <button class="filter-chip" type="button" data-stufe="alle" data-active="true">Alle Felder</button>
+          <button class="filter-chip" type="button" data-stufe="nk1-nk2">Geändert NK1 → NK2</button>
+          <button class="filter-chip" type="button" data-stufe="nk2-nk3">Geändert NK2 → NK3</button>
+          <button class="filter-chip" type="button" data-stufe="nk3-only">Erstmalig in NK3</button>
+          <button class="filter-chip" type="button" data-stufe="unveraendert">Unverändert</button>
+        </div>
+        <span class="filter-count" id="em-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Beleg-ID</th><th>Feld</th><th>NK1</th><th>NK2</th><th>NK3</th><th>Änderung</th><th>Änderungsart</th></tr></thead>
+          <tbody id="em-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TAB 2: DATENPOOL & AUSWERTBARKEIT ================= -->
+  <section id="view-datenpool" hidden>
+    <div class="view-wrap">
+      <div class="view-head">
+        <h1>Prüfung Datenpool und Auswertbarkeit der Datenqualität</h1>
+        <p>Analyse der Qualitätsschlüssel aus dem Eingangsmanagement und Bewertung der Vollständigkeit, Befüllungsqualität und Erkennungsquote der bereitgestellten Datenfelder im Datenpool — tagesaktuell auf Datenfeld-Ebene.</p>
+      </div>
+
+      <div class="gwt-box">
+        <div class="gwt-row"><span class="gwt-tag">Gegeben</span><span>Das EM hat Daten in den Datenpool eingespeist, die anschließend in SMILE weiterverarbeitet werden sollen.</span></div>
+        <div class="gwt-row"><span class="gwt-tag">Wenn</span><span>Ein Datensatz zu einem Beleg im Datenpool vorliegt.</span></div>
+        <div class="gwt-row"><span class="gwt-tag">Dann</span><span>führt der DQM u. a. folgende Prüfungen/Auswertungen durch und zeigt die Ergebnisse an — siehe Auswertungskatalog unten.</span></div>
+      </div>
+
+      <div class="kpi-row" id="dp-kpi"></div>
+
+      <div class="subhead">Datenpool-Dashboard je Datenfeld</div>
+      <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit, Befüllungsqualität und Erkennungsquote je bereitgestelltem Datenfeld, inkl. Kennzeichnung von Interaktionsbedarf. Zusätzlich filterbar nach Eingangskanal (Medium_Sub_Typ).</p>
+      <div class="filters">
+        <div class="filter-group" id="dp-filter">
+          <button class="filter-chip" type="button" data-f="alle" data-active="true">Alle Felder</button>
+          <button class="filter-chip" type="button" data-f="erfassung">Quelle: Erfassung</button>
+          <button class="filter-chip" type="button" data-f="av">Quelle: AV (Datenextraktion)</button>
+          <button class="filter-chip" type="button" data-f="interaktion">Interaktionsbedarf</button>
+        </div>
+        <span class="filter-count" id="dp-count"></span>
+      </div>
+      <div class="filters">
+        <span class="filter-dim-label">Eingangskanal (Medium_Sub_Typ)</span>
+        <div class="filter-group" id="dp-kanal-filter">
+          <button class="filter-chip" type="button" data-kanal="alle" data-active="true">Alle Kanäle</button>
+          <button class="filter-chip" type="button" data-kanal="papier">Papier</button>
+          <button class="filter-chip" type="button" data-kanal="mail">Mail</button>
+          <button class="filter-chip" type="button" data-kanal="kupo">KuPo</button>
+          <button class="filter-chip" type="button" data-kanal="app">App</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Datenfeld</th><th>Dok.-Art</th><th>Vollständigkeit</th><th>Befüllungsqualität</th><th>Erkennungsquote</th><th>Quelle</th><th>Interaktionsbedarf</th></tr></thead>
+          <tbody id="dp-body"></tbody>
+        </table>
+      </div>
+
+      <div class="subhead">Auswertungskatalog</div>
+      <p class="subhead-sub">Beispielhafte Auswertungsmöglichkeiten des DQM auf dem Datenpool.</p>
+      <div class="filters">
+        <input class="filter-search" id="av-search" type="search" placeholder="Auswertungskatalog durchsuchen…">
+        <span class="filter-count" id="av-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Kategorie</th><th>Auswertung</th><th>Beschreibung</th><th>Status</th></tr></thead>
+          <tbody id="av-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TAB 3: SMILE-NACHVOLLZIEHBARKEIT ================= -->
+  <section id="view-smile-trace" hidden>
+    <div class="view-wrap">
+      <div class="view-head">
+        <h1>Nachvollziehbarkeit im SMILE-Prozess</h1>
+        <p>Nachverfolgung und Anzeige des aktuellen Bearbeitungsstands für jedes Dokument (Document ID) sowie Abzug/Auswertung der KLTB0570 — Dashboard mit E2E-Identifier auf Dok.-Art-Ebene und tagesaktuellem KLTB0570-Abzug inkl. aller Hellwerdegründe pro Document ID.</p>
+      </div>
+
+      <div class="kpi-row" id="st-kpi"></div>
+
+      <div class="subhead">Gesamtübersicht des KLTB0570-Abzugs</div>
+      <p class="subhead-sub">Generelle Übersicht zum initialen Datensatz dieser Stichprobe.</p>
+      <div class="ov-grid">
+        <div class="table-wrap">
+          <table class="data-table ov-table">
+            <thead><tr><th>Kategorie</th><th class="num-col">Anzahl</th><th>Kommentar</th></tr></thead>
+            <tbody id="ov-body"></tbody>
+          </table>
+        </div>
+        <div class="erl-box">
+          <div class="erl-head">Erläuterung</div>
+          <ul id="ov-erl"></ul>
+        </div>
+      </div>
+
+      <div class="subhead">Verteilung der Hellwerdegründe nach Dok.-Art</div>
+      <p class="subhead-sub">Anzahl heller Belege je Dok.-Art, gruppiert nach Anzahl gleichzeitiger Hellwerdegründe. Klick auf eine Dok.-Art filtert den KLTB0570-Abzug je Document ID darunter.</p>
+      <div class="ov-grid">
+        <div class="table-wrap">
+          <table class="data-table ov-table">
+            <thead><tr><th>Dok.-Art</th><th class="num-col">Genau 1</th><th class="num-col">Genau 2</th><th class="num-col">Genau 3</th><th class="num-col">Genau 4</th></tr></thead>
+            <tbody id="xt-body"></tbody>
+          </table>
+        </div>
+        <div class="erl-box">
+          <div class="erl-head">Erläuterung</div>
+          <ul id="xt-erl"></ul>
+        </div>
+      </div>
+
+      <div class="subhead">KLTB0570-Abzug je Document ID</div>
+      <p class="subhead-sub">Beispielhafter Ausschnitt einzelner Document IDs aus dem Abzug (Drill-down von der Dok.-Art-Ebene oben) — Bearbeitungsstand und, sofern „hell“, der jeweilige Hellwerdegrund.</p>
+      <p class="validity-filter-hint" id="st-dokart-hint" hidden></p>
+      <div class="filters">
+        <div class="filter-group" id="st-filter">
+          <button class="filter-chip" type="button" data-s="alle" data-active="true">Alle Status</button>
+          <button class="filter-chip" type="button" data-s="eingegangen">Eingegangen</button>
+          <button class="filter-chip" type="button" data-s="verarbeitung">In Verarbeitung</button>
+          <button class="filter-chip" type="button" data-s="hell">Hell (Interaktion)</button>
+          <button class="filter-chip" type="button" data-s="abgeschlossen">Abgeschlossen</button>
+        </div>
+        <span class="filter-count" id="st-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Document ID</th><th>Dok.-Art</th><th>Bearbeitungsstand</th><th>Hellwerdegrund</th><th>Zeitstempel</th></tr></thead>
+          <tbody id="st-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TAB 4: ANPASSUNGEN SMILE ================= -->
+  <section id="view-smile-delta" hidden>
+    <div class="view-wrap">
+      <div class="view-head">
+        <h1>Prüfung der Anpassungen im SMILE-Prozess</h1>
+        <p>Nachverfolgung und Auswertung von Änderungen an bereitgestellten Datenfeldern zwischen Datenpool und nachgelagerter Verarbeitung in SMILE — Dashboard mit Schnittstellen zu Datenpool und Ablage, das das Delta der beiden Input-Quellen auf Datenfeld-Ebene bestimmt und anzeigt.</p>
+      </div>
+
+      <div class="kpi-row" id="sd-kpi"></div>
+
+      <div class="subhead">Gesamtübersicht: QSL vs. Delta zur Ablage</div>
+      <p class="subhead-sub">Wurde ein Datenfeld vom EM bereits mit einem „guten“ QSL (z. B. „Sicher gefunden“) in den Datenpool gespielt und musste dennoch bis SMILE/Ablage noch geändert werden?</p>
+      <div class="ov-grid">
+        <div class="table-wrap">
+          <table class="data-table ov-table">
+            <thead><tr><th>Kategorie</th><th class="num-col">Anzahl</th><th>Kommentar</th></tr></thead>
+            <tbody id="sqov-body"></tbody>
+          </table>
+        </div>
+        <div class="erl-box">
+          <div class="erl-head">Erläuterung</div>
+          <ul id="sqov-erl"></ul>
+        </div>
+      </div>
+
+      <div class="subhead">Delta nach Dok.-Art und QSL</div>
+      <p class="subhead-sub">Anzahl Datenfelder mit Delta zur Ablage je Dok.-Art, aufgeschlüsselt nach dem vom EM vergebenen QSL. Klick auf eine Dok.-Art filtert den Datenfeld-Vergleich darunter.</p>
+      <div class="ov-grid ov-grid--wide">
+        <div class="table-wrap">
+          <table class="data-table ov-table">
+            <thead><tr><th>Dok.-Art</th><th class="num-col">Sicher</th><th class="num-col">Unsicher</th><th class="num-col">Nicht gef.</th><th class="num-col">Korrigiert</th><th class="num-col">Bestätigt</th><th class="num-col">Sonstige</th></tr></thead>
+            <tbody id="sqxt-body"></tbody>
+          </table>
+        </div>
+        <div class="erl-box">
+          <div class="erl-head">Erläuterung</div>
+          <ul id="sqxt-erl"></ul>
+        </div>
+      </div>
+
+      <div class="subhead">Datenfeld-Vergleich Datenpool ↔ SMILE/Ablage</div>
+      <p class="subhead-sub">Beispielhafter Ausschnitt einzelner Datenfeld-Vergleiche inkl. des vom EM vergebenen QSL sowie der Kann-/Mussfeld-Zuordnung je System (Beispielwerte aus dem Feldkatalog GOÄ) — filterbar nach Delta-Status und, nach Auswahl oben, nach Dok.-Art.</p>
+      <p class="validity-filter-hint" id="sd-dokart-hint" hidden></p>
+      <div class="filters">
+        <div class="filter-group" id="sd-filter">
+          <button class="filter-chip" type="button" data-d="alle" data-active="true">Alle Felder</button>
+          <button class="filter-chip" type="button" data-d="delta">Mit Delta</button>
+          <button class="filter-chip" type="button" data-d="sync">Ohne Delta</button>
+          <button class="filter-chip" type="button" data-d="mismatch">Anforderung EM ≠ SMILE</button>
+        </div>
+        <span class="filter-count" id="sd-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Beleg-ID</th><th>Dok.-Art</th><th>Datenfeld</th><th>EM-Anforderung</th><th>SMILE-Anforderung</th><th>QSL (EM)</th><th>Wert Datenpool</th><th>Wert SMILE / Ablage</th><th>Delta</th><th>Änderungstyp</th><th>Zeitpunkt</th></tr></thead>
+          <tbody id="sd-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="modal-backdrop" id="qsl-modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="qsl-modal-title">
+    <div class="modal-head">
+      <div>
+        <h2 class="modal-title" id="qsl-modal-title">QSL-Verteilung</h2>
+        <p class="modal-sub" id="qsl-modal-sub"></p>
+      </div>
+      <button type="button" class="modal-close" id="qsl-modal-close" aria-label="Schließen"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="donut-wrap">
+      <svg class="donut-svg" id="qsl-donut-svg" viewBox="0 0 100 100" role="img" aria-label="QSL-Verteilung als Donut-Diagramm"></svg>
+      <ul class="qsl-legend" id="qsl-legend"></ul>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+const ICONS = {
+  pie:'<path d="M12 2a10 10 0 1 0 10 10H12V2Z"/><path d="M12 2a10 10 0 0 1 10 10"/>',
+  close:'<path d="M6 6l12 12M18 6 6 18"/>',
+};
+function icon(name, cls){ return '<svg class="'+(cls||"icon")+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICONS[name]+'</svg>'; }
+function heute(){
+  const d = new Date();
+  return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+d.getFullYear();
+}
+function bar(pct, cls){
+  const c = pct>=95 ? "" : pct>=85 ? "warn" : "crit";
+  return '<span style="white-space:nowrap;"><span class="bar-track"><span class="bar-fill '+(cls||c)+'" style="width:'+Math.max(0,Math.min(100,pct))+'%;"></span></span><span class="bar-pct">'+pct.toFixed(1).replace(".",",")+'%</span></span>';
+}
+
+/* ============================================================
+   DATA — Tab 1: EM-Datenqualität (NK1 / NK2 / NK3)
+   ============================================================ */
+const EM_PIPELINE = [
+  { label:"Eingang", name:"Belegeingang", num:1284, sub:"Papier, Mail, KuPo, App" },
+  { label:"Stufe 1", name:"NK1", num:1284, sub:"Klassifikation" },
+  { label:"Stufe 2", name:"NK2", num:1198, sub:"Datenextraktion (ohne GOÄ/GOZ-Tabellen)" },
+  { label:"Stufe 3", name:"NK3", num:1142, sub:"Tabellenextraktion GOÄ/GOZ-Tabellen" },
+  { label:"Ziel", name:"Datenpool", num:1142, sub:"Tagesaktuell", pool:true },
+];
+
+const EM_FIELD_TRACE = [
+  /* NK1-Herkunft: NK1 klassifiziert ausschließlich Dok.-Art und VP (hier: VNR-Zuordnung) */
+  { belegId:"BLG-20261006-0041", feld:"VNR (VP-Zuordnung)", herkunft:"nk1", nk1:"880214-7", nk2:"880214-7", nk3:"880214-7", stufe:"unveraendert", art:"—" },
+  { belegId:"BLG-20261006-0041", feld:"Dok.-Art", herkunft:"nk1", nk1:"Rechnung", nk2:"Rechnung", nk3:"RE ambulant neu (3552)", stufe:"nk2-nk3", art:"Klassifikation präzisiert" },
+  { belegId:"BLG-20261006-0096", feld:"VNR (VP-Zuordnung)", herkunft:"nk1", nk1:"552310-2", nk2:"552310-9", nk3:"552310-9", stufe:"nk1-nk2", art:"Korrektur Erfassungsfehler" },
+
+  /* NK2-Herkunft: allgemeine Datenfelder ohne GOÄ/GOZ-Tabellenbezug — existieren erst ab NK2 */
+  { belegId:"BLG-20261006-0057", feld:"Rechnungsbetrag", herkunft:"nk2", nk2:"1.284,00 €", nk3:"1.248,00 €", stufe:"nk2-nk3", art:"Korrektur OCR-Fehllesung" },
+  { belegId:"BLG-20261006-0057", feld:"Behandlungsdatum", herkunft:"nk2", nk2:"03.09.2026", nk3:"03.09.2026", stufe:"unveraendert", art:"—" },
+  { belegId:"BLG-20261006-0063", feld:"Diagnosetext", herkunft:"nk2", nk2:"—", nk3:"Schulterarthrose", stufe:"nk2-nk3", art:"Vervollständigung (fehlte in NK2)" },
+  { belegId:"BLG-20261006-0074", feld:"Arzt-ID / LANR", herkunft:"nk2", nk2:"101814142", nk3:"101814142", stufe:"unveraendert", art:"—" },
+  { belegId:"BLG-20261006-0074", feld:"IBAN", herkunft:"nk2", nk2:"DE46660146…2398 61", nk3:"DE46660466…2398 61", stufe:"nk2-nk3", art:"Plausi-Korrektur Prüfziffer" },
+  { belegId:"BLG-20261006-0081", feld:"Name Versicherte:r", herkunft:"nk2", nk2:"Birgit Braun", nk3:"Birgit Braun", stufe:"unveraendert", art:"—" },
+
+  /* NK3-Herkunft: GOÄ/GOZ-Tabellenfelder — existieren ausschließlich ab NK3 (Tabellenextraktion) */
+  { belegId:"BLG-20261006-0063", feld:"GOÄ-Ziffer", herkunft:"nk3", nk3:"1200", stufe:"nk3-only", art:"Erstmalig in NK3 (Tabellenextraktion)" },
+  { belegId:"BLG-20261006-0081", feld:"Faktor-Grund", herkunft:"nk3", nk3:"HV", stufe:"nk3-only", art:"Erstmalig in NK3 (Tabellenextraktion)" },
+  { belegId:"BLG-20261006-0096", feld:"Leistungsziffern (Anzahl)", herkunft:"nk3", nk3:"3", stufe:"nk3-only", art:"Erstmalig in NK3 (Tabellenextraktion)" },
+];
+const EM_STUFE_LABEL = { "nk1-nk2":"NK1 → NK2", "nk2-nk3":"NK2 → NK3", "unveraendert":"Unverändert", "nk3-only":"Erstmalig NK3" };
+let activeEmStufe = "alle";
+
+/* ============================================================
+   DATA — Tab 2: Datenpool & Auswertbarkeit
+   ============================================================ */
+const QSL_KATEGORIEN = [
+  { key:"sicher", label:"Sicher gefunden", code:"AIDA: Resultstatus leer", slot:1 },
+  { key:"unsicher", label:"Unsicher gefunden", code:"AIDA: Resultstatus „U“", slot:2 },
+  { key:"nicht", label:"Nicht gefunden", code:"AIDA: Resultstatus „N“", slot:3 },
+  { key:"korrigiert", label:"Manuell korrigiert", code:"Prokey: „T“ / „C“", slot:4 },
+  { key:"bestaetigt", label:"Manuell bestätigt", code:"Prokey: „A“ / „M“ / „V“", slot:5 },
+  { key:"sonstige", label:"Sonstige Verfahren", code:"GTI „G“ · ISH/Padline „I“ · AV-Auto-Prokey „R“ → QSL 12", slot:6 },
+];
+const DATENPOOL_FELDER = [
+  { feld:"VNR", dokArt:"Alle Dok.-Arten", vollst:99.2, befuell:98.7, erkennung:99.5, quelle:"erfassung", interaktion:false, grund:null,
+    qsl:{ sicher:86, unsicher:6, nicht:1, korrigiert:3, bestaetigt:3, sonstige:1 }, n:1142 },
+  { feld:"Rechnungsbetrag", dokArt:"RE ambulant neu (3552)", vollst:98.4, befuell:96.1, erkennung:97.8, quelle:"av", interaktion:false, grund:null,
+    qsl:{ sicher:78, unsicher:10, nicht:2, korrigiert:6, bestaetigt:3, sonstige:1 }, n:612 },
+  { feld:"GOÄ-Ziffer", dokArt:"RE ambulant neu (3552)", vollst:97.9, befuell:95.3, erkennung:96.6, quelle:"av", interaktion:false, grund:null,
+    qsl:{ sicher:74, unsicher:12, nicht:2, korrigiert:7, bestaetigt:4, sonstige:1 }, n:612 },
+  { feld:"Diagnosetext", dokArt:"RE ambulant neu (3552)", vollst:89.1, befuell:82.4, erkennung:88.0, quelle:"av", interaktion:true, grund:"KLTB0570 – Pflichtfeld unvollständig befüllt",
+    qsl:{ sicher:38, unsicher:29, nicht:11, korrigiert:16, bestaetigt:5, sonstige:1 }, n:612 },
+  { feld:"Arzt-ID / LANR", dokArt:"Alle Dok.-Arten", vollst:96.8, befuell:95.0, erkennung:97.1, quelle:"erfassung", interaktion:false, grund:null,
+    qsl:{ sicher:81, unsicher:8, nicht:2, korrigiert:5, bestaetigt:3, sonstige:1 }, n:1142 },
+  { feld:"IBAN", dokArt:"Alle Dok.-Arten", vollst:94.6, befuell:91.2, erkennung:93.9, quelle:"erfassung", interaktion:true, grund:"KLTB0570 – Prüfziffer invalide",
+    qsl:{ sicher:62, unsicher:15, nicht:5, korrigiert:12, bestaetigt:5, sonstige:1 }, n:1142 },
+  { feld:"Faktor-Grund (HV/AB/BT/ST/NT)", dokArt:"RE ambulant neu (3552)", vollst:78.3, befuell:74.9, erkennung:85.2, quelle:"av", interaktion:true, grund:"KLTB0570 – Angabe fehlt bei Faktor ≠ 1,0",
+    qsl:{ sicher:22, unsicher:31, nicht:22, korrigiert:19, bestaetigt:5, sonstige:1 }, n:340 },
+  { feld:"Honorarminderung §6a", dokArt:"RE stationär neu (3549)", vollst:92.0, befuell:90.5, erkennung:91.7, quelle:"av", interaktion:false, grund:null,
+    qsl:{ sicher:68, unsicher:16, nicht:4, korrigiert:9, bestaetigt:2, sonstige:1 }, n:158 },
+  { feld:"Leistungserbringer (LE)", dokArt:"Alle Dok.-Arten", vollst:95.5, befuell:93.8, erkennung:94.4, quelle:"erfassung", interaktion:false, grund:null,
+    qsl:{ sicher:79, unsicher:9, nicht:2, korrigiert:6, bestaetigt:3, sonstige:1 }, n:1142 },
+  { feld:"Eingangskanal", dokArt:"Alle Dok.-Arten", vollst:100.0, befuell:100.0, erkennung:100.0, quelle:"erfassung", interaktion:false, grund:null,
+    qsl:{ sicher:97, unsicher:0, nicht:0, korrigiert:1, bestaetigt:1, sonstige:1 }, n:1142 },
+  { feld:"GOZ-Zahnleistung (Kombi)", dokArt:"RE Zahnarzt neu (3559)", vollst:81.7, befuell:76.3, erkennung:83.9, quelle:"av", interaktion:true, grund:"KLTB0570 – Zuordnung GOÄ/GOZ uneindeutig",
+    qsl:{ sicher:30, unsicher:27, nicht:18, korrigiert:20, bestaetigt:4, sonstige:1 }, n:86 },
+  { feld:"Behandlungsdatum", dokArt:"Alle Dok.-Arten", vollst:99.6, befuell:99.1, erkennung:99.4, quelle:"erfassung", interaktion:false, grund:null,
+    qsl:{ sicher:89, unsicher:4, nicht:1, korrigiert:3, bestaetigt:2, sonstige:1 }, n:1142 },
+];
+let activeDpFilter = "alle";
+let activeDpKanal = "alle";
+
+/* Medium_Sub_Typ (Eingangskanal): illustrative Modifikatoren je Kanal auf Vollständigkeit/
+   Befüllungsqualität/Erkennungsquote, angewandt auf den Alle-Kanäle-Basiswert des Datenfelds.
+   App/KuPo = strukturierter, digitaler Eingang (eher höhere Werte); Papier/Mail (Scan/Anhang) = eher niedriger. */
+const DP_KANAL_LABEL = { alle:"Alle Kanäle", papier:"Papier", mail:"Mail", kupo:"KuPo", app:"App" };
+const DP_KANAL_MODIFIER = {
+  papier:   { vollst:-2.6, befuell:-3.4, erkennung:-5.1 },
+  mail:     { vollst:-0.7, befuell:-1.0, erkennung:-1.4 },
+  kupo:     { vollst:+1.0, befuell:+1.3, erkennung:+1.6 },
+  app:      { vollst:+1.4, befuell:+1.8, erkennung:+2.1 },
+};
+function dpKanalValue(base, kanal, metric){
+  if(kanal==="alle") return base;
+  const mod = DP_KANAL_MODIFIER[kanal][metric];
+  return Math.max(0, Math.min(100, base + mod));
+}
+
+const AUSWERTUNGEN = [
+  { kat:"Erfassung", name:"Prüfung der Erfassung", beschreibung:"Klassifikation der Erfassungsart je Datensatz: Dok.-Art, VP, VNR oder AV (Datenextraktion).", status:"verfuegbar" },
+  { kat:"Änderung", name:"Prüfung der Änderungen", beschreibung:"Nachweis von Datenänderungen an VNR, Belegdaten und GO-Daten entlang der Verarbeitung.", status:"verfuegbar" },
+  { kat:"Vollständigkeit", name:"Prüfung der Füllung des Datenpools", beschreibung:"Anteil befüllter vs. erwarteter Datenfelder je Dok.-Art im Datenpool.", status:"verfuegbar" },
+  { kat:"Vollständigkeit", name:"Prüfung der Vollständigkeit der Daten", beschreibung:"Abgleich der bereitgestellten Datenfelder gegen das erwartete Soll-Feldset je Belegtyp.", status:"verfuegbar" },
+  { kat:"Qualität", name:"Prüfung der Richtigkeit (Plausiprüfung)", beschreibung:"Plausibilitätsprüfung der Dateninhalte — siehe Arbeitspaket „EM5.1“.", status:"in-arbeit" },
+  { kat:"Interaktion", name:"Kennzeichnung Interaktionsbedarf", beschreibung:"Markiert, ob und warum ein manueller Interaktionsbedarf besteht (z. B. KLTB0570).", status:"verfuegbar" },
+  { kat:"Qualität", name:"Auswertung EM QSL", beschreibung:"Auswertung der Qualitätsschlüssel (QSL) aus dem Eingangsmanagement.", status:"verfuegbar" },
+  { kat:"Reporting", name:"Mengenbericht je Dok.-Art", beschreibung:"Bericht mit Menge je DOK-Art, interaktionslos, NK2, NK3, Dokumente, Tabellen, Felder, VNR, VP.", status:"verfuegbar" },
+  { kat:"Kanal", name:"Auswertung Eingangskanal", beschreibung:"Auswertung nach Eingangskanal und Mediumsubtyp (Papier, Mail, KuPo, App, …).", status:"verfuegbar" },
+  { kat:"Struktur", name:"Auswertbarkeit „Neuer Datenpool“", beschreibung:"Großer Topf ohne feste Attribute bzw. Feldebene — strukturfreie Auswertbarkeit.", status:"in-arbeit" },
+  { kat:"Suche", name:"Auswertbarkeit von Inhalten", beschreibung:"Inhaltssuche über den Datenpool, z. B. nach Arzt-ID oder Leistungserbringer (LE).", status:"verfuegbar" },
+  { kat:"E2E", name:"E2E-Betrachtung EM / SMILE", beschreibung:"Vollständigkeitsprüfung über die Prozesskette: Dokumente vollständig, Tabelle vollständig.", status:"verfuegbar" },
+  { kat:"Reporting", name:"Häufigkeit je Dokumentenart", beschreibung:"Wie häufig eine Dokumentenart eingegangen ist und wie oft sie nachträglich geändert wurde.", status:"verfuegbar" },
+  { kat:"Vollständigkeit", name:"Vollständigkeitsquote je Dokumentenart", beschreibung:"Prozentuale Anzeige je Dokumentenart, wie vollständig ein Dokument vom EM nach SMILE kommt.", status:"verfuegbar" },
+  { kat:"Trace", name:"Nachträgliche Belegverfolgung", beschreibung:"Verfolgung des Belegs und der erfassten/geänderten Daten: Dokumente, VNR, VP, Tabellen, Felder.", status:"verfuegbar" },
+];
+const AV_STATUS_LABEL = { verfuegbar:"Verfügbar", "in-arbeit":"In Arbeit" };
+
+/* ============================================================
+   DATA — Tab 3: SMILE-Nachvollziehbarkeit
+   ============================================================ */
+const XT_HELLWERDE = [
+  { dokArt:"RE ambulant neu (3552)", g1:1847, g2:612, g3:58, g4:0, fokus:true },
+  { dokArt:"RE stationär neu (3549)", g1:203, g2:411, g3:189, g4:0, fokus:true },
+  { dokArt:"RE Zahnarzt neu (3559)", g1:96, g2:44, g3:12, g4:310, fokus:true },
+  { dokArt:"RE Kieferorthopädie neu (3567)", g1:512, g2:18, g3:0, g4:0, fokus:false },
+  { dokArt:"HKP Zahn neu (3501)", g1:88, g2:3, g3:0, g4:0, fokus:false },
+  { dokArt:"HKP KFO neu (3502)", g1:140, g2:7, g3:0, g4:0, fokus:false },
+];
+const KLTB_OVERVIEW = {
+  ohneGrund: 1292,
+  fehlendeAngaben: [
+    { feld:"Diagnosetext", anzahl:1860, kommentar:"KI-Extraktion unsicher, manuelle Nachprüfung nötig" },
+    { feld:"Faktor-Grund (HV/AB/BT/ST/NT)", anzahl:1512, kommentar:"Angabe fehlt bei Faktor ≠ 1,0" },
+    { feld:"IBAN-Prüfziffer", anzahl:804, kommentar:"Prüfziffer invalide, Korrekturlauf nötig" },
+    { feld:"GOZ-Zuordnung", anzahl:611, kommentar:"Zuordnung GOÄ/GOZ uneindeutig" },
+  ],
+};
+const OV_ERLAEUTERUNG = [
+  { lead:"Einordnung", text:"Stichprobenbetrachtung des KLTB0570-Abzugs zum "+heute()+" — kein Perioden- oder Gesamtaufkommen. Auf dieser Basis lässt sich das zusätzliche Automatisierungspotenzial hochrechnen." },
+  { lead:"Kernbefund", text:"Belege werden überwiegend mit konkretem Hellwerdegrund hell. Die übrigen Fälle benötigen das Zusammenspiel mehrerer Datenfelder bzw. eine manuelle Durchsicht." },
+  { lead:"Datenqualität als Hebel", text:"Die am häufigsten fehlenden Angaben stehen größtenteils bereits auf dem Beleg und müssten nur zuverlässig erkannt werden — Verbesserungen bei der Erkennung wirken sich unmittelbar auf die Dunkelquote aus." },
+];
+const XT_ERLAEUTERUNG = [
+  { lead:"Verteilung", text:"Ein Teil der Belege hat genau einen konkreten Hellwerdegrund, der Rest benötigt das Zusammenspiel mehrerer Hebel gleichzeitig." },
+  { lead:"Fokus-Dok.-Arten", text:"RE ambulant neu (3552), RE stationär neu (3549) und RE Zahnarzt neu (3559) (gelb markiert) zeigen die unterschiedlichen Muster exemplarisch und werden vertieft betrachtet." },
+  { lead:"Steuerungslogik", text:"Belege mit nur einem Hellwerdegrund lassen sich oft über gezielte Datenfeld-Umstellungen automatisieren, Mehrgrund-Belege eher über eine gestaffelte Dunkel-Treppe." },
+];
+const SMILE_DOCUMENTS = [
+  { docId:"DOC-8841205", dokArt:"RE ambulant neu (3552)", stand:"abgeschlossen", grund:null, zeit:heute()+" 07:12" },
+  { docId:"DOC-8841206", dokArt:"RE ambulant neu (3552)", stand:"hell", grund:"KLTB0570 – Pflichtfeld VNR fehlt", zeit:heute()+" 07:14" },
+  { docId:"DOC-8841207", dokArt:"RE stationär neu (3549)", stand:"verarbeitung", grund:null, zeit:heute()+" 07:20" },
+  { docId:"DOC-8841208", dokArt:"RE ambulant neu (3552)", stand:"hell", grund:"Plausi-Verstoß: Diagnoseangabe widersprüchlich", zeit:heute()+" 07:33" },
+  { docId:"DOC-8841209", dokArt:"RE Zahnarzt neu (3559)", stand:"hell", grund:"KLTB0570 – Zuordnung GOÄ/GOZ uneindeutig", zeit:heute()+" 07:41" },
+  { docId:"DOC-8841210", dokArt:"RE Kieferorthopädie neu (3567)", stand:"abgeschlossen", grund:null, zeit:heute()+" 07:52" },
+  { docId:"DOC-8841211", dokArt:"RE ambulant neu (3552)", stand:"eingegangen", grund:null, zeit:heute()+" 08:05" },
+  { docId:"DOC-8841212", dokArt:"HKP Zahn neu (3501)", stand:"hell", grund:"Unleserliches Dokument (OCR-Konfidenz < Schwelle)", zeit:heute()+" 08:09" },
+  { docId:"DOC-8841213", dokArt:"HKP KFO neu (3502)", stand:"abgeschlossen", grund:null, zeit:heute()+" 08:17" },
+  { docId:"DOC-8841214", dokArt:"RE stationär neu (3549)", stand:"hell", grund:"Mehrfachbeleg erkannt – Dublettenprüfung erforderlich", zeit:heute()+" 08:24" },
+  { docId:"DOC-8841215", dokArt:"RE ambulant neu (3552)", stand:"verarbeitung", grund:null, zeit:heute()+" 08:31" },
+  { docId:"DOC-8841216", dokArt:"RE ambulant neu (3552)", stand:"abgeschlossen", grund:null, zeit:heute()+" 08:38" },
+];
+const ST_STAND_LABEL = { eingegangen:"Eingegangen", verarbeitung:"In Verarbeitung", hell:"Hell (Interaktion)", abgeschlossen:"Abgeschlossen" };
+const ST_STAND_BADGE = { eingegangen:"info", verarbeitung:"warn", hell:"crit", abgeschlossen:"ok" };
+let activeStFilter = "alle";
+
+/* ============================================================
+   DATA — Tab 4: Anpassungen SMILE (Delta Datenpool ↔ SMILE/Ablage)
+   ============================================================ */
+/* emReq/smileReq: Kann-/Mussfeld-Zuordnung, als Beispiel- und Dummy-Werte aus dem
+   Modul "Feldkatalog GOÄ & KI" (Extraktionskatalog GOÄ, 378 Feldanforderungen)
+   entnommen — dort als "rel": "relevant" -> muss, "relevant bei Angabe" -> bedingt,
+   "optional" -> kann, je Feld/Entität klassifiziert. */
+const SMILE_DELTA = [
+  { belegId:"BLG-20261006-0041", dokArt:"RE ambulant neu (3552)", feld:"Rechnungsbetrag", qsl:"sicher", emReq:"bedingt", smileReq:"muss", pool:"1.248,00 €", smile:"1.248,00 €", delta:false, typ:"—", zeit:heute()+" 06:58" },
+  { belegId:"BLG-20261006-0057", dokArt:"RE ambulant neu (3552)", feld:"Diagnosetext", qsl:"sicher", emReq:"muss", smileReq:"muss", pool:"Schulterarthrose", smile:"Schulterarthrose, rechts", delta:true, typ:"Ergänzung", zeit:heute()+" 07:03" },
+  { belegId:"BLG-20261006-0063", dokArt:"RE ambulant neu (3552)", feld:"GOÄ-Ziffer", qsl:"sicher", emReq:"bedingt", smileReq:"muss", pool:"1200", smile:"1200", delta:false, typ:"—", zeit:heute()+" 07:09" },
+  { belegId:"BLG-20261006-0074", dokArt:"RE stationär neu (3549)", feld:"IBAN", qsl:"unsicher", emReq:"bedingt", smileReq:"bedingt", pool:"DE46660466…2398 61", smile:"DE46660466…2398 61", delta:false, typ:"—", zeit:heute()+" 07:15" },
+  { belegId:"BLG-20261006-0081", dokArt:"RE ambulant neu (3552)", feld:"Faktor-Grund", qsl:"unsicher", emReq:"kann", smileReq:"muss", pool:"HV", smile:"—", delta:true, typ:"Löschung", zeit:heute()+" 07:22" },
+  { belegId:"BLG-20261006-0096", dokArt:"RE Kieferorthopädie neu (3567)", feld:"VNR", qsl:"sicher", emReq:"muss", smileReq:"muss", pool:"552310-9", smile:"552310-9", delta:false, typ:"—", zeit:heute()+" 07:28" },
+  { belegId:"BLG-20261006-0103", dokArt:"RE stationär neu (3549)", feld:"Leistungserbringer (LE)", qsl:"korrigiert", emReq:"muss", smileReq:"muss", pool:"Dr. med. Sabine Koch", smile:"Praxis Koch, Dr. med. Sabine", delta:true, typ:"Korrektur", zeit:heute()+" 07:35" },
+  { belegId:"BLG-20261006-0117", dokArt:"RE stationär neu (3549)", feld:"Honorarminderung §6a", qsl:"bestaetigt", emReq:"bedingt", smileReq:"bedingt", pool:"15 % Minderung", smile:"15 % Minderung", delta:false, typ:"—", zeit:heute()+" 07:44" },
+  { belegId:"BLG-20261006-0124", dokArt:"HKP Zahn neu (3501)", feld:"Arzt-ID / LANR", qsl:"sicher", emReq:"muss", smileReq:"muss", pool:"101814142", smile:"101814142", delta:false, typ:"—", zeit:heute()+" 07:50" },
+  { belegId:"BLG-20261006-0131", dokArt:"RE Zahnarzt neu (3559)", feld:"GOZ-Zuordnung", qsl:"nicht", emReq:"muss", smileReq:"muss", pool:"offen", smile:"GOZ-Katalogleistung", delta:true, typ:"Ergänzung", zeit:heute()+" 07:58" },
+];
+const REQ_LABEL = { muss:"Mussfeld", bedingt:"Bedingtes Mussfeld", kann:"Kannfeld" };
+const REQ_LABEL_SHORT = { muss:"Muss", bedingt:"Bedingt", kann:"Kann" };
+const REQ_BADGE = { muss:"info", bedingt:"warn", kann:"offen" };
+let activeSdFilter = "alle";
+let selectedSqDokArt = null;
+
+const SQ_OVERVIEW_ERL = [
+  { lead:"Einordnung", text:"Vergleich der vom EM an den Datenpool übergebenen Werte (inkl. QSL und Kann-/Mussfeld-Zuordnung) gegen den tatsächlich in SMILE/Ablage verwendeten Wert, Stichprobe "+heute()+"." },
+  { lead:"Kernbefund", text:"Auch Felder mit „gutem“ QSL (sicher gefunden, manuell bestätigt) sind nicht automatisch deltafrei — ein Teil wird in SMILE dennoch verändert." },
+  { lead:"Zweiter Treiber", text:"Weicht die Kann-/Mussfeld-Zuordnung zwischen EM und SMILE ab (z. B. EM: Kannfeld, SMILE: Mussfeld), steigt das Delta-Risiko zusätzlich — unabhängig vom QSL." },
+  { lead:"Handlungsimplikation", text:"Ein Delta trotz „Sicher gefunden“ deutet auf eine nachgelagerte fachliche Korrektur oder eine Lücke in der QSL-Logik hin und sollte vorrangig untersucht werden." },
+];
+const SQ_MATRIX_ERL = [
+  { lead:"Lesart", text:"Je Dok.-Art und QSL die Anzahl Datenfelder, bei denen der SMILE/Ablage-Wert vom Datenpool-Wert abweicht." },
+  { lead:"Auffälligkeit", text:"Delta in der Spalte „Sicher“ ist der kritischste Fall — das Feld galt als automatisch verlässlich befüllt und musste trotzdem angepasst werden." },
+  { lead:"Nächster Schritt", text:"Dok.-Arten mit hohem Delta-Anteil bei „Sicher“ bzw. „Bestätigt“ sind vorrangige Kandidaten für eine Ursachenanalyse der QSL-Vergabe." },
+];
+const SQ_MATRIX = (function(){
+  const dokArten = ["RE ambulant neu (3552)","RE stationär neu (3549)","RE Zahnarzt neu (3559)","RE Kieferorthopädie neu (3567)","HKP Zahn neu (3501)","HKP KFO neu (3502)"];
+  const base = {
+    "RE ambulant neu (3552)": { sicher:14, unsicher:22, nicht:6, korrigiert:18, bestaetigt:4, sonstige:1 },
+    "RE stationär neu (3549)": { sicher:5, unsicher:9, nicht:3, korrigiert:11, bestaetigt:6, sonstige:0 },
+    "RE Zahnarzt neu (3559)": { sicher:3, unsicher:8, nicht:10, korrigiert:7, bestaetigt:1, sonstige:2 },
+    "RE Kieferorthopädie neu (3567)": { sicher:2, unsicher:3, nicht:1, korrigiert:2, bestaetigt:0, sonstige:0 },
+    "HKP Zahn neu (3501)": { sicher:1, unsicher:2, nicht:0, korrigiert:1, bestaetigt:0, sonstige:0 },
+    "HKP KFO neu (3502)": { sicher:1, unsicher:1, nicht:0, korrigiert:1, bestaetigt:0, sonstige:0 },
+  };
+  return dokArten.map(d=>Object.assign({ dokArt:d }, base[d]));
+})();
+const QSL_DELTA_OHNE = 455;
+
+/* ============================================================
+   RENDER — Tab 1: EM-Datenqualität
+   ============================================================ */
+function renderEmPipeline(){
+  document.getElementById("em-pipeline").innerHTML = EM_PIPELINE.map((s,i)=>
+    (i>0 ? '<span class="pipe-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>' : '') +
+    '<div class="pipe-stage'+(s.pool?' is-pool':'')+'">'+
+      '<div class="pipe-stage-label">'+esc(s.label)+'</div>'+
+      '<div class="pipe-stage-name">'+esc(s.name)+'</div>'+
+      '<div class="pipe-stage-num">'+s.num.toLocaleString("de-DE")+'</div>'+
+      '<div class="pipe-stage-sub">'+esc(s.sub)+'</div>'+
+    '</div>'
+  ).join("");
+}
+const EM_STUFE_BADGE = { "nk1-nk2":"warn", "nk2-nk3":"warn", "unveraendert":"ok", "nk3-only":"info" };
+function emCell(v){
+  return v==null ? '<span class="k-quelle" title="In dieser Stufe nicht erfasst">–</span>' : esc(v);
+}
+function renderEmKpi(){
+  const nk1Fields = EM_FIELD_TRACE.filter(r=>r.herkunft==="nk1");
+  const nk2PlusFields = EM_FIELD_TRACE.filter(r=>r.herkunft==="nk1"||r.herkunft==="nk2");
+  const comparable = EM_FIELD_TRACE.filter(r=>r.stufe!=="nk3-only");
+  const c1 = nk1Fields.filter(r=>r.stufe==="nk1-nk2").length;
+  const c2 = nk2PlusFields.filter(r=>r.stufe==="nk2-nk3").length;
+  const cu = EM_FIELD_TRACE.filter(r=>r.stufe==="unveraendert").length;
+  document.getElementById("em-kpi").innerHTML = [
+    ['Belege heute', EM_PIPELINE[0].num.toLocaleString("de-DE"), "info"],
+    ['Änderungsquote NK1→NK2', ((c1/nk1Fields.length)*100).toFixed(1).replace(".",",")+" % (von "+nk1Fields.length+" NK1-Feldern)", "warn"],
+    ['Änderungsquote NK2→NK3', ((c2/nk2PlusFields.length)*100).toFixed(1).replace(".",",")+" % (von "+nk2PlusFields.length+" vergleichbaren Feldern)", "warn"],
+    ['Unveränderte Felder', ((cu/comparable.length)*100).toFixed(1).replace(".",",")+" % (von "+comparable.length+" vergleichbaren Feldern)", "ok"],
+  ].map(([l,v,c])=>'<div class="kpi-tile"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></div>').join("");
+}
+function renderEmTable(){
+  const rows = activeEmStufe==="alle" ? EM_FIELD_TRACE : EM_FIELD_TRACE.filter(r=>r.stufe===activeEmStufe);
+  document.getElementById("em-count").textContent = rows.length+" von "+EM_FIELD_TRACE.length+" Feldern";
+  document.getElementById("em-body").innerHTML = rows.length ? rows.map(r=>
+    '<tr>'+
+      '<td class="mono">'+esc(r.belegId)+'</td>'+
+      '<td class="k-name">'+esc(r.feld)+'</td>'+
+      '<td>'+emCell(r.nk1)+'</td><td>'+emCell(r.nk2)+'</td><td>'+emCell(r.nk3)+'</td>'+
+      '<td><span class="badge '+EM_STUFE_BADGE[r.stufe]+'"><span class="dot"></span>'+EM_STUFE_LABEL[r.stufe]+'</span></td>'+
+      '<td class="k-quelle">'+esc(r.art)+'</td>'+
+    '</tr>'
+  ).join("") : '<tr><td colspan="7" class="cell-empty">Keine Felder in dieser Auswahl.</td></tr>';
+}
+function renderEm(){ renderEmPipeline(); renderEmKpi(); renderEmTable(); }
+
+/* ============================================================
+   RENDER — Tab 2: Datenpool & Auswertbarkeit
+   ============================================================ */
+function renderDpKpi(){
+  const avg = k => (DATENPOOL_FELDER.reduce((s,r)=>s+dpKanalValue(r[k],activeDpKanal,k),0)/DATENPOOL_FELDER.length);
+  const interaktion = DATENPOOL_FELDER.filter(r=>r.interaktion).length;
+  const kanalSuffix = activeDpKanal==="alle" ? "" : " · Kanal: "+DP_KANAL_LABEL[activeDpKanal];
+  document.getElementById("dp-kpi").innerHTML = [
+    ['Ø Vollständigkeit', avg("vollst").toFixed(1).replace(".",",")+" %", avg("vollst")>=90?"ok":"warn"],
+    ['Ø Befüllungsqualität', avg("befuell").toFixed(1).replace(".",",")+" %", avg("befuell")>=90?"ok":"warn"],
+    ['Ø Erkennungsquote', avg("erkennung").toFixed(1).replace(".",",")+" %", avg("erkennung")>=90?"ok":"warn"],
+    ['Datenfelder im Pool', "1.901", "info"],
+    ['Felder mit Interaktionsbedarf', interaktion+" von "+DATENPOOL_FELDER.length, interaktion?"crit":"ok"],
+    ['Stand', heute()+" · tagesaktuell"+kanalSuffix, "info"],
+  ].map(([l,v,c])=>'<div class="kpi-tile"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></div>').join("");
+}
+function renderDpTable(){
+  let rows = DATENPOOL_FELDER;
+  if(activeDpFilter==="erfassung") rows = rows.filter(r=>r.quelle==="erfassung");
+  else if(activeDpFilter==="av") rows = rows.filter(r=>r.quelle==="av");
+  else if(activeDpFilter==="interaktion") rows = rows.filter(r=>r.interaktion);
+  const kanalNote = activeDpKanal==="alle" ? "" : " · Kanal: "+DP_KANAL_LABEL[activeDpKanal];
+  document.getElementById("dp-count").textContent = rows.length+" von "+DATENPOOL_FELDER.length+" Datenfeldern"+kanalNote;
+  document.getElementById("dp-body").innerHTML = rows.length ? rows.map(r=>{
+    const vollst = dpKanalValue(r.vollst, activeDpKanal, "vollst");
+    const befuell = dpKanalValue(r.befuell, activeDpKanal, "befuell");
+    const erkennung = dpKanalValue(r.erkennung, activeDpKanal, "erkennung");
+    return '<tr>'+
+      '<td class="k-name">'+esc(r.feld)+'</td>'+
+      '<td class="k-quelle">'+esc(r.dokArt)+'</td>'+
+      '<td><button type="button" class="qsl-trigger" data-feld="'+esc(r.feld)+'" title="QSL-Verteilung anzeigen">'+bar(vollst)+icon("pie")+'</button></td>'+
+      '<td>'+bar(befuell)+'</td>'+
+      '<td>'+bar(erkennung)+'</td>'+
+      '<td><span class="badge info"><span class="dot"></span>'+(r.quelle==="av"?"AV (Datenextraktion)":"Erfassung")+'</span></td>'+
+      '<td>'+(r.interaktion ? '<span class="badge crit"><span class="dot"></span>'+esc(r.grund)+'</span>' : '<span class="badge ok"><span class="dot"></span>Kein Bedarf</span>')+'</td>'+
+    '</tr>';
+  }).join("") : '<tr><td colspan="7" class="cell-empty">Keine Datenfelder in dieser Auswahl.</td></tr>';
+  document.querySelectorAll("#dp-body .qsl-trigger").forEach(btn=>{
+    btn.addEventListener("click", ()=>openQslModal(btn.dataset.feld));
+  });
+}
+function renderAvTable(){
+  const q = (document.getElementById("av-search").value||"").trim().toLowerCase();
+  const rows = !q ? AUSWERTUNGEN : AUSWERTUNGEN.filter(a=>
+    (a.name+" "+a.beschreibung+" "+a.kat).toLowerCase().includes(q)
+  );
+  document.getElementById("av-count").textContent = rows.length+" von "+AUSWERTUNGEN.length+" Auswertungen";
+  document.getElementById("av-body").innerHTML = rows.length ? rows.map(a=>
+    '<tr>'+
+      '<td class="k-quelle">'+esc(a.kat)+'</td>'+
+      '<td class="k-name">'+esc(a.name)+'</td>'+
+      '<td>'+esc(a.beschreibung)+'</td>'+
+      '<td><span class="badge '+(a.status==="verfuegbar"?"ok":"warn")+'"><span class="dot"></span>'+AV_STATUS_LABEL[a.status]+'</span></td>'+
+    '</tr>'
+  ).join("") : '<tr><td colspan="4" class="cell-empty">Keine Auswertung gefunden.</td></tr>';
+}
+
+/* ---------- QSL-Verteilung: Donut-Modal ---------- */
+function donutSegments(dist, n){
+  const r = 40, cx = 50, cy = 50, sw = 16;
+  const circumference = 2*Math.PI*r;
+  const gap = 1.6;
+  let cumulative = 0;
+  const circles = QSL_KATEGORIEN.map(k=>{
+    const pct = dist[k.key]||0;
+    if(pct<=0) return "";
+    const segLen = Math.max(0, (pct/100)*circumference - gap);
+    const offset = circumference - cumulative;
+    cumulative += (pct/100)*circumference;
+    return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="var(--qsl-'+k.slot+')" stroke-width="'+sw+'" '+
+      'stroke-dasharray="'+segLen.toFixed(2)+' '+(circumference-segLen).toFixed(2)+'" stroke-dashoffset="'+offset.toFixed(2)+'" '+
+      'transform="rotate(-90 '+cx+' '+cy+')"><title>'+esc(k.label)+': '+pct+' % (n='+Math.round(n*pct/100).toLocaleString("de-DE")+')</title></circle>';
+  }).join("");
+  return circles+
+    '<text x="'+cx+'" y="'+(cy-2)+'" text-anchor="middle" class="donut-center-num">'+n.toLocaleString("de-DE")+'</text>'+
+    '<text x="'+cx+'" y="'+(cy+11)+'" text-anchor="middle" class="donut-center-lbl">Datensätze</text>';
+}
+function openQslModal(feldName){
+  const row = DATENPOOL_FELDER.find(r=>r.feld===feldName);
+  if(!row) return;
+  document.getElementById("qsl-modal-title").textContent = "QSL-Verteilung — "+feldName;
+  document.getElementById("qsl-modal-sub").textContent = row.dokArt+" · Vollständigkeit "+row.vollst.toFixed(1).replace(".",",")+" % · "+row.n.toLocaleString("de-DE")+" betrachtete Datensätze";
+  document.getElementById("qsl-donut-svg").innerHTML = donutSegments(row.qsl, row.n);
+  document.getElementById("qsl-legend").innerHTML = QSL_KATEGORIEN.map(k=>{
+    const pct = row.qsl[k.key]||0;
+    const count = Math.round(row.n*pct/100);
+    return '<li><span class="qsl-swatch" style="background:var(--qsl-'+k.slot+');"></span>'+
+      '<span><span class="qsl-legend-label">'+esc(k.label)+'</span>'+
+      '<span class="qsl-legend-val">'+pct+' % · '+count.toLocaleString("de-DE")+'</span>'+
+      '<span class="qsl-legend-code">'+esc(k.code)+'</span></span></li>';
+  }).join("");
+  document.getElementById("qsl-modal").hidden = false;
+}
+function closeQslModal(){ document.getElementById("qsl-modal").hidden = true; }
+document.getElementById("qsl-modal-close").addEventListener("click", closeQslModal);
+document.getElementById("qsl-modal").addEventListener("click", e=>{
+  if(e.target.id==="qsl-modal") closeQslModal();
+});
+document.addEventListener("keydown", e=>{
+  if(e.key==="Escape" && !document.getElementById("qsl-modal").hidden) closeQslModal();
+});
+
+function renderDatenpool(){ renderDpKpi(); renderDpTable(); renderAvTable(); }
+
+/* ============================================================
+   RENDER — Tab 3: SMILE-Nachvollziehbarkeit
+   ============================================================ */
+let selectedXtDokArt = null;
+
+function renderStKpi(){
+  const mitGrund = XT_HELLWERDE.reduce((s,r)=>s+r.g1+r.g2+r.g3+r.g4,0);
+  const gesamt = mitGrund + KLTB_OVERVIEW.ohneGrund;
+  document.getElementById("st-kpi").innerHTML = [
+    ['KLTB0570-Abzug', heute(), "info"],
+    ['Betrachtete Dokumente', gesamt.toLocaleString("de-DE"), "info"],
+    ['Betrachtete Dok.-Arten', String(XT_HELLWERDE.length), "info"],
+    ['Mit konkretem Hellwerdegrund', ((mitGrund/gesamt)*100).toFixed(0)+" %", "warn"],
+  ].map(([l,v,c])=>'<div class="kpi-tile"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></div>').join("");
+}
+
+function renderOverview(){
+  const mitGrund = XT_HELLWERDE.reduce((s,r)=>s+r.g1+r.g2+r.g3+r.g4,0);
+  const ohneGrund = KLTB_OVERVIEW.ohneGrund;
+  const gesamt = mitGrund + ohneGrund;
+  const rows = [
+    { section:"1. Was haben wir betrachtet?" },
+    { kat:"Betrachtete Dokumente", anzahl:gesamt.toLocaleString("de-DE"), kommentar:"KLTB0570-Abzug, Stichprobe "+heute() },
+    { kat:"Betrachtete Dok.-Arten", anzahl:String(XT_HELLWERDE.length), kommentar:"" },
+    { section:"2. Warum werden Dokumente hell?" },
+    { kat:"… mit konkretem Hellwerdegrund", anzahl:mitGrund.toLocaleString("de-DE"), kommentar:((mitGrund/gesamt)*100).toFixed(0)+" % der betrachteten Dokumente" },
+    { kat:"… ohne konkreten Hellwerdegrund", anzahl:ohneGrund.toLocaleString("de-DE"), kommentar:((ohneGrund/gesamt)*100).toFixed(0)+" % der betrachteten Dokumente" },
+    { section:"3. Welche Angaben fehlen am häufigsten?" },
+  ].concat(KLTB_OVERVIEW.fehlendeAngaben.map(f=>({ kat:f.feld, anzahl:f.anzahl.toLocaleString("de-DE"), kommentar:f.kommentar })));
+
+  document.getElementById("ov-body").innerHTML = rows.map(r=>
+    r.section ? '<tr class="ov-section"><td colspan="3">'+esc(r.section)+'</td></tr>'
+    : '<tr><td class="k-name">'+esc(r.kat)+'</td><td class="ov-num">'+esc(r.anzahl)+'</td><td class="k-quelle">'+esc(r.kommentar)+'</td></tr>'
+  ).join("");
+
+  document.getElementById("ov-erl").innerHTML = OV_ERLAEUTERUNG.map(e=>'<li><b>'+esc(e.lead)+':</b> '+esc(e.text)+'</li>').join("");
+}
+
+function renderCrosstab(){
+  document.getElementById("xt-body").innerHTML = XT_HELLWERDE.map(r=>{
+    const selected = r.dokArt===selectedXtDokArt;
+    return '<tr class="row-clickable'+(r.fokus?" row-fokus":"")+(selected?" row-selected":"")+'" data-dokart="'+esc(r.dokArt)+'">'+
+      '<td class="k-name">'+esc(r.dokArt)+(r.fokus?' <span class="badge info">Fokus</span>':'')+'</td>'+
+      '<td class="ov-num">'+r.g1.toLocaleString("de-DE")+'</td>'+
+      '<td class="ov-num">'+r.g2.toLocaleString("de-DE")+'</td>'+
+      '<td class="ov-num">'+r.g3.toLocaleString("de-DE")+'</td>'+
+      '<td class="ov-num">'+r.g4.toLocaleString("de-DE")+'</td>'+
+    '</tr>';
+  }).join("") + '<tr class="ov-total"><td class="k-name">Gesamt</td>'+
+    ["g1","g2","g3","g4"].map(k=>'<td class="ov-num">'+XT_HELLWERDE.reduce((s,r)=>s+r[k],0).toLocaleString("de-DE")+'</td>').join("")+
+  '</tr>';
+
+  document.querySelectorAll("#xt-body tr.row-clickable").forEach(tr=>{
+    tr.addEventListener("click", ()=>{
+      const d = tr.dataset.dokart;
+      selectedXtDokArt = (selectedXtDokArt===d) ? null : d;
+      renderCrosstab();
+      renderStTable();
+    });
+  });
+
+  document.getElementById("xt-erl").innerHTML = XT_ERLAEUTERUNG.map(e=>'<li><b>'+esc(e.lead)+':</b> '+esc(e.text)+'</li>').join("");
+}
+
+function renderStTable(){
+  let rows = activeStFilter==="alle" ? SMILE_DOCUMENTS : SMILE_DOCUMENTS.filter(r=>r.stand===activeStFilter);
+  if(selectedXtDokArt) rows = rows.filter(r=>r.dokArt===selectedXtDokArt);
+
+  const hint = document.getElementById("st-dokart-hint");
+  if(selectedXtDokArt){
+    hint.hidden = false;
+    hint.textContent = "Gefiltert auf Dok.-Art „"+selectedXtDokArt+"“ ("+rows.length+" von "+SMILE_DOCUMENTS.length+" Document IDs) — Klick auf die Dok.-Art oben erneut, um den Filter aufzuheben.";
+  } else {
+    hint.hidden = true;
+  }
+
+  document.getElementById("st-count").textContent = rows.length+" von "+SMILE_DOCUMENTS.length+" Document IDs";
+  document.getElementById("st-body").innerHTML = rows.length ? rows.map(r=>
+    '<tr>'+
+      '<td class="mono">'+esc(r.docId)+'</td>'+
+      '<td class="k-quelle">'+esc(r.dokArt)+'</td>'+
+      '<td><span class="badge '+ST_STAND_BADGE[r.stand]+'"><span class="dot"></span>'+ST_STAND_LABEL[r.stand]+'</span></td>'+
+      '<td>'+(r.grund ? esc(r.grund) : '<span class="k-quelle">—</span>')+'</td>'+
+      '<td class="mono">'+esc(r.zeit)+'</td>'+
+    '</tr>'
+  ).join("") : '<tr><td colspan="5" class="cell-empty">Keine Document IDs in dieser Auswahl.</td></tr>';
+}
+function renderSmileTrace(){ renderStKpi(); renderOverview(); renderCrosstab(); renderStTable(); }
+
+/* ============================================================
+   RENDER — Tab 4: Anpassungen SMILE
+   ============================================================ */
+function qslLabel(key){ const k = QSL_KATEGORIEN.find(x=>x.key===key); return k ? k.label : key; }
+function qslSlot(key){ const k = QSL_KATEGORIEN.find(x=>x.key===key); return k ? k.slot : 1; }
+
+function renderSdKpi(){
+  const total = SMILE_DELTA.length;
+  const delta = SMILE_DELTA.filter(r=>r.delta).length;
+  const sicherDelta = SMILE_DELTA.filter(r=>r.delta && r.qsl==="sicher").length;
+  const reqMismatch = SMILE_DELTA.filter(r=>r.emReq!==r.smileReq).length;
+  document.getElementById("sd-kpi").innerHTML = [
+    ['Felder geprüft (heute)', total.toLocaleString("de-DE"), "info"],
+    ['Felder mit Delta', delta.toLocaleString("de-DE"), "crit"],
+    ['Felder synchron', (total-delta).toLocaleString("de-DE"), "ok"],
+    ['Delta-Quote', ((delta/total)*100).toFixed(1).replace(".",",")+" %", delta?"warn":"ok"],
+    ['Delta trotz „Sicher gefunden“', sicherDelta.toLocaleString("de-DE"), sicherDelta?"crit":"ok"],
+    ['Anforderung EM ≠ SMILE', reqMismatch.toLocaleString("de-DE"), reqMismatch?"warn":"ok"],
+  ].map(([l,v,c])=>'<div class="kpi-tile"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></div>').join("");
+}
+
+function renderSqOverview(){
+  const col = k => SQ_MATRIX.reduce((s,r)=>s+r[k],0);
+  const perKat = QSL_KATEGORIEN.map(k=>({ label:k.label, count: col(k.key) }));
+  const gesamtDelta = perKat.reduce((s,k)=>s+k.count,0);
+  const geprueft = gesamtDelta + QSL_DELTA_OHNE;
+
+  const mismatches = SMILE_DELTA.filter(r=>r.emReq!==r.smileReq);
+  const mismatchCombos = {};
+  mismatches.forEach(r=>{
+    const key = r.emReq+"->"+r.smileReq;
+    mismatchCombos[key] = (mismatchCombos[key]||0) + 1;
+  });
+  const mismatchWithDelta = mismatches.filter(r=>r.delta).length;
+
+  const rows = [
+    { section:"1. Was haben wir betrachtet?" },
+    { kat:"Geprüfte Datenfeld-Vergleiche", anzahl:geprueft.toLocaleString("de-DE"), kommentar:"Datenpool vs. SMILE/Ablage, Stichprobe "+heute() },
+    { kat:"Davon mit Delta zur Ablage", anzahl:gesamtDelta.toLocaleString("de-DE"), kommentar:((gesamtDelta/geprueft)*100).toFixed(1).replace(".",",")+" % aller geprüften Felder" },
+    { section:"2. Bei welchem QSL gab es wie viel Delta?" },
+  ].concat(perKat.map(k=>({ kat:k.label, anzahl:k.count.toLocaleString("de-DE"), kommentar:((k.count/gesamtDelta)*100).toFixed(0)+" % aller Delta-Fälle" })))
+  .concat([
+    { section:"3. Wo weicht die Kann-/Mussfeld-Zuordnung zwischen EM und SMILE ab?" },
+    { kat:"Datenfelder mit abweichender Zuordnung", anzahl:mismatches.length+" von "+SMILE_DELTA.length, kommentar:"Beispiel-Stichprobe im Vergleich unten" },
+    { kat:"Davon mit Delta zur Ablage", anzahl:mismatchWithDelta+" von "+mismatches.length, kommentar:"abweichende Zuordnung korreliert mit erhöhtem Delta-Risiko" },
+  ])
+  .concat(Object.keys(mismatchCombos).map(key=>{
+    const [em,smile] = key.split("->");
+    return { kat:"EM „"+REQ_LABEL[em]+"“ → SMILE „"+REQ_LABEL[smile]+"“", anzahl:String(mismatchCombos[key]), kommentar:"Quelle: Feldkatalog GOÄ (Beispielwerte)" };
+  }));
+
+  document.getElementById("sqov-body").innerHTML = rows.map(r=>
+    r.section ? '<tr class="ov-section"><td colspan="3">'+esc(r.section)+'</td></tr>'
+    : '<tr><td class="k-name">'+esc(r.kat)+'</td><td class="ov-num">'+esc(r.anzahl)+'</td><td class="k-quelle">'+esc(r.kommentar)+'</td></tr>'
+  ).join("");
+  document.getElementById("sqov-erl").innerHTML = SQ_OVERVIEW_ERL.map(e=>'<li><b>'+esc(e.lead)+':</b> '+esc(e.text)+'</li>').join("");
+}
+
+function renderSqMatrix(){
+  document.getElementById("sqxt-body").innerHTML = SQ_MATRIX.map(r=>{
+    const selected = r.dokArt===selectedSqDokArt;
+    return '<tr class="row-clickable'+(selected?" row-selected":"")+'" data-dokart="'+esc(r.dokArt)+'">'+
+      '<td class="k-name">'+esc(r.dokArt)+'</td>'+
+      '<td class="ov-num">'+r.sicher+'</td>'+
+      '<td class="ov-num">'+r.unsicher+'</td>'+
+      '<td class="ov-num">'+r.nicht+'</td>'+
+      '<td class="ov-num">'+r.korrigiert+'</td>'+
+      '<td class="ov-num">'+r.bestaetigt+'</td>'+
+      '<td class="ov-num">'+r.sonstige+'</td>'+
+    '</tr>';
+  }).join("") + '<tr class="ov-total"><td class="k-name">Gesamt</td>'+
+    ["sicher","unsicher","nicht","korrigiert","bestaetigt","sonstige"].map(k=>'<td class="ov-num">'+SQ_MATRIX.reduce((s,r)=>s+r[k],0)+'</td>').join("")+
+  '</tr>';
+
+  document.querySelectorAll("#sqxt-body tr.row-clickable").forEach(tr=>{
+    tr.addEventListener("click", ()=>{
+      const d = tr.dataset.dokart;
+      selectedSqDokArt = (selectedSqDokArt===d) ? null : d;
+      renderSqMatrix();
+      renderSdTable();
+    });
+  });
+
+  document.getElementById("sqxt-erl").innerHTML = SQ_MATRIX_ERL.map(e=>'<li><b>'+esc(e.lead)+':</b> '+esc(e.text)+'</li>').join("");
+}
+
+function reqBadge(req, mismatch){
+  return '<span class="badge badge--sm '+REQ_BADGE[req]+'" title="'+esc(REQ_LABEL[req])+'">'+REQ_LABEL_SHORT[req]+'</span>'+
+    (mismatch ? ' <span class="badge badge--sm crit" title="Kann-/Mussfeld-Zuordnung weicht vom EM-Datenfeld ab">≠ EM</span>' : '');
+}
+function renderSdTable(){
+  let rows = SMILE_DELTA;
+  if(activeSdFilter==="delta") rows = rows.filter(r=>r.delta);
+  else if(activeSdFilter==="sync") rows = rows.filter(r=>!r.delta);
+  else if(activeSdFilter==="mismatch") rows = rows.filter(r=>r.emReq!==r.smileReq);
+  if(selectedSqDokArt) rows = rows.filter(r=>r.dokArt===selectedSqDokArt);
+
+  const hint = document.getElementById("sd-dokart-hint");
+  if(selectedSqDokArt){
+    hint.hidden = false;
+    hint.textContent = "Gefiltert auf Dok.-Art „"+selectedSqDokArt+"“ ("+rows.length+" von "+SMILE_DELTA.length+" Datenfeldern) — Klick auf die Dok.-Art oben erneut, um den Filter aufzuheben.";
+  } else {
+    hint.hidden = true;
+  }
+
+  document.getElementById("sd-count").textContent = rows.length+" von "+SMILE_DELTA.length+" Datenfeldern";
+  document.getElementById("sd-body").innerHTML = rows.length ? rows.map(r=>
+    '<tr>'+
+      '<td class="mono">'+esc(r.belegId)+'</td>'+
+      '<td class="k-quelle">'+esc(r.dokArt)+'</td>'+
+      '<td class="k-name">'+esc(r.feld)+'</td>'+
+      '<td>'+reqBadge(r.emReq, false)+'</td>'+
+      '<td>'+reqBadge(r.smileReq, r.emReq!==r.smileReq)+'</td>'+
+      '<td><span class="qsl-swatch" style="background:var(--qsl-'+qslSlot(r.qsl)+'); display:inline-block; vertical-align:-1px; margin-right:6px;"></span>'+esc(qslLabel(r.qsl))+'</td>'+
+      '<td>'+esc(r.pool)+'</td>'+
+      '<td>'+esc(r.smile)+'</td>'+
+      '<td>'+(r.delta ? '<span class="badge crit"><span class="dot"></span>Delta erkannt</span>' : '<span class="badge ok"><span class="dot"></span>Synchron</span>')+'</td>'+
+      '<td class="k-quelle">'+esc(r.typ)+'</td>'+
+      '<td class="mono">'+esc(r.zeit)+'</td>'+
+    '</tr>'
+  ).join("") : '<tr><td colspan="11" class="cell-empty">Keine Datenfelder in dieser Auswahl.</td></tr>';
+}
+function renderSmileDelta(){ renderSdKpi(); renderSqOverview(); renderSqMatrix(); renderSdTable(); }
+
+/* ============================================================
+   INIT / EVENTS
+   ============================================================ */
+function switchTab(tab){
+  document.querySelectorAll(".tab-btn").forEach(b=>b.dataset.active = (b.dataset.tab===tab) ? "true":"false");
+  ["em","datenpool","smile-trace","smile-delta"].forEach(v=>{
+    document.getElementById("view-"+v).hidden = (v!==tab);
+  });
+}
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>switchTab(btn.dataset.tab));
+});
+
+document.getElementById("em-filter").querySelectorAll(".filter-chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    activeEmStufe = chip.dataset.stufe;
+    document.querySelectorAll("#em-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
+    renderEmTable();
+  });
+});
+
+document.getElementById("dp-filter").querySelectorAll(".filter-chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    activeDpFilter = chip.dataset.f;
+    document.querySelectorAll("#dp-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
+    renderDpTable();
+  });
+});
+document.getElementById("dp-kanal-filter").querySelectorAll(".filter-chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    activeDpKanal = chip.dataset.kanal;
+    document.querySelectorAll("#dp-kanal-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
+    renderDpKpi(); renderDpTable();
+  });
+});
+document.getElementById("av-search").addEventListener("input", renderAvTable);
+
+document.getElementById("st-filter").querySelectorAll(".filter-chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    activeStFilter = chip.dataset.s;
+    document.querySelectorAll("#st-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
+    renderStTable();
+  });
+});
+
+document.getElementById("sd-filter").querySelectorAll(".filter-chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    activeSdFilter = chip.dataset.d;
+    document.querySelectorAll("#sd-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
+    renderSdTable();
+  });
+});
+
+renderEm();
+renderDatenpool();
+renderSmileTrace();
+renderSmileDelta();
+
+/* Theme toggle: cycles system -> light -> dark -> system */
+const root = document.documentElement;
+function currentThemeState(){ return root.getAttribute("data-theme"); }
+document.getElementById("btn-theme").addEventListener("click", ()=>{
+  const cur = currentThemeState();
+  if(cur==="dark"){ root.removeAttribute("data-theme"); }
+  else if(cur==="light"){ root.setAttribute("data-theme","dark"); }
+  else { root.setAttribute("data-theme","light"); }
+});
+
+})();
+</script>
+</body>
+</html>
