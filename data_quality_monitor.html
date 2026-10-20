@@ -151,8 +151,17 @@
   .badge.crit{background:var(--c-crit-bg); color:var(--c-crit);} .badge.crit .dot{background:var(--c-crit);}
   .badge.offen{background:var(--c-offen-bg); color:var(--c-offen);} .badge.offen .dot{background:var(--c-offen);}
   .badge.info{background:var(--c-info-bg); color:var(--c-info);} .badge.info .dot{background:var(--c-info);}
-  .col-toggle-btn{appearance:none; border:1px solid transparent; cursor:pointer; font-family:inherit; transition:filter .12s ease;}
-  .col-toggle-btn:hover{filter:brightness(0.94); border-color:currentColor;}
+  .col-toggle-btn{
+    appearance:none; cursor:pointer; font-family:inherit; border:1.5px solid currentColor;
+    box-shadow:0 1px 2px rgba(20,25,40,.08); transition:transform .1s ease, box-shadow .12s ease, filter .12s ease;
+  }
+  .col-toggle-btn:hover{filter:brightness(0.95); transform:translateY(-1px); box-shadow:0 3px 8px rgba(20,25,40,.14);}
+  .col-toggle-btn:active{transform:translateY(0); box-shadow:0 1px 2px rgba(20,25,40,.1);}
+  .col-toggle-btn .icon{width:13px; height:13px;}
+  .av-visible-cols{display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:-6px 0 14px; font-size:.78rem; color:var(--ink-soft);}
+  .av-visible-cols b{color:var(--ink); font-weight:700;}
+  .av-visible-cols .col-chip{display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; background:var(--c-ok-bg); color:var(--c-ok); font-weight:700; font-size:.72rem;}
+  .av-visible-cols .col-chip.is-off{background:var(--c-offen-bg); color:var(--c-offen); text-decoration:line-through; opacity:.75;}
 
   /* ---------- Tables ---------- */
   .table-wrap{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow-x:auto; box-shadow:var(--shadow-sm); margin-bottom:16px;}
@@ -392,7 +401,8 @@
       </div>
 
       <div class="subhead">Auswertungskatalog</div>
-      <p class="subhead-sub">Beispielhafte Auswertungsmöglichkeiten des DQM auf dem Datenpool.</p>
+      <p class="subhead-sub">Beispielhafte Auswertungsmöglichkeiten des DQM auf dem Datenpool. Die Einträge der Kategorie „Anzeige" sind klickbar (Aktiv/Inaktiv) und blenden die jeweilige Spalte im Datenpool-Dashboard oben ein oder aus.</p>
+      <div class="av-visible-cols" id="av-visible-cols"></div>
       <div class="filters">
         <input class="filter-search" id="av-search" type="search" placeholder="Auswertungskatalog durchsuchen…">
         <span class="filter-count" id="av-count"></span>
@@ -494,6 +504,8 @@ function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,
 const ICONS = {
   pie:'<path d="M12 2a10 10 0 1 0 10 10H12V2Z"/><path d="M12 2a10 10 0 0 1 10 10"/>',
   close:'<path d="M6 6l12 12M18 6 6 18"/>',
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+  'eye-off':'<path d="M3 3l18 18"/><path d="M10.6 5.2A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a16.6 16.6 0 0 1-3.2 4.1M6.5 6.6C3.7 8.4 2 12 2 12s3.5 7 10 7a9.9 9.9 0 0 0 3.4-.6"/><path d="M14.1 14.1a3 3 0 1 1-4.2-4.2"/>',
 };
 function icon(name, cls){ return '<svg class="'+(cls||"icon")+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICONS[name]+'</svg>'; }
 function heute(){
@@ -999,15 +1011,22 @@ function renderDpTable(){
     btn.addEventListener("click", ()=>openQslModal(btn.dataset.rowid));
   });
 }
+function renderAvVisibleCols(){
+  document.getElementById("av-visible-cols").innerHTML =
+    '<b>Sichtbare Spalten im Datenpool-Dashboard:</b>'+
+    DP_COLUMNS.map(c=>'<span class="col-chip'+(dpColumnState[c.key]?"":" is-off")+'">'+esc(c.label)+'</span>').join("");
+}
 function renderAvTable(){
+  renderAvVisibleCols();
   const q = (document.getElementById("av-search").value||"").trim().toLowerCase();
   const rows = !q ? AUSWERTUNGEN : AUSWERTUNGEN.filter(a=>
     (a.name+" "+a.beschreibung+" "+a.kat).toLowerCase().includes(q)
   );
   document.getElementById("av-count").textContent = rows.length+" von "+AUSWERTUNGEN.length+" Auswertungen";
   document.getElementById("av-body").innerHTML = rows.length ? rows.map(a=>{
+    const on = a.col ? dpColumnState[a.col] : null;
     const statusCell = a.col
-      ? '<button type="button" class="col-toggle-btn badge '+(dpColumnState[a.col]?"ok":"offen")+'" data-col="'+a.col+'"><span class="dot"></span>'+(dpColumnState[a.col]?"Aktiv":"Inaktiv")+'</button>'
+      ? '<button type="button" class="col-toggle-btn badge '+(on?"ok":"offen")+'" data-col="'+a.col+'">'+icon(on?"eye":"eye-off")+(on?"Aktiv":"Inaktiv")+'</button>'
       : '<span class="badge '+(a.status==="verfuegbar"?"ok":"warn")+'"><span class="dot"></span>'+AV_STATUS_LABEL[a.status]+'</span>';
     return '<tr>'+
       '<td class="k-quelle">'+esc(a.kat)+'</td>'+
