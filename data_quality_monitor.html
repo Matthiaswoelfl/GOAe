@@ -386,7 +386,7 @@
           </button>
         </div>
       </div>
-      <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit, Befüllungsqualität und Erkennungsquote je angefordertem Datenfeld (inkl. AV-Zielstatus aus dem Extraktionskatalog). Filterbar nach Dok.-Art, AV-Zielstatus, Datenpool-Stand und Eingangskanal. Klick auf die Vollständigkeit öffnet die QSL-Verteilung inkl. Qualitätsschlüssel je Feld.</p>
+      <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit, Befüllungsqualität und Erkennungsquote je angefordertem Datenfeld (inkl. AV-Zielstatus aus dem Extraktionskatalog). Filterbar nach Dok.-Art, AV-Zielstatus, Datenpool-Stand, Eingangskanal, GO-Ziffer und VNR. Klick auf die Vollständigkeit öffnet die QSL-Verteilung inkl. Qualitätsschlüssel je Feld.</p>
       <div class="filters">
         <span class="filter-dim-label">Dok.-Art</span>
         <div class="filter-group" id="dp-dokart-filter">
@@ -435,6 +435,11 @@
         <input class="filter-search" id="dp-ziffer-search" type="search" placeholder="z. B. 1200 (Sonographie)…">
       </div>
       <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht aus und zeigt stattdessen je Dok.-Art eine Zeile mit den Auswertungen speziell für die gefundene(n) GO-Ziffer(n).</p>
+      <div class="filters">
+        <span class="filter-dim-label">VNR-Suche</span>
+        <input class="filter-search" id="dp-vnr-search" type="search" placeholder="Versicherungsnummer eingeben, z. B. 552310-9…">
+      </div>
+      <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht aus und zeigt stattdessen alle im Datenpool vorliegenden eingereichten Belege dieser VNR mit ihren jeweiligen Datenfeld-Auswertungen (geht Dok.-Art- und GO-Ziffer-Suche vor).</p>
       <div class="table-wrap" id="dp-table-wrap">
         <table class="data-table">
           <thead id="dp-thead"></thead>
@@ -971,6 +976,7 @@ let activeDpDokArt = "alle";
 let activeDpZielstatus = "alle";
 let activeDpKanal = "alle";
 let dpZifferQuery = "";
+let dpVnrQuery = "";
 
 /* GO-Ziffer-Suche: echte GOÄneu-Ziffern aus dem Gebührenverzeichnis (Modul Belegwerkstatt).
    Standardmäßig tauchen GO-Ziffern NICHT in der Datenfeld-Übersicht auf — erst eine Suche hier
@@ -1014,36 +1020,74 @@ function matchGoZiffern(query){
   if(!q) return [];
   return GO_ZIFFERN.filter(z=>z.nr.toLowerCase().startsWith(q) || z.bez.toLowerCase().includes(q));
 }
+/* Gemeinsame deterministische Illustrativ-Metrik-Erzeugung für GO-Ziffer- und VNR-Suche:
+   aus einem beliebigen Seed-String werden stabile, aber plausibel variierende Vollständigkeit/
+   Befüllungsqualität/Erkennungsquote sowie eine QSL-Verteilung abgeleitet. */
+function dpGenerateMetrics(seed){
+  const h = salt => dpZifferHash(seed+"|"+salt);
+  const base = 80 + (h("")%1700)/100;
+  const vollst = Math.max(55, Math.min(99.8, base + (h("v")%400)/100 - 2));
+  const befuell = Math.max(50, Math.min(99.6, vollst - 2 - (h("b")%350)/100));
+  const erkennung = Math.max(55, Math.min(99.7, base + 1 - (h("e")%300)/100));
+  const sicher0 = Math.max(5, Math.min(92, Math.round(vollst-15+(h("q1")%10))));
+  const unsicher = Math.max(1, (h("q2")%18)+3);
+  const nicht = Math.max(0, (h("q3")%8));
+  const korrigiert = Math.max(0, (h("q4")%15)+1);
+  const bestaetigt = Math.max(0, (h("q5")%6));
+  let sonstige = Math.max(0, 100-(sicher0+unsicher+nicht+korrigiert+bestaetigt));
+  let sicher = sicher0 + (100-(sicher0+unsicher+nicht+korrigiert+bestaetigt+sonstige));
+  if(sicher<0){ sonstige += -sicher; sicher = 0; }
+  return {
+    vollst:Math.round(vollst*10)/10, befuell:Math.round(befuell*10)/10, erkennung:Math.round(erkennung*10)/10,
+    qsl:{ sicher, unsicher, nicht, korrigiert, bestaetigt, sonstige },
+  };
+}
 function buildGoZifferRows(matches){
   const rows = [];
   matches.forEach(z=>{
     DP_DOKARTEN.forEach(d=>{
       const seed = z.nr+"|"+d.code;
-      const h = salt => dpZifferHash(seed+salt);
-      const base = 80 + (h("")%1700)/100;
-      const vollst = Math.max(55, Math.min(99.8, base + (h("v")%400)/100 - 2));
-      const befuell = Math.max(50, Math.min(99.6, vollst - 2 - (h("b")%350)/100));
-      const erkennung = Math.max(55, Math.min(99.7, base + 1 - (h("e")%300)/100));
-      const sicher0 = Math.max(5, Math.min(92, Math.round(vollst-15+(h("q1")%10))));
-      const unsicher = Math.max(1, (h("q2")%18)+3);
-      const nicht = Math.max(0, (h("q3")%8));
-      const korrigiert = Math.max(0, (h("q4")%15)+1);
-      const bestaetigt = Math.max(0, (h("q5")%6));
-      let sonstige = Math.max(0, 100-(sicher0+unsicher+nicht+korrigiert+bestaetigt));
-      let sicher = sicher0 + (100-(sicher0+unsicher+nicht+korrigiert+bestaetigt+sonstige));
-      if(sicher<0){ sonstige += -sicher; sicher = 0; }
-      rows.push({
+      const m = dpGenerateMetrics(seed);
+      rows.push(Object.assign({
         id:"ziffer-"+z.nr+"-"+d.code,
         feld:"GOÄ-Ziffer "+z.nr+" — "+z.bez,
         dokArt:d.label,
         zielstatus:null,
-        vollst:Math.round(vollst*10)/10, befuell:Math.round(befuell*10)/10, erkennung:Math.round(erkennung*10)/10,
-        quelle:"av", n:d.n, off:5+(h("d")%55),
-        qsl:{ sicher, unsicher, nicht, korrigiert, bestaetigt, sonstige },
-      });
+        quelle:"av", n:d.n, off:5+(dpZifferHash(seed+"|d")%55),
+      }, m));
     });
   });
   return rows;
+}
+
+/* VNR-Suche: zu einer beliebig eingegebenen VNR werden deterministisch die im Datenpool
+   vorliegenden eingereichten Belege erzeugt, je mit ihren eigenen Auswertungen (Vollständigkeit
+   etc.) über die im jeweiligen Beleg enthaltenen Datenfelder (n = Anzahl Datenfelder im Beleg). */
+function dpVnrPseudoDatum(offsetDays){
+  const d = new Date();
+  d.setDate(d.getDate()-offsetDays);
+  return d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0");
+}
+function buildVnrBelegRows(vnrRaw){
+  const vnr = vnrRaw.trim();
+  const belegCount = 1 + (dpZifferHash(vnr+"|count")%4);
+  const rows = [];
+  for(let i=0;i<belegCount;i++){
+    const seed = vnr+"|beleg"+i;
+    const dok = DP_DOKARTEN[dpZifferHash(seed+"|dok")%DP_DOKARTEN.length];
+    const off = 1 + (dpZifferHash(seed+"|off")%90);
+    const belegId = "BLG-"+dpVnrPseudoDatum(off)+"-"+String(1000+(dpZifferHash(seed+"|seq")%9000));
+    const feldAnzahl = 14 + (dpZifferHash(seed+"|n")%22);
+    const m = dpGenerateMetrics(seed);
+    rows.push(Object.assign({
+      id:"vnr-"+vnr+"-"+i,
+      feld:belegId+" — "+dok.label,
+      dokArt:dok.label,
+      zielstatus:null,
+      quelle:"av", n:feldAnzahl, off,
+    }, m));
+  }
+  return rows.sort((a,b)=>a.off-b.off);
 }
 function dpIsoToday(){
   const d = new Date();
@@ -1190,10 +1234,19 @@ const QSL_DELTA_OHNE = 455;
    RENDER — Tab 2: Datenpool & Auswertbarkeit
    ============================================================ */
 function getDpZifferMatches(){ return matchGoZiffern(dpZifferQuery); }
+const DP_VNR_MIN_LEN = 4;
+function dpVnrActive(){ return dpVnrQuery.trim().length >= DP_VNR_MIN_LEN; }
+function dpMode(){
+  if(dpVnrActive()) return "vnr";
+  if(dpZifferQuery.trim()) return "ziffer";
+  return "normal";
+}
 function getFilteredDpRows(){
-  const q = dpZifferQuery.trim();
+  const mode = dpMode();
   let rows;
-  if(q){
+  if(mode==="vnr"){
+    rows = buildVnrBelegRows(dpVnrQuery);
+  } else if(mode==="ziffer"){
     const matches = getDpZifferMatches();
     rows = matches.length ? buildGoZifferRows(matches) : [];
   } else {
@@ -1206,43 +1259,47 @@ function getFilteredDpRows(){
 }
 function renderDpKpi(){
   const rows = getFilteredDpRows();
+  const mode = dpMode();
   const avg = k => rows.length ? (rows.reduce((s,r)=>s+dpEffectiveValue(r,k),0)/rows.length) : 0;
   const kanalSuffix = activeDpKanal==="alle" ? "" : " · Kanal: "+DP_KANAL_LABEL[activeDpKanal];
-  const zifferActive = dpZifferQuery.trim().length>0;
-  const felderLabel = zifferActive ? "Treffer GO-Ziffer-Suche" : "Angeforderte Datenfelder";
-  const felderTotal = zifferActive ? (GO_ZIFFERN.length*DP_DOKARTEN.length) : DATENPOOL_FELDER.length;
+  const felderLabel = mode==="ziffer" ? "Treffer GO-Ziffer-Suche" : mode==="vnr" ? "Belege zu dieser VNR" : "Angeforderte Datenfelder";
   document.getElementById("dp-kpi").innerHTML = [
     ['Ø Vollständigkeit', rows.length?avg("vollst").toFixed(1).replace(".",",")+" %":"—", rows.length&&avg("vollst")>=90?"ok":"warn"],
     ['Ø Befüllungsqualität', rows.length?avg("befuell").toFixed(1).replace(".",",")+" %":"—", rows.length&&avg("befuell")>=90?"ok":"warn"],
     ['Ø Erkennungsquote', rows.length?avg("erkennung").toFixed(1).replace(".",",")+" %":"—", rows.length&&avg("erkennung")>=90?"ok":"warn"],
-    [felderLabel, rows.length+(zifferActive?"":" von "+felderTotal)+kanalSuffix, "info"],
+    [felderLabel, rows.length+(mode==="normal"?" von "+DATENPOOL_FELDER.length:"")+kanalSuffix, "info"],
   ].map(([l,v,c])=>'<div class="kpi-tile"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></div>').join("")+
   '<div class="kpi-tile kpi-tile--wide"><div class="kpi-num info">'+fmtDateDe(activeDpDate)+'</div>'+
     '<div class="kpi-label">Datenpool-Stand</div>'+
     '<div class="kpi-tile-note">Datum, an dem das Datenfeld in den Datenpool geliefert wurde.</div></div>';
 }
 function renderDpThead(){
-  const zifferActive = dpZifferQuery.trim().length>0;
-  const ths = ['<th>'+(zifferActive?"GO-Ziffer":"Datenfeld")+'</th>'];
+  const mode = dpMode();
+  const label = mode==="ziffer" ? "GO-Ziffer" : mode==="vnr" ? "Eingereichter Beleg" : "Datenfeld";
+  const ths = ['<th>'+label+'</th>'];
   DP_COLUMNS.forEach(c=>{ if(dpColumnState[c.key]) ths.push('<th>'+esc(c.label)+'</th>'); });
   document.getElementById("dp-thead").innerHTML = '<tr>'+ths.join("")+'</tr>';
 }
 function renderDpTable(){
   renderDpThead();
   const rows = getFilteredDpRows();
-  const zifferActive = dpZifferQuery.trim().length>0;
+  const mode = dpMode();
   const kanalNote = activeDpKanal==="alle" ? "" : " · Kanal: "+DP_KANAL_LABEL[activeDpKanal];
   const dokNote = activeDpDokArt==="alle" ? "" : " · "+activeDpDokArt;
   const zielNote = activeDpZielstatus==="alle" ? "" : " · AV-Zielstatus: "+activeDpZielstatus;
-  if(zifferActive){
+  let emptyMsg = "Keine Datenfelder in dieser Auswahl.";
+  if(mode==="ziffer"){
     const matches = getDpZifferMatches();
     const zifferNote = matches.length ? " · GO-Ziffer-Suche: "+matches.map(z=>z.nr).join(", ") : " · GO-Ziffer-Suche „"+esc(dpZifferQuery.trim())+"“ ohne Treffer";
     document.getElementById("dp-count").textContent = rows.length+" Zeile(n)"+dokNote+kanalNote+zifferNote;
+    emptyMsg = "Keine GO-Ziffer gefunden für „"+esc(dpZifferQuery.trim())+"“.";
+  } else if(mode==="vnr"){
+    document.getElementById("dp-count").textContent = rows.length+" eingereichte(r) Beleg(e) · VNR-Suche: "+esc(dpVnrQuery.trim())+dokNote+kanalNote;
+    emptyMsg = "Keine Belege zu dieser VNR im gewählten Filter.";
   } else {
     document.getElementById("dp-count").textContent = rows.length+" von "+DATENPOOL_FELDER.length+" Datenfeldern"+dokNote+zielNote+kanalNote;
   }
   const colCount = 1 + DP_COLUMNS.filter(c=>dpColumnState[c.key]).length;
-  const emptyMsg = zifferActive ? "Keine GO-Ziffer gefunden für „"+esc(dpZifferQuery.trim())+"“." : "Keine Datenfelder in dieser Auswahl.";
   document.getElementById("dp-body").innerHTML = rows.length ? rows.map(r=>{
     const vollst = dpEffectiveValue(r, "vollst");
     const befuell = dpEffectiveValue(r, "befuell");
@@ -1265,7 +1322,8 @@ let dpTableCollapsed = false;
 function updateDpTableCollapsedHint(rowCount){
   const hint = document.getElementById("dp-table-collapsed-hint");
   if(dpTableCollapsed){
-    const noun = dpZifferQuery.trim() ? "Zeile(n)" : "Datenfelder";
+    const mode = dpMode();
+    const noun = mode==="vnr" ? "Beleg(e)" : mode==="ziffer" ? "Zeile(n)" : "Datenfelder";
     hint.textContent = "▸ Tabelle eingeklappt — "+rowCount+" "+noun+" ausgeblendet. Klicken zum Ausklappen.";
   }
 }
@@ -1337,7 +1395,8 @@ function openQslModal(rowId){
   const row = getFilteredDpRows().find(r=>r.id===rowId);
   if(!row) return;
   document.getElementById("qsl-modal-title").textContent = "QSL-Verteilung — "+row.feld;
-  document.getElementById("qsl-modal-sub").textContent = row.dokArt+" · Vollständigkeit "+dpEffectiveValue(row,"vollst").toFixed(1).replace(".",",")+" % · "+row.n.toLocaleString("de-DE")+" betrachtete Datensätze";
+  const nUnit = dpMode()==="vnr" ? " Datenfelder in diesem Beleg" : " betrachtete Datensätze";
+  document.getElementById("qsl-modal-sub").textContent = row.dokArt+" · Vollständigkeit "+dpEffectiveValue(row,"vollst").toFixed(1).replace(".",",")+" % · "+row.n.toLocaleString("de-DE")+nUnit;
   document.getElementById("qsl-donut-svg").innerHTML = donutSegments(row.qsl, row.n);
   document.getElementById("qsl-legend").innerHTML = QSL_KATEGORIEN.map(k=>{
     const pct = row.qsl[k.key]||0;
@@ -1564,6 +1623,10 @@ document.getElementById("dp-table-toggle").addEventListener("click", ()=>setDpTa
 document.getElementById("dp-table-collapsed-hint").addEventListener("click", ()=>setDpTableCollapsed(false));
 document.getElementById("dp-ziffer-search").addEventListener("input", e=>{
   dpZifferQuery = e.target.value;
+  renderDpKpi(); renderDpTable();
+});
+document.getElementById("dp-vnr-search").addEventListener("input", e=>{
+  dpVnrQuery = e.target.value;
   renderDpKpi(); renderDpTable();
 });
 
