@@ -1079,6 +1079,25 @@ function dpKanalValue(base, kanal, metric){
   return Math.max(0, Math.min(100, base + mod));
 }
 
+/* Datenpool-Stand (Datum): die Auswertungen schwanken je gewähltem Stichtag — ältere Stände
+   zeigen tendenziell etwas niedrigere Werte (noch nicht alle Nacherfassungen/Korrekturen
+   eingearbeitet), zusätzlich je Datenfeld/Ziffer ein deterministischer Tages-Jitter, damit
+   unterschiedliche Stichtage auch unterschiedliche, aber bei erneuter Auswahl stabile Werte zeigen. */
+function dpDateOffset(rowId, dateIso, metric){
+  const today = dpIsoToday();
+  if(dateIso===today) return 0;
+  const dayDiff = Math.max(0, Math.round((new Date(today+"T00:00:00") - new Date(dateIso+"T00:00:00"))/86400000));
+  const trend = -Math.min(dayDiff, 60)/60*5;
+  const jitter = (dpZifferHash(rowId+"|"+dateIso+"|"+metric)%700)/100 - 3.5;
+  return trend + jitter;
+}
+function dpEffectiveValue(row, metric){
+  let v = row[metric];
+  if(activeDpKanal!=="alle") v += DP_KANAL_MODIFIER[activeDpKanal][metric];
+  v += dpDateOffset(row.id, activeDpDate, metric);
+  return Math.max(0, Math.min(100, v));
+}
+
 /* Spalten der Datenpool-Tabelle, die über den Auswertungskatalog unten ein-/ausgeblendet werden
    können ("Spalte: ..."-Einträge in AUSWERTUNGEN). "Datenfeld" bleibt als Identitätsspalte immer sichtbar. */
 const DP_COLUMNS = [
@@ -1187,7 +1206,7 @@ function getFilteredDpRows(){
 }
 function renderDpKpi(){
   const rows = getFilteredDpRows();
-  const avg = k => rows.length ? (rows.reduce((s,r)=>s+dpKanalValue(r[k],activeDpKanal,k),0)/rows.length) : 0;
+  const avg = k => rows.length ? (rows.reduce((s,r)=>s+dpEffectiveValue(r,k),0)/rows.length) : 0;
   const kanalSuffix = activeDpKanal==="alle" ? "" : " · Kanal: "+DP_KANAL_LABEL[activeDpKanal];
   const zifferActive = dpZifferQuery.trim().length>0;
   const felderLabel = zifferActive ? "Treffer GO-Ziffer-Suche" : "Angeforderte Datenfelder";
@@ -1225,9 +1244,9 @@ function renderDpTable(){
   const colCount = 1 + DP_COLUMNS.filter(c=>dpColumnState[c.key]).length;
   const emptyMsg = zifferActive ? "Keine GO-Ziffer gefunden für „"+esc(dpZifferQuery.trim())+"“." : "Keine Datenfelder in dieser Auswahl.";
   document.getElementById("dp-body").innerHTML = rows.length ? rows.map(r=>{
-    const vollst = dpKanalValue(r.vollst, activeDpKanal, "vollst");
-    const befuell = dpKanalValue(r.befuell, activeDpKanal, "befuell");
-    const erkennung = dpKanalValue(r.erkennung, activeDpKanal, "erkennung");
+    const vollst = dpEffectiveValue(r, "vollst");
+    const befuell = dpEffectiveValue(r, "befuell");
+    const erkennung = dpEffectiveValue(r, "erkennung");
     const cells = ['<td class="k-name">'+esc(r.feld)+'</td>'];
     if(dpColumnState.dokart) cells.push('<td class="k-quelle">'+esc(r.dokArt)+'</td>');
     if(dpColumnState.zielstatus) cells.push('<td>'+(r.zielstatus?'<span class="badge info"><span class="dot"></span>'+esc(r.zielstatus)+'</span>':'<span class="k-quelle">—</span>')+'</td>');
@@ -1318,7 +1337,7 @@ function openQslModal(rowId){
   const row = getFilteredDpRows().find(r=>r.id===rowId);
   if(!row) return;
   document.getElementById("qsl-modal-title").textContent = "QSL-Verteilung — "+row.feld;
-  document.getElementById("qsl-modal-sub").textContent = row.dokArt+" · Vollständigkeit "+row.vollst.toFixed(1).replace(".",",")+" % · "+row.n.toLocaleString("de-DE")+" betrachtete Datensätze";
+  document.getElementById("qsl-modal-sub").textContent = row.dokArt+" · Vollständigkeit "+dpEffectiveValue(row,"vollst").toFixed(1).replace(".",",")+" % · "+row.n.toLocaleString("de-DE")+" betrachtete Datensätze";
   document.getElementById("qsl-donut-svg").innerHTML = donutSegments(row.qsl, row.n);
   document.getElementById("qsl-legend").innerHTML = QSL_KATEGORIEN.map(k=>{
     const pct = row.qsl[k.key]||0;
