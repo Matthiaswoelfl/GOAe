@@ -386,7 +386,7 @@
           </button>
         </div>
       </div>
-      <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit, Befüllungsqualität und Erkennungsquote je angefordertem Datenfeld (inkl. AV-Zielstatus aus dem Extraktionskatalog). Filterbar nach Dok.-Art, AV-Zielstatus, Datenpool-Stand, Eingangskanal, GO-Ziffer und VNR. Klick auf die Vollständigkeit öffnet die QSL-Verteilung inkl. Qualitätsschlüssel je Feld.</p>
+      <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit, Befüllungsqualität und Erkennungsquote je angefordertem Datenfeld (inkl. AV-Zielstatus aus dem Extraktionskatalog und, bei Abrechnungspositionen, Zeilentyp). Filterbar nach Dok.-Art, AV-Zielstatus, Zeilentyp, Datenpool-Stand, Eingangskanal, GO-Ziffer und VNR. Klick auf die Vollständigkeit öffnet die QSL-Verteilung inkl. Qualitätsschlüssel je Feld.</p>
       <div class="filters">
         <span class="filter-dim-label">Dok.-Art</span>
         <div class="filter-group" id="dp-dokart-filter">
@@ -410,6 +410,27 @@
           <button class="filter-chip" type="button" data-ziel="SWH">SWH</button>
           <button class="filter-chip" type="button" data-ziel="TM">TM</button>
           <button class="filter-chip" type="button" data-ziel="P">P</button>
+        </div>
+      </div>
+      <div class="filters">
+        <span class="filter-dim-label">Zeilentyp</span>
+        <div class="filter-group" id="dp-zeilentyp-filter">
+          <button class="filter-chip" type="button" data-zeilentyp="alle" data-active="true">Alle</button>
+          <button class="filter-chip" type="button" data-zeilentyp="1">1 · GOÄ</button>
+          <button class="filter-chip" type="button" data-zeilentyp="2">2 · GOÄ Analog</button>
+          <button class="filter-chip" type="button" data-zeilentyp="3">3 · GOÄ Anästhesie unabhängig</button>
+          <button class="filter-chip" type="button" data-zeilentyp="4">4 · GOÄ Gemindert</button>
+          <button class="filter-chip" type="button" data-zeilentyp="5">5 · GOÄ Minus</button>
+          <button class="filter-chip" type="button" data-zeilentyp="6">6 · GOZ</button>
+          <button class="filter-chip" type="button" data-zeilentyp="7">7 · Wegegeld</button>
+          <button class="filter-chip" type="button" data-zeilentyp="8">8 · Auslage</button>
+          <button class="filter-chip" type="button" data-zeilentyp="9">9 · GOZ Analog</button>
+          <button class="filter-chip" type="button" data-zeilentyp="10">10 · MLK Eigenlabor</button>
+          <button class="filter-chip" type="button" data-zeilentyp="11">11 · MLK Fremdlabor</button>
+          <button class="filter-chip" type="button" data-zeilentyp="14">14 · GEBÜH (inkl. Wegegeld)</button>
+          <button class="filter-chip" type="button" data-zeilentyp="20">20 · unbekannte Ziffer</button>
+          <button class="filter-chip" type="button" data-zeilentyp="21">21 · fehlende Ziffer</button>
+          <button class="filter-chip" type="button" data-zeilentyp="22">22 · Differenzbetrag</button>
         </div>
       </div>
       <div class="filters">
@@ -972,8 +993,30 @@ const DATENPOOL_FELDER = [
   {id:"3501-17",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"HKP Zahn neu (3501)",zielstatus:"K",req:"bedingt",vollst:79.1,befuell:74.1,erkennung:80.4,quelle:"av",n:71,off:30,qsl:{sicher:64,unsicher:3,nicht:3,korrigiert:7,bestaetigt:3,sonstige:20}},
   {id:"3501-16",feld:"Vorname, Name, LANR (Lebenslange Arztnummer)",dokArt:"HKP Zahn neu (3501)",zielstatus:"K",req:"muss",vollst:86.1,befuell:83.6,erkennung:85.0,quelle:"av",n:71,off:49,qsl:{sicher:67,unsicher:16,nicht:2,korrigiert:15,bestaetigt:0,sonstige:0}}
 ];
+
+/* Zeilentyp: Klassifikation einzelner Abrechnungszeilen/-positionen im Datenpool (nicht jedes
+   Datenfeld ist eine Abrechnungszeile — daher nur "bei passenden" gesetzt, sonst null/"—"). */
+const ZEILENTYP_LABEL = {
+  "1":"GOÄ", "2":"GOÄ Analog", "3":"GOÄ Anästhesie unabhängig", "4":"GOÄ Gemindert",
+  "5":"GOÄ Minus", "6":"GOZ", "7":"Wegegeld", "8":"Auslage", "9":"GOZ Analog",
+  "10":"MLK Eigenlabor", "11":"MLK Fremdlabor", "14":"GEBÜH (inkl. Wegegeld)",
+  "20":"unbekannte Ziffer", "21":"fehlende Ziffer", "22":"Differenzbetrag",
+};
+const ZEILENTYP_ORDER = ["1","2","3","4","5","6","7","8","9","10","11","14","20","21","22"];
+function classifyZeilentyp(feldName){
+  const f = (feldName||"").toLowerCase();
+  if(f.includes("goä")){
+    if(f.includes("minderung")) return "4";
+    return "1";
+  }
+  if(f.includes("goz")) return "6";
+  return null;
+}
+DATENPOOL_FELDER.forEach(r=>{ r.zeilentyp = classifyZeilentyp(r.feld); });
+
 let activeDpDokArt = "alle";
 let activeDpZielstatus = "alle";
+let activeDpZeilentyp = "alle";
 let activeDpKanal = "alle";
 let dpZifferQuery = "";
 let dpVnrQuery = "";
@@ -1042,18 +1085,27 @@ function dpGenerateMetrics(seed){
     qsl:{ sicher, unsicher, nicht, korrigiert, bestaetigt, sonstige },
   };
 }
+/* Je Dok.-Art plausible Zeilentyp-Kandidaten für GO-Ziffer-Treffer (RE-Dok.-Arten eher
+   GOÄ-lastig, HKP-Dok.-Arten eher GOZ/MLK-lastig als Kostenplan-Positionen). */
+const DP_DOKART_ZEILENTYP_POOL = {
+  "3552":["1","2","3","4","5"], "3549":["1","2","3","4","5"],
+  "3559":["1","6","9"], "3567":["1","6","9"],
+  "3501":["6","9","10","11"], "3502":["6","9","10","11"],
+};
 function buildGoZifferRows(matches){
   const rows = [];
   matches.forEach(z=>{
     DP_DOKARTEN.forEach(d=>{
       const seed = z.nr+"|"+d.code;
       const m = dpGenerateMetrics(seed);
+      const pool = DP_DOKART_ZEILENTYP_POOL[d.code];
+      const zeilentyp = pool[dpZifferHash(seed+"|zt")%pool.length];
       rows.push(Object.assign({
         id:"ziffer-"+z.nr+"-"+d.code,
         feld:"GOÄ-Ziffer "+z.nr+" — "+z.bez,
         dokArt:d.label,
-        zielstatus:null,
-        quelle:"av", n:d.n, off:5+(dpZifferHash(seed+"|d")%55),
+        zielstatus:null, zeilentyp,
+        n:d.n, off:5+(dpZifferHash(seed+"|d")%55),
       }, m));
     });
   });
@@ -1083,8 +1135,8 @@ function buildVnrBelegRows(vnrRaw){
       id:"vnr-"+vnr+"-"+i,
       feld:belegId+" — "+dok.label,
       dokArt:dok.label,
-      zielstatus:null,
-      quelle:"av", n:feldAnzahl, off,
+      zielstatus:null, zeilentyp:null,
+      n:feldAnzahl, off,
     }, m));
   }
   return rows.sort((a,b)=>a.off-b.off);
@@ -1147,12 +1199,12 @@ function dpEffectiveValue(row, metric){
 const DP_COLUMNS = [
   { key:"dokart", label:"Dok.-Art" },
   { key:"zielstatus", label:"AV-Zielstatus" },
+  { key:"zeilentyp", label:"Zeilentyp" },
   { key:"vollst", label:"Vollständigkeit" },
   { key:"befuell", label:"Befüllungsqualität" },
   { key:"erkennung", label:"Erkennungsquote" },
-  { key:"quelle", label:"Quelle" },
 ];
-const dpColumnState = { dokart:true, zielstatus:true, vollst:true, befuell:true, erkennung:true, quelle:true };
+const dpColumnState = { dokart:true, zielstatus:true, zeilentyp:true, vollst:true, befuell:true, erkennung:true };
 
 const AUSWERTUNGEN = [
   { kat:"Erfassung", name:"Prüfung der Erfassung", beschreibung:"Klassifikation der Erfassungsart je Datensatz: Dok.-Art, VP, VNR oder AV (Datenextraktion).", status:"verfuegbar" },
@@ -1171,10 +1223,10 @@ const AUSWERTUNGEN = [
   { kat:"Trace", name:"Nachträgliche Belegverfolgung", beschreibung:"Verfolgung des Belegs und der erfassten/geänderten Daten: Dokumente, VNR, VP, Tabellen, Felder.", status:"verfuegbar" },
   { kat:"Anzeige", name:"Spalte: Dok.-Art", beschreibung:"Blendet die Spalte „Dok.-Art“ im Datenpool-Dashboard oben ein oder aus.", col:"dokart" },
   { kat:"Anzeige", name:"Spalte: AV-Zielstatus", beschreibung:"Blendet die Spalte „AV-Zielstatus“ im Datenpool-Dashboard oben ein oder aus.", col:"zielstatus" },
+  { kat:"Anzeige", name:"Spalte: Zeilentyp", beschreibung:"Blendet die Spalte „Zeilentyp“ im Datenpool-Dashboard oben ein oder aus.", col:"zeilentyp" },
   { kat:"Anzeige", name:"Spalte: Vollständigkeit", beschreibung:"Blendet die Spalte „Vollständigkeit“ im Datenpool-Dashboard oben ein oder aus.", col:"vollst" },
   { kat:"Anzeige", name:"Spalte: Befüllungsqualität", beschreibung:"Blendet die Spalte „Befüllungsqualität“ im Datenpool-Dashboard oben ein oder aus.", col:"befuell" },
   { kat:"Anzeige", name:"Spalte: Erkennungsquote", beschreibung:"Blendet die Spalte „Erkennungsquote“ im Datenpool-Dashboard oben ein oder aus.", col:"erkennung" },
-  { kat:"Anzeige", name:"Spalte: Quelle", beschreibung:"Blendet die Spalte „Quelle“ im Datenpool-Dashboard oben ein oder aus.", col:"quelle" },
 ];
 const AV_STATUS_LABEL = { verfuegbar:"Verfügbar", "in-arbeit":"In Arbeit" };
 
@@ -1254,6 +1306,7 @@ function getFilteredDpRows(){
   }
   if(activeDpDokArt!=="alle") rows = rows.filter(r=>r.dokArt===activeDpDokArt || r.dokArt==="Alle Dok.-Arten");
   if(activeDpZielstatus!=="alle") rows = rows.filter(r=>r.zielstatus===activeDpZielstatus || r.zielstatus===null);
+  if(activeDpZeilentyp!=="alle") rows = rows.filter(r=>r.zeilentyp===activeDpZeilentyp);
   rows = rows.filter(r=>dpRowLieferdatum(r)<=activeDpDate);
   return rows;
 }
@@ -1287,17 +1340,18 @@ function renderDpTable(){
   const kanalNote = activeDpKanal==="alle" ? "" : " · Kanal: "+DP_KANAL_LABEL[activeDpKanal];
   const dokNote = activeDpDokArt==="alle" ? "" : " · "+activeDpDokArt;
   const zielNote = activeDpZielstatus==="alle" ? "" : " · AV-Zielstatus: "+activeDpZielstatus;
+  const zeilentypNote = activeDpZeilentyp==="alle" ? "" : " · Zeilentyp: "+activeDpZeilentyp+" · "+ZEILENTYP_LABEL[activeDpZeilentyp];
   let emptyMsg = "Keine Datenfelder in dieser Auswahl.";
   if(mode==="ziffer"){
     const matches = getDpZifferMatches();
     const zifferNote = matches.length ? " · GO-Ziffer-Suche: "+matches.map(z=>z.nr).join(", ") : " · GO-Ziffer-Suche „"+esc(dpZifferQuery.trim())+"“ ohne Treffer";
-    document.getElementById("dp-count").textContent = rows.length+" Zeile(n)"+dokNote+kanalNote+zifferNote;
+    document.getElementById("dp-count").textContent = rows.length+" Zeile(n)"+dokNote+zeilentypNote+kanalNote+zifferNote;
     emptyMsg = "Keine GO-Ziffer gefunden für „"+esc(dpZifferQuery.trim())+"“.";
   } else if(mode==="vnr"){
     document.getElementById("dp-count").textContent = rows.length+" eingereichte(r) Beleg(e) · VNR-Suche: "+esc(dpVnrQuery.trim())+dokNote+kanalNote;
     emptyMsg = "Keine Belege zu dieser VNR im gewählten Filter.";
   } else {
-    document.getElementById("dp-count").textContent = rows.length+" von "+DATENPOOL_FELDER.length+" Datenfeldern"+dokNote+zielNote+kanalNote;
+    document.getElementById("dp-count").textContent = rows.length+" von "+DATENPOOL_FELDER.length+" Datenfeldern"+dokNote+zielNote+zeilentypNote+kanalNote;
   }
   const colCount = 1 + DP_COLUMNS.filter(c=>dpColumnState[c.key]).length;
   document.getElementById("dp-body").innerHTML = rows.length ? rows.map(r=>{
@@ -1307,10 +1361,10 @@ function renderDpTable(){
     const cells = ['<td class="k-name">'+esc(r.feld)+'</td>'];
     if(dpColumnState.dokart) cells.push('<td class="k-quelle">'+esc(r.dokArt)+'</td>');
     if(dpColumnState.zielstatus) cells.push('<td>'+(r.zielstatus?'<span class="badge info"><span class="dot"></span>'+esc(r.zielstatus)+'</span>':'<span class="k-quelle">—</span>')+'</td>');
+    if(dpColumnState.zeilentyp) cells.push('<td>'+(r.zeilentyp?'<span class="badge info"><span class="dot"></span>'+esc(r.zeilentyp)+' · '+esc(ZEILENTYP_LABEL[r.zeilentyp])+'</span>':'<span class="k-quelle">—</span>')+'</td>');
     if(dpColumnState.vollst) cells.push('<td><button type="button" class="qsl-trigger" data-rowid="'+esc(r.id)+'" title="QSL-Verteilung anzeigen">'+bar(vollst)+icon("pie")+'</button></td>');
     if(dpColumnState.befuell) cells.push('<td>'+bar(befuell)+'</td>');
     if(dpColumnState.erkennung) cells.push('<td>'+bar(erkennung)+'</td>');
-    if(dpColumnState.quelle) cells.push('<td><span class="badge info"><span class="dot"></span>'+(r.quelle==="av"?"AV (Datenextraktion)":"Erfassung")+'</span></td>');
     return '<tr>'+cells.join("")+'</tr>';
   }).join("") : '<tr><td colspan="'+colCount+'" class="cell-empty">'+emptyMsg+'</td></tr>';
   document.querySelectorAll("#dp-body .qsl-trigger").forEach(btn=>{
@@ -1596,6 +1650,13 @@ document.getElementById("dp-zielstatus-filter").querySelectorAll(".filter-chip")
   chip.addEventListener("click", ()=>{
     activeDpZielstatus = chip.dataset.ziel;
     document.querySelectorAll("#dp-zielstatus-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
+    renderDpKpi(); renderDpTable();
+  });
+});
+document.getElementById("dp-zeilentyp-filter").querySelectorAll(".filter-chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    activeDpZeilentyp = chip.dataset.zeilentyp;
+    document.querySelectorAll("#dp-zeilentyp-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
     renderDpKpi(); renderDpTable();
   });
 });
