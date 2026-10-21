@@ -534,7 +534,6 @@
           <button class="filter-chip" type="button" data-d="alle" data-active="true">Alle Felder</button>
           <button class="filter-chip" type="button" data-d="delta">Mit Delta</button>
           <button class="filter-chip" type="button" data-d="sync">Ohne Delta</button>
-          <button class="filter-chip" type="button" data-d="mismatch">Anforderung EM ≠ SMILE</button>
         </div>
         <span class="filter-count" id="sd-count"></span>
       </div>
@@ -1259,7 +1258,6 @@ let selectedSqDokArt = null;
 const SQ_OVERVIEW_ERL = [
   { lead:"Einordnung", text:"Vergleich der vom EM an den Datenpool übergebenen Werte (inkl. QSL und Kann-/Mussfeld-Zuordnung) gegen den tatsächlich in SMILE/Ablage verwendeten Wert, Stichprobe "+heute()+"." },
   { lead:"Kernbefund", text:"Auch Felder mit „gutem“ QSL (sicher gefunden, manuell bestätigt) sind nicht automatisch deltafrei — ein Teil wird in SMILE dennoch verändert." },
-  { lead:"Zweiter Treiber", text:"Weicht die Kann-/Mussfeld-Zuordnung zwischen EM und SMILE ab (z. B. EM: Kannfeld, SMILE: Mussfeld), steigt das Delta-Risiko zusätzlich — unabhängig vom QSL." },
   { lead:"Handlungsimplikation", text:"Ein Delta trotz „Sicher gefunden“ deutet auf eine nachgelagerte fachliche Korrektur oder eine Lücke in der QSL-Logik hin und sollte vorrangig untersucht werden." },
 ];
 const SQ_MATRIX_ERL = [
@@ -1512,14 +1510,12 @@ function renderSdKpi(){
   const total = SMILE_DELTA.length;
   const delta = SMILE_DELTA.filter(r=>r.delta).length;
   const sicherDelta = SMILE_DELTA.filter(r=>r.delta && r.qsl==="sicher").length;
-  const reqMismatch = SMILE_DELTA.filter(r=>r.emReq!==r.smileReq).length;
   document.getElementById("sd-kpi").innerHTML = [
     ['Felder geprüft (heute)', total.toLocaleString("de-DE"), "info"],
     ['Felder mit Delta', delta.toLocaleString("de-DE"), "crit"],
     ['Felder synchron', (total-delta).toLocaleString("de-DE"), "ok"],
     ['Delta-Quote', ((delta/total)*100).toFixed(1).replace(".",",")+" %", delta?"warn":"ok"],
     ['Delta trotz „Sicher gefunden“', sicherDelta.toLocaleString("de-DE"), sicherDelta?"crit":"ok"],
-    ['Anforderung EM ≠ SMILE', reqMismatch.toLocaleString("de-DE"), reqMismatch?"warn":"ok"],
   ].map(([l,v,c])=>'<div class="kpi-tile"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></div>').join("");
 }
 
@@ -1529,29 +1525,12 @@ function renderSqOverview(){
   const gesamtDelta = perKat.reduce((s,k)=>s+k.count,0);
   const geprueft = gesamtDelta + QSL_DELTA_OHNE;
 
-  const mismatches = SMILE_DELTA.filter(r=>r.emReq!==r.smileReq);
-  const mismatchCombos = {};
-  mismatches.forEach(r=>{
-    const key = r.emReq+"->"+r.smileReq;
-    mismatchCombos[key] = (mismatchCombos[key]||0) + 1;
-  });
-  const mismatchWithDelta = mismatches.filter(r=>r.delta).length;
-
   const rows = [
     { section:"1. Was haben wir betrachtet?" },
     { kat:"Geprüfte Datenfeld-Vergleiche", anzahl:geprueft.toLocaleString("de-DE"), kommentar:"Datenpool vs. SMILE/Ablage, Stichprobe "+heute() },
     { kat:"Davon mit Delta zur Ablage", anzahl:gesamtDelta.toLocaleString("de-DE"), kommentar:((gesamtDelta/geprueft)*100).toFixed(1).replace(".",",")+" % aller geprüften Felder" },
     { section:"2. Bei welchem QSL gab es wie viel Delta?" },
-  ].concat(perKat.map(k=>({ kat:k.label, anzahl:k.count.toLocaleString("de-DE"), kommentar:((k.count/gesamtDelta)*100).toFixed(0)+" % aller Delta-Fälle" })))
-  .concat([
-    { section:"3. Wo weicht die Kann-/Mussfeld-Zuordnung zwischen EM und SMILE ab?" },
-    { kat:"Datenfelder mit abweichender Zuordnung", anzahl:mismatches.length+" von "+SMILE_DELTA.length, kommentar:"Beispiel-Stichprobe im Vergleich unten" },
-    { kat:"Davon mit Delta zur Ablage", anzahl:mismatchWithDelta+" von "+mismatches.length, kommentar:"abweichende Zuordnung korreliert mit erhöhtem Delta-Risiko" },
-  ])
-  .concat(Object.keys(mismatchCombos).map(key=>{
-    const [em,smile] = key.split("->");
-    return { kat:"EM „"+REQ_LABEL[em]+"“ → SMILE „"+REQ_LABEL[smile]+"“", anzahl:String(mismatchCombos[key]), kommentar:"Quelle: Feldkatalog GOÄ (Beispielwerte)" };
-  }));
+  ].concat(perKat.map(k=>({ kat:k.label, anzahl:k.count.toLocaleString("de-DE"), kommentar:((k.count/gesamtDelta)*100).toFixed(0)+" % aller Delta-Fälle" })));
 
   document.getElementById("sqov-body").innerHTML = rows.map(r=>
     r.section ? '<tr class="ov-section"><td colspan="3">'+esc(r.section)+'</td></tr>'
@@ -1588,15 +1567,13 @@ function renderSqMatrix(){
   document.getElementById("sqxt-erl").innerHTML = SQ_MATRIX_ERL.map(e=>'<li><b>'+esc(e.lead)+':</b> '+esc(e.text)+'</li>').join("");
 }
 
-function reqBadge(req, mismatch){
-  return '<span class="badge badge--sm '+REQ_BADGE[req]+'" title="'+esc(REQ_LABEL[req])+'">'+REQ_LABEL_SHORT[req]+'</span>'+
-    (mismatch ? ' <span class="badge badge--sm crit" title="Kann-/Mussfeld-Zuordnung weicht vom EM-Datenfeld ab">≠ EM</span>' : '');
+function reqBadge(req){
+  return '<span class="badge badge--sm '+REQ_BADGE[req]+'" title="'+esc(REQ_LABEL[req])+'">'+REQ_LABEL_SHORT[req]+'</span>';
 }
 function renderSdTable(){
   let rows = SMILE_DELTA;
   if(activeSdFilter==="delta") rows = rows.filter(r=>r.delta);
   else if(activeSdFilter==="sync") rows = rows.filter(r=>!r.delta);
-  else if(activeSdFilter==="mismatch") rows = rows.filter(r=>r.emReq!==r.smileReq);
   if(selectedSqDokArt) rows = rows.filter(r=>r.dokArt===selectedSqDokArt);
 
   const hint = document.getElementById("sd-dokart-hint");
@@ -1613,8 +1590,8 @@ function renderSdTable(){
       '<td class="mono">'+esc(r.belegId)+'</td>'+
       '<td class="k-quelle">'+esc(r.dokArt)+'</td>'+
       '<td class="k-name">'+esc(r.feld)+'</td>'+
-      '<td>'+reqBadge(r.emReq, false)+'</td>'+
-      '<td>'+reqBadge(r.smileReq, r.emReq!==r.smileReq)+'</td>'+
+      '<td>'+reqBadge(r.emReq)+'</td>'+
+      '<td>'+reqBadge(r.smileReq)+'</td>'+
       '<td><span class="qsl-swatch" style="background:var(--qsl-'+qslSlot(r.qsl)+'); display:inline-block; vertical-align:-1px; margin-right:6px;"></span>'+esc(qslLabel(r.qsl))+'</td>'+
       '<td>'+esc(r.pool)+'</td>'+
       '<td>'+esc(r.smile)+'</td>'+
