@@ -207,6 +207,7 @@
 
   .subhead{font-size:1.02rem; font-weight:800; margin:26px 0 4px;}
   .subhead-sub{font-size:.82rem; color:var(--ink-soft); margin:0 0 14px; max-width:80ch; line-height:1.6;}
+  .dp-ziffer-hint{font-size:.74rem; font-style:italic; margin:-10px 0 14px;}
 
   /* ---------- Gesamtübersicht (Kategorie-Tabelle + Erläuterung) ---------- */
   .ov-grid{display:grid; grid-template-columns:1.6fr 1fr; gap:20px; align-items:start; margin-bottom:8px;}
@@ -429,6 +430,11 @@
           <button class="filter-chip" type="button" data-kanal="app">App</button>
         </div>
       </div>
+      <div class="filters">
+        <span class="filter-dim-label">GO-Ziffer-Suche</span>
+        <input class="filter-search" id="dp-ziffer-search" type="search" placeholder="z. B. 1200 (Sonographie)…">
+      </div>
+      <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht aus und zeigt stattdessen je Dok.-Art eine Zeile mit den Auswertungen speziell für die gefundene(n) GO-Ziffer(n).</p>
       <div class="table-wrap" id="dp-table-wrap">
         <table class="data-table">
           <thead id="dp-thead"></thead>
@@ -964,6 +970,81 @@ const DATENPOOL_FELDER = [
 let activeDpDokArt = "alle";
 let activeDpZielstatus = "alle";
 let activeDpKanal = "alle";
+let dpZifferQuery = "";
+
+/* GO-Ziffer-Suche: echte GOÄneu-Ziffern aus dem Gebührenverzeichnis (Modul Belegwerkstatt).
+   Standardmäßig tauchen GO-Ziffern NICHT in der Datenfeld-Übersicht auf — erst eine Suche hier
+   erzeugt pro Dok.-Art eine eigene Zeile mit den Auswertungen (Vollständigkeit, Befüllungsqualität,
+   Erkennungsquote, QSL) speziell für diese Ziffer bei dieser Dok.-Art. */
+const GO_ZIFFERN = [
+  { nr:"1", bez:"Persönliche Beratung durch den Arzt (unter 10 Minuten)" },
+  { nr:"2", bez:"Persönliche Beratung durch den Arzt (je vollendete 10 Minuten)" },
+  { nr:"18", bez:"Vollständige körperliche Untersuchung eines Organsystems" },
+  { nr:"19", bez:"Untersuchung zur Erhebung des Ganzkörperstatus" },
+  { nr:"116", bez:"Erwachsenen-Vorsorgeuntersuchung zur Früherkennung" },
+  { nr:"117", bez:"Untersuchung der Haut und der sichtbaren Schleimhäute zur Früherkennung von Krebserkrankungen" },
+  { nr:"700", bez:"Blutentnahme mittels Spritze, Kanüle oder Katheter aus der Vene" },
+  { nr:"729", bez:"Medikamentöse Infiltrationsbehandlung im Bereich einer Körperregion" },
+  { nr:"1200", bez:"Sonographische (Teil-)Untersuchung mit Bezug auf ein Organ (Sonographie)" },
+  { nr:"1301", bez:"Doppler-Echokardiographie mittels PW- und/oder CW-Doppler" },
+  { nr:"2901", bez:"Elektrokardiographische Untersuchung mit mindestens zwölf Ableitungen in Ruhe" },
+  { nr:"2905", bez:"Elektrokardiographische Untersuchung, Dauer 18 bis 36 Stunden (Langzeit-EKG)" },
+  { nr:"4104", bez:"Kryotherapie der Haut" },
+  { nr:"4117", bez:"Dermatoskopie mittels Auflichtmikroskopie (bis 5 Hautläsionen)" },
+  { nr:"4300", bez:"Neurologische Untersuchung von mindestens drei Untersuchungsbereichen" },
+  { nr:"4505", bez:"Tiefenpsychologisch fundierte Psychotherapie, Einzelbehandlung" },
+  { nr:"5600", bez:"Exzision eines kleinen kutanen Prozesses" },
+  { nr:"11025", bez:"Blutbild, insgesamt" },
+];
+const DP_DOKARTEN = [
+  { code:"3552", label:"RE ambulant neu (3552)", n:612 },
+  { code:"3549", label:"RE stationär neu (3549)", n:158 },
+  { code:"3559", label:"RE Zahnarzt neu (3559)", n:86 },
+  { code:"3567", label:"RE Kieferorthopädie neu (3567)", n:54 },
+  { code:"3501", label:"HKP Zahn neu (3501)", n:71 },
+  { code:"3502", label:"HKP KFO neu (3502)", n:39 },
+];
+function dpZifferHash(s){
+  let h = 0;
+  for(let i=0;i<s.length;i++){ h = (h*31+s.charCodeAt(i))%100000; }
+  return h;
+}
+function matchGoZiffern(query){
+  const q = query.trim().toLowerCase();
+  if(!q) return [];
+  return GO_ZIFFERN.filter(z=>z.nr.toLowerCase().startsWith(q) || z.bez.toLowerCase().includes(q));
+}
+function buildGoZifferRows(matches){
+  const rows = [];
+  matches.forEach(z=>{
+    DP_DOKARTEN.forEach(d=>{
+      const seed = z.nr+"|"+d.code;
+      const h = salt => dpZifferHash(seed+salt);
+      const base = 80 + (h("")%1700)/100;
+      const vollst = Math.max(55, Math.min(99.8, base + (h("v")%400)/100 - 2));
+      const befuell = Math.max(50, Math.min(99.6, vollst - 2 - (h("b")%350)/100));
+      const erkennung = Math.max(55, Math.min(99.7, base + 1 - (h("e")%300)/100));
+      const sicher0 = Math.max(5, Math.min(92, Math.round(vollst-15+(h("q1")%10))));
+      const unsicher = Math.max(1, (h("q2")%18)+3);
+      const nicht = Math.max(0, (h("q3")%8));
+      const korrigiert = Math.max(0, (h("q4")%15)+1);
+      const bestaetigt = Math.max(0, (h("q5")%6));
+      let sonstige = Math.max(0, 100-(sicher0+unsicher+nicht+korrigiert+bestaetigt));
+      let sicher = sicher0 + (100-(sicher0+unsicher+nicht+korrigiert+bestaetigt+sonstige));
+      if(sicher<0){ sonstige += -sicher; sicher = 0; }
+      rows.push({
+        id:"ziffer-"+z.nr+"-"+d.code,
+        feld:"GOÄ-Ziffer "+z.nr+" — "+z.bez,
+        dokArt:d.label,
+        zielstatus:null,
+        vollst:Math.round(vollst*10)/10, befuell:Math.round(befuell*10)/10, erkennung:Math.round(erkennung*10)/10,
+        quelle:"av", n:d.n, off:5+(h("d")%55),
+        qsl:{ sicher, unsicher, nicht, korrigiert, bestaetigt, sonstige },
+      });
+    });
+  });
+  return rows;
+}
 function dpIsoToday(){
   const d = new Date();
   return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
@@ -1089,8 +1170,16 @@ const QSL_DELTA_OHNE = 455;
 /* ============================================================
    RENDER — Tab 2: Datenpool & Auswertbarkeit
    ============================================================ */
+function getDpZifferMatches(){ return matchGoZiffern(dpZifferQuery); }
 function getFilteredDpRows(){
-  let rows = DATENPOOL_FELDER;
+  const q = dpZifferQuery.trim();
+  let rows;
+  if(q){
+    const matches = getDpZifferMatches();
+    rows = matches.length ? buildGoZifferRows(matches) : [];
+  } else {
+    rows = DATENPOOL_FELDER;
+  }
   if(activeDpDokArt!=="alle") rows = rows.filter(r=>r.dokArt===activeDpDokArt || r.dokArt==="Alle Dok.-Arten");
   if(activeDpZielstatus!=="alle") rows = rows.filter(r=>r.zielstatus===activeDpZielstatus || r.zielstatus===null);
   rows = rows.filter(r=>dpRowLieferdatum(r)<=activeDpDate);
@@ -1100,29 +1189,41 @@ function renderDpKpi(){
   const rows = getFilteredDpRows();
   const avg = k => rows.length ? (rows.reduce((s,r)=>s+dpKanalValue(r[k],activeDpKanal,k),0)/rows.length) : 0;
   const kanalSuffix = activeDpKanal==="alle" ? "" : " · Kanal: "+DP_KANAL_LABEL[activeDpKanal];
+  const zifferActive = dpZifferQuery.trim().length>0;
+  const felderLabel = zifferActive ? "Treffer GO-Ziffer-Suche" : "Angeforderte Datenfelder";
+  const felderTotal = zifferActive ? (GO_ZIFFERN.length*DP_DOKARTEN.length) : DATENPOOL_FELDER.length;
   document.getElementById("dp-kpi").innerHTML = [
     ['Ø Vollständigkeit', rows.length?avg("vollst").toFixed(1).replace(".",",")+" %":"—", rows.length&&avg("vollst")>=90?"ok":"warn"],
     ['Ø Befüllungsqualität', rows.length?avg("befuell").toFixed(1).replace(".",",")+" %":"—", rows.length&&avg("befuell")>=90?"ok":"warn"],
     ['Ø Erkennungsquote', rows.length?avg("erkennung").toFixed(1).replace(".",",")+" %":"—", rows.length&&avg("erkennung")>=90?"ok":"warn"],
-    ['Angeforderte Datenfelder', rows.length+" von "+DATENPOOL_FELDER.length+kanalSuffix, "info"],
+    [felderLabel, rows.length+(zifferActive?"":" von "+felderTotal)+kanalSuffix, "info"],
   ].map(([l,v,c])=>'<div class="kpi-tile"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></div>').join("")+
   '<div class="kpi-tile kpi-tile--wide"><div class="kpi-num info">'+fmtDateDe(activeDpDate)+'</div>'+
     '<div class="kpi-label">Datenpool-Stand</div>'+
     '<div class="kpi-tile-note">Datum, an dem das Datenfeld in den Datenpool geliefert wurde.</div></div>';
 }
 function renderDpThead(){
-  const ths = ['<th>Datenfeld</th>'];
+  const zifferActive = dpZifferQuery.trim().length>0;
+  const ths = ['<th>'+(zifferActive?"GO-Ziffer":"Datenfeld")+'</th>'];
   DP_COLUMNS.forEach(c=>{ if(dpColumnState[c.key]) ths.push('<th>'+esc(c.label)+'</th>'); });
   document.getElementById("dp-thead").innerHTML = '<tr>'+ths.join("")+'</tr>';
 }
 function renderDpTable(){
   renderDpThead();
   const rows = getFilteredDpRows();
+  const zifferActive = dpZifferQuery.trim().length>0;
   const kanalNote = activeDpKanal==="alle" ? "" : " · Kanal: "+DP_KANAL_LABEL[activeDpKanal];
   const dokNote = activeDpDokArt==="alle" ? "" : " · "+activeDpDokArt;
   const zielNote = activeDpZielstatus==="alle" ? "" : " · AV-Zielstatus: "+activeDpZielstatus;
-  document.getElementById("dp-count").textContent = rows.length+" von "+DATENPOOL_FELDER.length+" Datenfeldern"+dokNote+zielNote+kanalNote;
+  if(zifferActive){
+    const matches = getDpZifferMatches();
+    const zifferNote = matches.length ? " · GO-Ziffer-Suche: "+matches.map(z=>z.nr).join(", ") : " · GO-Ziffer-Suche „"+esc(dpZifferQuery.trim())+"“ ohne Treffer";
+    document.getElementById("dp-count").textContent = rows.length+" Zeile(n)"+dokNote+kanalNote+zifferNote;
+  } else {
+    document.getElementById("dp-count").textContent = rows.length+" von "+DATENPOOL_FELDER.length+" Datenfeldern"+dokNote+zielNote+kanalNote;
+  }
   const colCount = 1 + DP_COLUMNS.filter(c=>dpColumnState[c.key]).length;
+  const emptyMsg = zifferActive ? "Keine GO-Ziffer gefunden für „"+esc(dpZifferQuery.trim())+"“." : "Keine Datenfelder in dieser Auswahl.";
   document.getElementById("dp-body").innerHTML = rows.length ? rows.map(r=>{
     const vollst = dpKanalValue(r.vollst, activeDpKanal, "vollst");
     const befuell = dpKanalValue(r.befuell, activeDpKanal, "befuell");
@@ -1135,7 +1236,7 @@ function renderDpTable(){
     if(dpColumnState.erkennung) cells.push('<td>'+bar(erkennung)+'</td>');
     if(dpColumnState.quelle) cells.push('<td><span class="badge info"><span class="dot"></span>'+(r.quelle==="av"?"AV (Datenextraktion)":"Erfassung")+'</span></td>');
     return '<tr>'+cells.join("")+'</tr>';
-  }).join("") : '<tr><td colspan="'+colCount+'" class="cell-empty">Keine Datenfelder in dieser Auswahl.</td></tr>';
+  }).join("") : '<tr><td colspan="'+colCount+'" class="cell-empty">'+emptyMsg+'</td></tr>';
   document.querySelectorAll("#dp-body .qsl-trigger").forEach(btn=>{
     btn.addEventListener("click", ()=>openQslModal(btn.dataset.rowid));
   });
@@ -1145,7 +1246,8 @@ let dpTableCollapsed = false;
 function updateDpTableCollapsedHint(rowCount){
   const hint = document.getElementById("dp-table-collapsed-hint");
   if(dpTableCollapsed){
-    hint.textContent = "▸ Tabelle eingeklappt — "+rowCount+" Datenfelder ausgeblendet. Klicken zum Ausklappen.";
+    const noun = dpZifferQuery.trim() ? "Zeile(n)" : "Datenfelder";
+    hint.textContent = "▸ Tabelle eingeklappt — "+rowCount+" "+noun+" ausgeblendet. Klicken zum Ausklappen.";
   }
 }
 function setDpTableCollapsed(collapsed){
@@ -1213,7 +1315,7 @@ function donutSegments(dist, n){
     '<text x="'+cx+'" y="'+(cy+11)+'" text-anchor="middle" class="donut-center-lbl">Datensätze</text>';
 }
 function openQslModal(rowId){
-  const row = DATENPOOL_FELDER.find(r=>r.id===rowId);
+  const row = getFilteredDpRows().find(r=>r.id===rowId);
   if(!row) return;
   document.getElementById("qsl-modal-title").textContent = "QSL-Verteilung — "+row.feld;
   document.getElementById("qsl-modal-sub").textContent = row.dokArt+" · Vollständigkeit "+row.vollst.toFixed(1).replace(".",",")+" % · "+row.n.toLocaleString("de-DE")+" betrachtete Datensätze";
@@ -1441,6 +1543,10 @@ document.getElementById("dp-kanal-filter").querySelectorAll(".filter-chip").forE
 document.getElementById("av-search").addEventListener("input", renderAvTable);
 document.getElementById("dp-table-toggle").addEventListener("click", ()=>setDpTableCollapsed(!dpTableCollapsed));
 document.getElementById("dp-table-collapsed-hint").addEventListener("click", ()=>setDpTableCollapsed(false));
+document.getElementById("dp-ziffer-search").addEventListener("input", e=>{
+  dpZifferQuery = e.target.value;
+  renderDpKpi(); renderDpTable();
+});
 
 document.getElementById("sd-filter").querySelectorAll(".filter-chip").forEach(chip=>{
   chip.addEventListener("click", ()=>{
