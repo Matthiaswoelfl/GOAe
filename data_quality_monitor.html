@@ -276,6 +276,7 @@
   .modal-backdrop{position:fixed; inset:0; background:rgba(10,14,26,.5); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50;}
   .modal-backdrop[hidden]{display:none;}
   .modal-card{background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow-md); max-width:680px; width:100%; max-height:88vh; overflow-y:auto; padding:22px 26px;}
+  .modal-card--wide{max-width:920px;}
   .modal-head{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:4px;}
   .modal-title{font-size:1.1rem; font-weight:800; margin:0;}
   .modal-sub{font-size:.8rem; color:var(--ink-soft); margin:2px 0 0;}
@@ -293,6 +294,20 @@
   .qsl-legend-label{font-weight:700; color:var(--ink);}
   .qsl-legend-val{font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; margin-left:6px;}
   .qsl-legend-code{display:block; font-size:.72rem; color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; margin-top:1px;}
+  .qsl-legend-qsl{display:block; font-size:.76rem; font-weight:700; color:var(--c-info); font-family:"IBM Plex Mono",monospace; margin-top:4px;}
+
+  .subhead-row{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin:26px 0 4px;}
+  .subhead-row .subhead{margin:0;}
+  .qsl-glossar-trigger{
+    appearance:none; cursor:pointer; font:600 .78rem "Source Sans 3",sans-serif; color:var(--c-info);
+    background:var(--c-info-bg); border:1px solid transparent; border-radius:999px; padding:7px 13px;
+    display:inline-flex; align-items:center; gap:6px; transition:filter .12s ease;
+  }
+  .qsl-glossar-trigger:hover{filter:brightness(0.95);}
+  .qsl-glossar-trigger .icon{width:14px; height:14px; flex:none;}
+  .qsl-glossar-link{margin-top:18px; width:100%; justify-content:center; background:var(--surface-2); color:var(--ink-soft); border:1px dashed var(--border);}
+  .qsl-glossar-link:hover{color:var(--ink); border-color:var(--ink-soft);}
+  .qsl-glossar-code{font-weight:800; color:var(--ink); white-space:nowrap;}
 
   @media (max-width:860px){
     .topbar{flex-wrap:wrap;}
@@ -348,8 +363,14 @@
 
       <div class="kpi-row" id="dp-kpi"></div>
 
-      <div class="subhead">Datenpool-Dashboard je Datenfeld</div>
-      <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit, Befüllungsqualität und Erkennungsquote je angefordertem Datenfeld (inkl. AV-Zielstatus aus dem Extraktionskatalog). Filterbar nach Dok.-Art, AV-Zielstatus, Datenpool-Stand und Eingangskanal.</p>
+      <div class="subhead-row">
+        <div class="subhead">Datenpool-Dashboard je Datenfeld</div>
+        <button type="button" class="qsl-glossar-trigger btn btn-ghost">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 16.5h.01"/><circle cx="12" cy="12" r="9"/></svg>
+          QSL-Verzeichnis
+        </button>
+      </div>
+      <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit, Befüllungsqualität und Erkennungsquote je angefordertem Datenfeld (inkl. AV-Zielstatus aus dem Extraktionskatalog). Filterbar nach Dok.-Art, AV-Zielstatus, Datenpool-Stand und Eingangskanal. Klick auf die Vollständigkeit öffnet die QSL-Verteilung inkl. Qualitätsschlüssel je Feld.</p>
       <div class="filters">
         <span class="filter-dim-label">Dok.-Art</span>
         <div class="filter-group" id="dp-dokart-filter">
@@ -493,6 +514,31 @@
       <svg class="donut-svg" id="qsl-donut-svg" viewBox="0 0 100 100" role="img" aria-label="QSL-Verteilung als Donut-Diagramm"></svg>
       <ul class="qsl-legend" id="qsl-legend"></ul>
     </div>
+    <button type="button" class="qsl-glossar-trigger qsl-glossar-link">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 16.5h.01"/><circle cx="12" cy="12" r="9"/></svg>
+      QSL-Verzeichnis: Was bedeutet welcher Qualitätsschlüssel?
+    </button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="qsl-glossar-modal" hidden>
+  <div class="modal-card modal-card--wide" role="dialog" aria-modal="true" aria-labelledby="qsl-glossar-title">
+    <div class="modal-head">
+      <div>
+        <h2 class="modal-title" id="qsl-glossar-title">QSL-Verzeichnis</h2>
+        <p class="modal-sub">Alle 41 Qualitätsschlüssel-Codes aus dem Fachkonzept „VATB QSL" — welcher QSL bedeutet was.</p>
+      </div>
+      <button type="button" class="modal-close" id="qsl-glossar-close" aria-label="Schließen"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="filters">
+      <input class="filter-search" id="qsl-glossar-search" type="search" placeholder="QSL-Verzeichnis durchsuchen (Code, Result-Status, Bedeutung)…">
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>QSL</th><th>Result-Status</th><th>Bedeutung</th></tr></thead>
+        <tbody id="qsl-glossar-body"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -520,13 +566,80 @@ function bar(pct, cls){
 /* ============================================================
    DATA — Tab 2: Datenpool & Auswertbarkeit
    ============================================================ */
+/* Qualitätsschlüssel (QSL): numerische Codes gemäß Fachkonzept „VATB QSL" — siehe QSL_GLOSSAR
+   unten für alle 41 Einzelcodes. Die 6 Kategorien hier fassen die fachlich zusammengehörigen
+   QSL-Gruppen für Donut-Diagramm und Matrix zusammen; qsl = die darin enthaltenen Einzelcodes. */
 const QSL_KATEGORIEN = [
-  { key:"sicher", label:"Sicher gefunden", code:"AIDA: Resultstatus leer", slot:1 },
-  { key:"unsicher", label:"Unsicher gefunden", code:"AIDA: Resultstatus „U“", slot:2 },
-  { key:"nicht", label:"Nicht gefunden", code:"AIDA: Resultstatus „N“", slot:3 },
-  { key:"korrigiert", label:"Manuell korrigiert", code:"Prokey: „T“ / „C“", slot:4 },
-  { key:"bestaetigt", label:"Manuell bestätigt", code:"Prokey: „A“ / „M“ / „V“", slot:5 },
-  { key:"sonstige", label:"Sonstige Verfahren", code:"GTI „G“ · ISH/Padline „I“ · AV-Auto-Prokey „R“ → QSL 12", slot:6 },
+  { key:"sicher", label:"Sicher gefunden", qsl:"2 · 12", resultStatus:"AIDA: Resultstatus leer", slot:1 },
+  { key:"unsicher", label:"Unsicher gefunden", qsl:"1 · 11", resultStatus:"AIDA: Resultstatus „U“", slot:2 },
+  { key:"nicht", label:"Nicht gefunden", qsl:"0 · 10", resultStatus:"AIDA: Resultstatus „N“", slot:3 },
+  { key:"korrigiert", label:"Manuell korrigiert", qsl:"20 · 21 · 22", resultStatus:"Prokey: „T“ / „C“ (bzw. 40–42 im Hintergrund-/F4-Fall)", slot:4 },
+  { key:"bestaetigt", label:"Manuell bestätigt", qsl:"23 · 24 · 25", resultStatus:"Prokey: „A“ / „M“ / „V“ (bzw. 43–45 im Hintergrund-/F4-Fall)", slot:5 },
+  { key:"sonstige", label:"Sonstige Verfahren", qsl:"30 · 50–69 · 99 · -1", resultStatus:"KH-Puffer · GTI „G“ · ISH/Padline „I“ · technisch ungültig", slot:6 },
+];
+
+/* QSL-Verzeichnis: vollständige Liste aller 41 Qualitätsschlüssel-Codes aus dem Fachkonzept
+   „VATB QSL" (Eich, P., IVKSK — Stand 27.02.2024), gruppiert nach den dort verwendeten Familien. */
+const QSL_GLOSSAR = [
+  { gruppe:"Sonderfall", einträge:[
+    { qsl:"-1", resultStatus:"—", bedeutung:"Wert „ungültig“ (nicht verwendbar). Gibt es nur bei nachfolgenden Datentabellen, z. B. im Datenpool, wenn der Wert nicht gefunden wurde oder ungültig ist (Beispiel: Feld wird doppelt geliefert)." },
+  ]},
+  { gruppe:"1-stellig — nur Autoprokey, nie durch die manuelle AV gelaufen (auch nicht im Hintergrund)", einträge:[
+    { qsl:"0", resultStatus:"„N“", bedeutung:"Wert nicht gefunden von ICR und nie in die AV gegangen." },
+    { qsl:"1", resultStatus:"„U“", bedeutung:"Wert unsicher gefunden von ICR und nie in die AV gegangen (keine Formatprüfungen)." },
+    { qsl:"2", resultStatus:"leer", bedeutung:"Wert sicher gefunden von ICR und nie in die AV gegangen (keine Formatprüfungen)." },
+  ]},
+  { gruppe:"10er — durch Autoformat/Autoprokey akzeptiert, ohne Sachbearbeiter", einträge:[
+    { qsl:"10", resultStatus:"„NA“ / „AN“ / „ANV“ / „NR“ / „RN“", bedeutung:"Wert nicht gefunden von ICR und durch die automatischen Formatprüfungen in der AV akzeptiert." },
+    { qsl:"11", resultStatus:"„UA“ / „AU“ / „AUV“ / „UR“ / „RU“", bedeutung:"Wert unsicher gefunden von ICR und durch die automatischen Formatprüfungen in der AV akzeptiert." },
+    { qsl:"12", resultStatus:"„A“ / „AV“ / „R“ / leer+„A“", bedeutung:"Wert sicher gefunden von ICR und durch die automatischen Formatprüfungen in der AV akzeptiert. (Auch der State „R“ des neuen AV-Auto-Prokey führt zu QSL 12, Ticket ERGO02612411.)" },
+  ]},
+  { gruppe:"20er — komplett manuell erfasst, bestätigt oder erneut eingegeben; immer ein Sachbearbeiter beteiligt", einträge:[
+    { qsl:"20", resultStatus:"„NAMCT“ / „ACNT“ / „ACMNT“", bedeutung:"Wert nicht gefunden von ICR und durch einen Mitarbeiter der AV erfasst." },
+    { qsl:"21", resultStatus:"„UAMCT“ / „ACTU“ / „ACMTU“", bedeutung:"Wert unsicher gefunden von ICR und durch einen Mitarbeiter der AV verändert." },
+    { qsl:"22", resultStatus:"„AMCT“ / „ACT“ / „ACMT“", bedeutung:"Wert sicher gefunden von ICR und durch einen Mitarbeiter der AV verändert." },
+    { qsl:"23", resultStatus:"„NAMT“ / „AMN“ / „ANT“ / „AMNT“", bedeutung:"Wert nicht gefunden von ICR und durch einen Mitarbeiter der AV nochmals identisch (d. h. leer) eingegeben und/oder so bestätigt." },
+    { qsl:"24", resultStatus:"„AMU“ / „ATU“ / „UAMT“ / „AMTU“", bedeutung:"Wert unsicher gefunden von ICR und durch einen Mitarbeiter der AV nochmals identisch eingegeben und/oder so bestätigt." },
+    { qsl:"25", resultStatus:"„AMT“ / „AM“ / „AT“ / leer+„AMT“", bedeutung:"Wert sicher gefunden von ICR und durch einen Mitarbeiter der AV nochmals identisch eingegeben und/oder so bestätigt." },
+  ]},
+  { gruppe:"30 — Krankenhausfallpuffer", einträge:[
+    { qsl:"30", resultStatus:"—", bedeutung:"Wert kommt aus dem „Krankenhausfallpuffer“ (QSL 30 wird aus dem KH-Puffer geliefert)." },
+  ]},
+  { gruppe:"40er — Feld war mit F4 im Hintergrund und wurde durch den Sachbearbeiter manuell bearbeitet, obwohl es nicht in Korrektur vorgelegt wurde", einträge:[
+    { qsl:"40", resultStatus:"„NAMCTV“ / „ACNTV“ / „AMNTV“", bedeutung:"Wert nicht gefunden von ICR und durch einen Mitarbeiter der AV erfasst, obwohl das Feld nicht in Korrektur vorgelegt wurde." },
+    { qsl:"41", resultStatus:"„UAMCTV“ / „ACTUV“ / „ACMTUV“", bedeutung:"Wert unsicher gefunden von ICR und durch einen Mitarbeiter der AV verändert, obwohl das Feld nicht in Korrektur vorgelegt wurde." },
+    { qsl:"42", resultStatus:"„AMCTV“ / „ACTV“ / „ACMTV“", bedeutung:"Wert sicher gefunden von ICR und durch einen Mitarbeiter der AV verändert, obwohl das Feld nicht in Korrektur vorgelegt wurde." },
+    { qsl:"43", resultStatus:"„NAMTV“ / „AMNV“ / „ANTV“ / „AMNTV“", bedeutung:"Wert nicht gefunden von ICR und durch einen Mitarbeiter der AV nochmals identisch (d. h. leer) eingegeben und/oder so bestätigt, obwohl das Feld nicht in Korrektur vorgelegt wurde." },
+    { qsl:"44", resultStatus:"„UAMTV“ / „AMUV“ / „ATUV“ / „AMTUV“", bedeutung:"Wert unsicher gefunden von ICR und durch einen Mitarbeiter der AV nochmals identisch eingegeben und/oder so bestätigt, obwohl das Feld nicht in Korrektur vorgelegt wurde." },
+    { qsl:"45", resultStatus:"„AMTV“ / „AMV“ / „ATV“ / leer+„AMTV“", bedeutung:"Wert sicher gefunden von ICR und durch einen Mitarbeiter der AV nochmals identisch eingegeben und/oder so bestätigt, obwohl das Feld nicht in Korrektur vorgelegt wurde." },
+  ]},
+  { gruppe:"50er — GTI-Werte (fraglich, ob noch genutzt)", einträge:[
+    { qsl:"50", resultStatus:"„AG“ / „AGV“ / leer+„AG“", bedeutung:"Wert von GTI geliefert und durch die automatischen Formatprüfungen in der AV akzeptiert." },
+    { qsl:"51", resultStatus:"„AGT“ / „AGM“ / „AGMT“", bedeutung:"Wert von GTI geliefert und durch einen Mitarbeiter der AV nochmals identisch eingegeben und/oder so bestätigt." },
+    { qsl:"52", resultStatus:"„ACGT“ / „ACGMT“", bedeutung:"Wert von GTI geliefert und durch einen Mitarbeiter der AV verändert." },
+    { qsl:"53", resultStatus:"„AGMV“ / „AGTV“ / „AGMTV“", bedeutung:"Wert von GTI geliefert und durch einen Mitarbeiter der AV nochmals identisch eingegeben und/oder so bestätigt, obwohl das Feld nicht in Korrektur vorgelegt wurde." },
+    { qsl:"54", resultStatus:"„ACGTV“ / „ACGMTV“", bedeutung:"Wert von GTI geliefert und durch einen Mitarbeiter der AV verändert, obwohl das Feld nicht in Korrektur vorgelegt wurde." },
+    { qsl:"55", resultStatus:"„UAG“ / „AGU“ / „AGUV“", bedeutung:"Wert von GTI unsicher geliefert und durch die automatischen Formatprüfungen in der AV akzeptiert." },
+    { qsl:"56", resultStatus:"„AGMU“ / „AGTU“ / „AGMTU“", bedeutung:"Wert von GTI unsicher geliefert und durch einen Mitarbeiter der AV nochmals identisch eingegeben und/oder so bestätigt." },
+    { qsl:"57", resultStatus:"„ACGTU“ / „ACGMTU“", bedeutung:"Wert von GTI unsicher geliefert und durch einen Mitarbeiter der AV verändert." },
+    { qsl:"58", resultStatus:"„AGMUV“ / „AGTUV“ / „AGMTUV“", bedeutung:"Wert von GTI unsicher geliefert und durch einen Mitarbeiter der AV nochmals identisch eingegeben und/oder so bestätigt, obwohl das Feld nicht in Korrektur vorgelegt wurde." },
+    { qsl:"59", resultStatus:"„ACGTUV“", bedeutung:"Wert von GTI unsicher geliefert und durch einen Mitarbeiter der AV verändert, obwohl das Feld nicht in Korrektur vorgelegt wurde." },
+  ]},
+  { gruppe:"60er — ISH/Padline-Werte", einträge:[
+    { qsl:"60", resultStatus:"„AI“ / „AIV“", bedeutung:"Wert von ISH/Padline geliefert und durch die automatischen Formatprüfungen in der AV akzeptiert." },
+    { qsl:"61", resultStatus:"„AIT“ / „AIM“ / „AIMT“", bedeutung:"Wert von ISH/Padline geliefert und durch einen Mitarbeiter der AV nochmals identisch eingegeben und/oder so bestätigt." },
+    { qsl:"62", resultStatus:"„ACIT“ / „ACIMT“", bedeutung:"Wert von ISH/Padline geliefert und durch einen Mitarbeiter der AV verändert." },
+    { qsl:"63", resultStatus:"„AIMV“ / „AITV“ / „AIMTV“", bedeutung:"Wert von ISH/Padline geliefert und durch einen Mitarbeiter der AV nochmals identisch eingegeben und/oder so bestätigt, obwohl das Feld nicht in Korrektur vorgelegt wurde." },
+    { qsl:"64", resultStatus:"„ACITV“ / „ACIMTV“", bedeutung:"Wert von ISH/Padline geliefert und durch einen Mitarbeiter der AV verändert, obwohl das Feld nicht in Korrektur vorgelegt wurde." },
+    { qsl:"65", resultStatus:"„UAG“ / „AIU“ / „AIUV“", bedeutung:"Wert von ISH/Padline unsicher geliefert und durch die automatischen Formatprüfungen in der AV akzeptiert." },
+    { qsl:"66", resultStatus:"„AITU“ / „AIMTU“", bedeutung:"Wert von ISH/Padline unsicher geliefert und durch einen Mitarbeiter der AV nochmals identisch eingegeben und/oder so bestätigt." },
+    { qsl:"67", resultStatus:"„ACITU“ / „ACIMTU“", bedeutung:"Wert von ISH/Padline unsicher geliefert und durch einen Mitarbeiter der AV verändert." },
+    { qsl:"68", resultStatus:"„AITUV“ / „AIMTUV“", bedeutung:"Wert von ISH/Padline unsicher geliefert und durch einen Mitarbeiter der AV nochmals identisch eingegeben und/oder so bestätigt, obwohl das Feld nicht in Korrektur vorgelegt wurde." },
+    { qsl:"69", resultStatus:"„ACITUV“", bedeutung:"Wert von ISH/Padline unsicher geliefert und durch einen Mitarbeiter der AV verändert, obwohl das Feld nicht in Korrektur vorgelegt wurde." },
+  ]},
+  { gruppe:"99 — technisch", einträge:[
+    { qsl:"99", resultStatus:"ungültiger Buchstabe/Wert", bedeutung:"Rein technischer QSL. Wird ausgeworfen, wenn aus dem Result-Status nichts abgeleitet werden kann." },
+  ]},
 ];
 
 /* Angeforderte Datenfelder: die 6 universellen (dok.-artübergreifenden) Erfassungsfelder,
@@ -1076,17 +1189,46 @@ function openQslModal(rowId){
     return '<li><span class="qsl-swatch" style="background:var(--qsl-'+k.slot+');"></span>'+
       '<span><span class="qsl-legend-label">'+esc(k.label)+'</span>'+
       '<span class="qsl-legend-val">'+pct+' % · '+count.toLocaleString("de-DE")+'</span>'+
-      '<span class="qsl-legend-code">'+esc(k.code)+'</span></span></li>';
+      '<span class="qsl-legend-qsl">Qualitätsschlüssel: '+esc(k.qsl)+'</span>'+
+      '<span class="qsl-legend-code">'+esc(k.resultStatus)+'</span></span></li>';
   }).join("");
   document.getElementById("qsl-modal").hidden = false;
 }
+function openQslGlossar(){
+  document.getElementById("qsl-glossar-body").innerHTML = QSL_GLOSSAR.map(g=>
+    '<tr class="ov-section"><td colspan="3">'+esc(g.gruppe)+'</td></tr>'+
+    g.einträge.map(e=>
+      '<tr><td class="mono qsl-glossar-code">'+esc(e.qsl)+'</td>'+
+      '<td class="k-quelle">'+esc(e.resultStatus)+'</td>'+
+      '<td>'+esc(e.bedeutung)+'</td></tr>'
+    ).join("")
+  ).join("");
+  document.getElementById("qsl-glossar-modal").hidden = false;
+}
+function closeQslGlossar(){ document.getElementById("qsl-glossar-modal").hidden = true; }
 function closeQslModal(){ document.getElementById("qsl-modal").hidden = true; }
 document.getElementById("qsl-modal-close").addEventListener("click", closeQslModal);
 document.getElementById("qsl-modal").addEventListener("click", e=>{
   if(e.target.id==="qsl-modal") closeQslModal();
 });
+document.querySelectorAll(".qsl-glossar-trigger").forEach(btn=>{
+  btn.addEventListener("click", openQslGlossar);
+});
+document.getElementById("qsl-glossar-close").addEventListener("click", closeQslGlossar);
+document.getElementById("qsl-glossar-modal").addEventListener("click", e=>{
+  if(e.target.id==="qsl-glossar-modal") closeQslGlossar();
+});
+document.getElementById("qsl-glossar-search").addEventListener("input", e=>{
+  const q = e.target.value.trim().toLowerCase();
+  document.querySelectorAll("#qsl-glossar-body tr").forEach(tr=>{
+    if(tr.classList.contains("ov-section")){ tr.hidden = false; return; }
+    const match = !q || tr.textContent.toLowerCase().includes(q);
+    tr.hidden = !match;
+  });
+});
 document.addEventListener("keydown", e=>{
   if(e.key==="Escape" && !document.getElementById("qsl-modal").hidden) closeQslModal();
+  if(e.key==="Escape" && !document.getElementById("qsl-glossar-modal").hidden) closeQslGlossar();
 });
 
 function renderDatenpool(){ renderDpKpi(); renderDpTable(); renderAvTable(); }
