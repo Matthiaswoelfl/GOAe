@@ -120,6 +120,17 @@
   .kpi-num{font-size:1.5rem; font-weight:800; font-variant-numeric:tabular-nums; line-height:1.15;}
   .kpi-num.ok{color:var(--c-ok);} .kpi-num.warn{color:var(--c-warn);} .kpi-num.crit{color:var(--c-crit);} .kpi-num.info{color:var(--c-info);}
   .kpi-label{font-size:.72rem; color:var(--ink-soft); font-weight:600; margin-top:4px; line-height:1.4;}
+  .kpi-tile--click{appearance:none; font:inherit; text-align:left; cursor:pointer; transition:box-shadow .12s ease, transform .1s ease;}
+  .kpi-tile--click:hover{box-shadow:0 3px 10px rgba(20,25,40,.14); transform:translateY(-1px);}
+
+  .beleg-agg-headline{
+    display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; background:var(--navy); color:#fff;
+    border-radius:var(--radius); padding:18px 22px; margin-bottom:16px;
+  }
+  .beleg-agg-headline .num{font-size:2.1rem; font-weight:800; font-variant-numeric:tabular-nums; line-height:1;}
+  .beleg-agg-headline .sub{font-size:.86rem; opacity:.88;}
+  .beleg-agg-reason{font-size:.78rem; color:var(--ink-soft);}
+  .beleg-agg-zt{display:inline-flex; flex-wrap:wrap; gap:4px;}
 
   /* ---------- Given/When/Then scenario box ---------- */
   .gwt-box{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; margin-bottom:20px; box-shadow:var(--shadow-sm);}
@@ -362,7 +373,7 @@
     <div class="view-wrap">
       <div class="view-head">
         <h1>Prüfung Datenpool und Auswertbarkeit der Datenqualität</h1>
-        <p>Analyse der Qualitätsschlüssel aus dem Eingangsmanagement und Bewertung der Vollständigkeit, Befüllungsqualität und Erkennungsquote der bereitgestellten Datenfelder im Datenpool — tagesaktuell auf Datenfeld-Ebene.</p>
+        <p>Zielbild grundsätzlich für alle Dokumentarten, aktueller Fokus auf die 6 neuen GOÄ-Dok.-Arten. Zweck: Identifikation von Ursachen und Fehlerquellen im EM — bis auf Belegebene —, nicht nur Anzeige übergeordneter KPIs. Bewertung der Vollständigkeit, Befüllungsqualität und Erkennungsquote tagesaktuell auf Datenfeld- und Belegebene.</p>
       </div>
 
       <div class="gwt-box">
@@ -372,6 +383,27 @@
       </div>
 
       <div class="kpi-row" id="dp-kpi"></div>
+
+      <div class="subhead-row">
+        <div class="subhead">Beleg-Qualität — aggregierte Zwischenebene</div>
+      </div>
+      <p class="subhead-sub">Zwischenebene zwischen Einzelfeldern und den Filterattributen: macht eine <b>absolute</b> Aussage zur Datenqualität je Beleg (nicht nur Prozent-Durchschnitt über Felder) und ist der Einstieg in die Ursachenanalyse. Beispiel-Stichprobe von <span id="beleg-agg-size"></span> Belegen — filterbar nach Dok.-Art, Zeilentyp und Datenpool-Stand; Eingangskanal/ISH wirken zusätzlich auf die angezeigte Vollständigkeit je Beleg. AV-Zielstatus ist auf Belegebene nicht anwendbar (felderspezifisch).</p>
+      <div class="beleg-agg-headline" id="beleg-agg-headline"></div>
+      <div class="kpi-row" id="beleg-agg-kpi"></div>
+      <div class="filters">
+        <div class="filter-group" id="beleg-agg-sicht-toggle">
+          <button class="filter-chip" type="button" data-sicht="alle" data-active="true">Sicht 1 · Alle Belege</button>
+          <button class="filter-chip" type="button" data-sicht="unvollstaendig">Sicht 2 · Nur unvollständige Belege</button>
+        </div>
+        <span class="filter-count" id="beleg-agg-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Beleg-ID</th><th>Dok.-Art</th><th>Vollständigkeit</th><th>Fehlende Felder</th><th>Enthaltene Zeilentypen</th><th>Vermuteter Grund</th></tr></thead>
+          <tbody id="beleg-agg-body"></tbody>
+        </table>
+      </div>
+      <p class="subhead-sub dp-ziffer-hint">Hinweis zur technischen Komplexität (Workshop-Feedback): Ein echter Abgleich auf jeder tieferen Zeilenebene mit dem Datenpool ist deutlich aufwendiger als hier dargestellt. Diese Ansicht simuliert plausible Ergebnisse zur Veranschaulichung, kein Live-Abgleich. Ob die benötigten Attribute vom EM geliefert werden können, ist mit dem EM-Team zu klären (MVP-Annahme).</p>
 
       <div class="subhead-row">
         <div class="subhead">Datenpool-Dashboard je Datenfeld</div>
@@ -451,11 +483,25 @@
           <button class="filter-chip" type="button" data-kanal="app">App</button>
         </div>
       </div>
+      <p class="subhead-sub dp-ziffer-hint">Grobe Clusterung aus über 100 realen Sub-Kanälen (z. B. Fax, Brief, Scan-Dienstleister, E-Mail-Anhang …) — hier bewusst vereinfacht dargestellt.</p>
+      <div class="filters">
+        <span class="filter-dim-label">Verarbeitungsverfahren</span>
+        <div class="filter-group" id="dp-ish-filter">
+          <button class="filter-chip" type="button" data-ish="alle" data-active="true">Alle</button>
+          <button class="filter-chip" type="button" data-ish="ish">ISH/Padline</button>
+          <button class="filter-chip" type="button" data-ish="nichtish">Nicht ISH</button>
+        </div>
+      </div>
+      <p class="subhead-sub dp-ziffer-hint">ISH/Padline ist ein Verarbeitungsverfahren, kein Eingangskanal — es kann in jedem Kanal auftreten und ist daher unabhängig vom Eingangskanal-Filter auswertbar.</p>
       <div class="filters">
         <span class="filter-dim-label">GO-Ziffer-Suche</span>
         <input class="filter-search" id="dp-ziffer-search" type="search" placeholder="z. B. 1200 (Sonographie)…">
+        <div class="filter-group" id="dp-ziffer-sicht-toggle">
+          <button class="filter-chip" type="button" data-sicht="zeile" data-active="true">Zeilen-Sicht</button>
+          <button class="filter-chip" type="button" data-sicht="beleg">Beleg-Sicht</button>
+        </div>
       </div>
-      <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht aus und zeigt stattdessen je Dok.-Art eine Zeile mit den Auswertungen speziell für die gefundene(n) GO-Ziffer(n).</p>
+      <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht aus. Zeilen-Sicht: je Dok.-Art eine Zeile mit den Auswertungen der GO-Zeile selbst. Beleg-Sicht: Beispiel-Belege, die diese Ziffer enthalten, mit der Vollständigkeit des jeweils gesamten Belegs.</p>
       <div class="filters">
         <span class="filter-dim-label">VNR-Suche</span>
         <input class="filter-search" id="dp-vnr-search" type="search" placeholder="Versicherungsnummer eingeben, z. B. 552310-9…">
@@ -1017,7 +1063,9 @@ let activeDpDokArt = "alle";
 let activeDpZielstatus = "alle";
 let activeDpZeilentyp = "alle";
 let activeDpKanal = "alle";
+let activeDpIsh = "alle";
 let dpZifferQuery = "";
+let dpZifferSicht = "zeile";
 let dpVnrQuery = "";
 
 /* GO-Ziffer-Suche: echte GOÄneu-Ziffern aus dem Gebührenverzeichnis (Modul Belegwerkstatt).
@@ -1085,11 +1133,15 @@ function dpGenerateMetrics(seed){
   };
 }
 /* Je Dok.-Art plausible Zeilentyp-Kandidaten für GO-Ziffer-Treffer (RE-Dok.-Arten eher
-   GOÄ-lastig, HKP-Dok.-Arten eher GOZ/MLK-lastig als Kostenplan-Positionen). */
+   GOÄ-lastig, HKP-Dok.-Arten eher GOZ/MLK-lastig als Kostenplan-Positionen). Deckt alle
+   "regulären" Zeilentypen ab (7 Wegegeld/8 Auslage/14 GEBÜH/22 Differenzbetrag inklusive) —
+   die beiden Fehlerfall-Typen 20 (unbekannte Ziffer) und 21 (fehlende Ziffer) ergeben sich
+   erst auf Belegebene (siehe BELEG_POOL weiter unten), da eine GO-Ziffer-Suche per Definition
+   eine bekannte Ziffer trifft. */
 const DP_DOKART_ZEILENTYP_POOL = {
-  "3552":["1","2","3","4","5"], "3549":["1","2","3","4","5"],
-  "3559":["1","6","9"], "3567":["1","6","9"],
-  "3501":["6","9","10","11"], "3502":["6","9","10","11"],
+  "3552":["1","2","3","4","5","7","8","14"], "3549":["1","2","3","4","5","7","8","14","22"],
+  "3559":["1","6","9","22"], "3567":["1","6","9"],
+  "3501":["6","9","10","11"], "3502":["6","9","10","11","22"],
 };
 function buildGoZifferRows(matches){
   const rows = [];
@@ -1109,6 +1161,107 @@ function buildGoZifferRows(matches){
     });
   });
   return rows;
+}
+
+/* GO-Ziffer-Suche, Beleg-Sicht: zusätzlich zur Zeilen-Sicht (Qualität der GO-Zeile selbst,
+   s.o.) je Ziffer/Dok.-Art ein bis zwei Beispiel-Belege erzeugen, die diese Ziffer enthalten —
+   mit der Vollständigkeit des GESAMTEN Belegs (nicht nur der einen Zeile). Klärt die im
+   Workshop offene Frage "Zeile oder ganzer Beleg?" durch Angebot beider Sichten. */
+function buildGoZifferBelegRows(matches){
+  const rows = [];
+  matches.forEach(z=>{
+    DP_DOKARTEN.forEach(d=>{
+      const belegCount = 1 + (dpZifferHash(z.nr+"|"+d.code+"|belegcount")%2);
+      for(let i=0;i<belegCount;i++){
+        const seed = z.nr+"|"+d.code+"|belegsicht"+i;
+        const off = 1 + (dpZifferHash(seed+"|off")%90);
+        const belegId = "BLG-"+dpVnrPseudoDatum(off)+"-"+String(1000+(dpZifferHash(seed+"|seq")%9000));
+        const feldAnzahl = 14 + (dpZifferHash(seed+"|n")%22);
+        const m = dpGenerateMetrics(seed);
+        rows.push(Object.assign({
+          id:"zifferbeleg-"+z.nr+"-"+d.code+"-"+i,
+          feld:belegId+" — "+d.label+" (enthält GOÄ-Ziffer "+z.nr+")",
+          dokArt:d.label,
+          zielstatus:null, zeilentyp:null,
+          n:feldAnzahl, off,
+        }, m));
+      }
+    });
+  });
+  return rows.sort((a,b)=>a.off-b.off);
+}
+
+/* ============================================================
+   Beleg-Qualität: aggregierte Zwischenebene zwischen Einzelfeldern und Filterattributen
+   (Workshop-Feedback). Liefert eine ABSOLUTE Aussage zur Datenqualität je Beleg statt nur
+   Prozent-Durchschnitte über Felder — Grundlage für Sicht 1 (Gesamtquote) und Sicht 2
+   (Drilldown auf die unvollständigen Belege, inkl. vermutetem Grund) zur Ursachenanalyse.
+   Deterministisch generierte Beispiel-Stichprobe, kein Live-Abgleich mit dem Datenpool. */
+const BELEG_POOL_SIZE = 1000;
+const BELEG_AGG_GRUENDE = [
+  "Pflichtfeld „Diagnosetext“ nicht befüllt",
+  "GOÄ-Ziffer nicht eindeutig erkannt (ICR unsicher)",
+  "IBAN-Prüfziffer invalide",
+  "Faktor-Grund fehlt bei Faktor ≠ 1,0",
+  "Zahn/Region nicht angegeben",
+  "Unbekannte oder fehlende GO-Ziffer in einer Zeile",
+  "Name/Adresse des Leistungserbringers unvollständig",
+  "Rechnungsbetrag und Summe der Einzelpositionen weichen voneinander ab",
+];
+const BELEG_POOL = (function(){
+  const pool = [];
+  for(let i=0;i<BELEG_POOL_SIZE;i++){
+    const seed = "belegpool|"+i;
+    const h = salt => dpZifferHash(seed+"|"+salt);
+    const dok = DP_DOKARTEN[h("dok")%DP_DOKARTEN.length];
+    const off = h("off")%120;
+    const feldAnzahl = 14 + (h("n")%22);
+    const istVollstaendig = (h("complete")%100) < 80;
+    let vollst, anzahlFehlend, grund;
+    if(istVollstaendig){
+      vollst = 100; anzahlFehlend = 0; grund = null;
+    } else {
+      vollst = Math.round((60 + (h("v")%3500)/100)*10)/10;
+      anzahlFehlend = Math.max(1, Math.round(feldAnzahl*(100-vollst)/100));
+      grund = BELEG_AGG_GRUENDE[h("grund")%BELEG_AGG_GRUENDE.length];
+    }
+    const anzahlBefuellt = feldAnzahl - anzahlFehlend;
+    const befuell = Math.max(50, Math.min(100, vollst - (h("b")%300)/100));
+    const erkennung = Math.max(55, Math.min(100, vollst + 1 - (h("e")%250)/100));
+    const ztPool = DP_DOKART_ZEILENTYP_POOL[dok.code];
+    const ztCount = 1 + (h("ztc")%2);
+    const zeilentypen = [];
+    for(let k=0;k<ztCount;k++){
+      const zt = ztPool[h("zt"+k)%ztPool.length];
+      if(!zeilentypen.includes(zt)) zeilentypen.push(zt);
+    }
+    if(!istVollstaendig && h("fehlertyp")%3===0){
+      const fehlerZt = (h("fehlertyp2")%2===0) ? "20" : "21";
+      if(!zeilentypen.includes(fehlerZt)) zeilentypen.push(fehlerZt);
+    }
+    pool.push({
+      id:"belegpool-"+i,
+      belegId:"BLG-"+dpVnrPseudoDatum(off)+"-"+String(1000+(h("seq")%9000)),
+      dokArt:dok.label, off, feldAnzahl, anzahlBefuellt, anzahlFehlend,
+      istVollstaendig, vollst, befuell:Math.round(befuell*10)/10, erkennung:Math.round(erkennung*10)/10,
+      zeilentypen, grund,
+    });
+  }
+  return pool;
+})();
+let activeBelegAggSicht = "alle";
+function getFilteredBelegPool(){
+  let rows = BELEG_POOL;
+  if(activeDpDokArt!=="alle") rows = rows.filter(r=>r.dokArt===activeDpDokArt);
+  if(activeDpZeilentyp!=="alle") rows = rows.filter(r=>r.zeilentypen.includes(activeDpZeilentyp));
+  rows = rows.filter(r=>dpRowLieferdatum(r)<=activeDpDate);
+  return rows;
+}
+function belegAggEffectiveVollst(r){
+  let v = r.vollst;
+  if(activeDpKanal!=="alle") v += DP_KANAL_MODIFIER[activeDpKanal].vollst;
+  if(activeDpIsh!=="alle") v += DP_ISH_MODIFIER[activeDpIsh].vollst;
+  return Math.max(0, Math.min(100, v));
 }
 
 /* VNR-Suche: zu einer beliebig eingegebenen VNR werden deterministisch die im Datenpool
@@ -1174,6 +1327,15 @@ function dpKanalValue(base, kanal, metric){
   return Math.max(0, Math.min(100, base + mod));
 }
 
+/* Verarbeitungsverfahren ISH/Padline: laut Workshop ein Querschnitts-Verfahren, das in jedem
+   Eingangskanal auftreten kann und daher als eigener, mit dem Kanal kombinierbarer Filter
+   geführt wird statt als weiterer Kanal-Cluster (vgl. QSL-Verzeichnis, "sonstige Verfahren"). */
+const DP_ISH_LABEL = { alle:"Alle", ish:"ISH/Padline", nichtish:"Nicht ISH" };
+const DP_ISH_MODIFIER = {
+  ish:      { vollst:-3.2, befuell:-4.0, erkennung:-4.5 },
+  nichtish: { vollst:+0.3, befuell:+0.4, erkennung:+0.5 },
+};
+
 /* Datenpool-Stand (Datum): die Auswertungen schwanken je gewähltem Stichtag — ältere Stände
    zeigen tendenziell etwas niedrigere Werte (noch nicht alle Nacherfassungen/Korrekturen
    eingearbeitet), zusätzlich je Datenfeld/Ziffer ein deterministischer Tages-Jitter, damit
@@ -1189,6 +1351,7 @@ function dpDateOffset(rowId, dateIso, metric){
 function dpEffectiveValue(row, metric){
   let v = row[metric];
   if(activeDpKanal!=="alle") v += DP_KANAL_MODIFIER[activeDpKanal][metric];
+  if(activeDpIsh!=="alle") v += DP_ISH_MODIFIER[activeDpIsh][metric];
   v += dpDateOffset(row.id, activeDpDate, metric);
   return Math.max(0, Math.min(100, v));
 }
@@ -1298,7 +1461,7 @@ function getFilteredDpRows(){
     rows = buildVnrBelegRows(dpVnrQuery);
   } else if(mode==="ziffer"){
     const matches = getDpZifferMatches();
-    rows = matches.length ? buildGoZifferRows(matches) : [];
+    rows = matches.length ? (dpZifferSicht==="beleg" ? buildGoZifferBelegRows(matches) : buildGoZifferRows(matches)) : [];
   } else {
     rows = DATENPOOL_FELDER;
   }
@@ -1313,7 +1476,7 @@ function renderDpKpi(){
   const mode = dpMode();
   const avg = k => rows.length ? (rows.reduce((s,r)=>s+dpEffectiveValue(r,k),0)/rows.length) : 0;
   const kanalSuffix = activeDpKanal==="alle" ? "" : " · Kanal: "+DP_KANAL_LABEL[activeDpKanal];
-  const felderLabel = mode==="ziffer" ? "Treffer GO-Ziffer-Suche" : mode==="vnr" ? "Belege zu dieser VNR" : "Angeforderte Datenfelder";
+  const felderLabel = mode==="ziffer" ? (dpZifferSicht==="beleg" ? "Belege mit dieser GO-Ziffer" : "Treffer GO-Ziffer-Suche") : mode==="vnr" ? "Belege zu dieser VNR" : "Angeforderte Datenfelder";
   document.getElementById("dp-kpi").innerHTML = [
     ['Ø Vollständigkeit', rows.length?avg("vollst").toFixed(1).replace(".",",")+" %":"—", rows.length&&avg("vollst")>=90?"ok":"warn"],
     ['Ø Befüllungsqualität', rows.length?avg("befuell").toFixed(1).replace(".",",")+" %":"—", rows.length&&avg("befuell")>=90?"ok":"warn"],
@@ -1326,7 +1489,7 @@ function renderDpKpi(){
 }
 function renderDpThead(){
   const mode = dpMode();
-  const label = mode==="ziffer" ? "GO-Ziffer" : mode==="vnr" ? "Eingereichter Beleg" : "Datenfeld";
+  const label = mode==="ziffer" ? (dpZifferSicht==="beleg" ? "Beleg mit dieser GO-Ziffer" : "GO-Zeile") : mode==="vnr" ? "Eingereichter Beleg" : "Datenfeld";
   const ths = ['<th>'+label+'</th>'];
   DP_COLUMNS.forEach(c=>{ if(dpColumnState[c.key]) ths.push('<th>'+esc(c.label)+'</th>'); });
   document.getElementById("dp-thead").innerHTML = '<tr>'+ths.join("")+'</tr>';
@@ -1342,8 +1505,9 @@ function renderDpTable(){
   let emptyMsg = "Keine Datenfelder in dieser Auswahl.";
   if(mode==="ziffer"){
     const matches = getDpZifferMatches();
+    const sichtNote = dpZifferSicht==="beleg" ? " · Beleg-Sicht" : " · Zeilen-Sicht";
     const zifferNote = matches.length ? " · GO-Ziffer-Suche: "+matches.map(z=>z.nr).join(", ") : " · GO-Ziffer-Suche „"+esc(dpZifferQuery.trim())+"“ ohne Treffer";
-    document.getElementById("dp-count").textContent = rows.length+" Zeile(n)"+dokNote+zeilentypNote+kanalNote+zifferNote;
+    document.getElementById("dp-count").textContent = rows.length+" Zeile(n)"+dokNote+zeilentypNote+kanalNote+zifferNote+sichtNote;
     emptyMsg = "Keine GO-Ziffer gefunden für „"+esc(dpZifferQuery.trim())+"“.";
   } else if(mode==="vnr"){
     document.getElementById("dp-count").textContent = rows.length+" eingereichte(r) Beleg(e) · VNR-Suche: "+esc(dpVnrQuery.trim())+dokNote+kanalNote;
@@ -1497,7 +1661,56 @@ document.addEventListener("keydown", e=>{
   if(e.key==="Escape" && !document.getElementById("qsl-glossar-modal").hidden) closeQslGlossar();
 });
 
-function renderDatenpool(){ renderDpKpi(); renderDpTable(); renderAvTable(); }
+function renderBelegAgg(){
+  document.getElementById("beleg-agg-size").textContent = BELEG_POOL_SIZE.toLocaleString("de-DE");
+  const rows = getFilteredBelegPool();
+  const vollstaendig = rows.filter(r=>r.istVollstaendig);
+  const quote = rows.length ? (vollstaendig.length/rows.length*100) : 0;
+  const dokNote = activeDpDokArt==="alle" ? "" : " · "+activeDpDokArt;
+  const zeilentypNote = activeDpZeilentyp==="alle" ? "" : " · Zeilentyp: "+activeDpZeilentyp+" · "+ZEILENTYP_LABEL[activeDpZeilentyp];
+
+  document.getElementById("beleg-agg-headline").innerHTML = rows.length
+    ? '<span class="num">'+quote.toFixed(1).replace(".",",")+' %</span>'+
+      '<span class="sub">vollständig — '+vollstaendig.length.toLocaleString("de-DE")+' von '+rows.length.toLocaleString("de-DE")+' betrachteten Belegen'+dokNote+zeilentypNote+'</span>'
+    : '<span class="sub">Keine Belege in dieser Auswahl.</span>';
+
+  const avgBefuellt = rows.length ? rows.reduce((s,r)=>s+r.anzahlBefuellt,0)/rows.length : 0;
+  const avgFehlend = rows.length ? rows.reduce((s,r)=>s+r.anzahlFehlend,0)/rows.length : 0;
+  const unvollstCount = rows.length-vollstaendig.length;
+  document.getElementById("beleg-agg-kpi").innerHTML = [
+    ['Belege betrachtet', rows.length.toLocaleString("de-DE"), "info", false],
+    ['Davon vollständig', vollstaendig.length.toLocaleString("de-DE"), "ok", false],
+    ['Belege mit fehlendem Pflichtfeld', unvollstCount.toLocaleString("de-DE"), unvollstCount?"crit":"ok", true],
+    ['Ø befüllte Felder je Beleg', avgBefuellt.toFixed(1).replace(".",","), "ok", false],
+    ['Ø fehlende Felder je Beleg', avgFehlend.toFixed(1).replace(".",","), avgFehlend>0?"warn":"ok", false],
+  ].map(([l,v,c,clickable])=>
+    clickable
+      ? '<button type="button" class="kpi-tile kpi-tile--click" id="beleg-agg-drill-btn" title="Klicken für Sicht 2: nur unvollständige Belege"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></button>'
+      : '<div class="kpi-tile"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></div>'
+  ).join("");
+  const drillBtn = document.getElementById("beleg-agg-drill-btn");
+  if(drillBtn) drillBtn.addEventListener("click", ()=>{
+    activeBelegAggSicht = "unvollstaendig";
+    document.querySelectorAll("#beleg-agg-sicht-toggle .filter-chip").forEach(c=>c.dataset.active = (c.dataset.sicht==="unvollstaendig") ? "true":"false");
+    renderBelegAgg();
+  });
+
+  const sichtRows = activeBelegAggSicht==="unvollstaendig" ? rows.filter(r=>!r.istVollstaendig) : rows;
+  const shown = sichtRows.slice(0, 50);
+  document.getElementById("beleg-agg-count").textContent = sichtRows.length.toLocaleString("de-DE")+" Beleg(e)"+(sichtRows.length>50 ? " · Anzeige auf 50 begrenzt (Beispiel-Ausschnitt)" : "");
+  document.getElementById("beleg-agg-body").innerHTML = shown.length ? shown.map(r=>{
+    const vollst = belegAggEffectiveVollst(r);
+    return '<tr>'+
+      '<td class="mono">'+esc(r.belegId)+'</td>'+
+      '<td class="k-quelle">'+esc(r.dokArt)+'</td>'+
+      '<td>'+bar(vollst)+'</td>'+
+      '<td>'+(r.anzahlFehlend ? r.anzahlFehlend+' von '+r.feldAnzahl : '<span class="badge ok"><span class="dot"></span>Keine</span>')+'</td>'+
+      '<td class="beleg-agg-zt">'+r.zeilentypen.map(zt=>'<span class="badge info badge--sm">'+esc(zt)+'</span>').join("")+'</td>'+
+      '<td class="beleg-agg-reason">'+(r.grund ? esc(r.grund) : '—')+'</td>'+
+    '</tr>';
+  }).join("") : '<tr><td colspan="6" class="cell-empty">Keine Belege in dieser Auswahl.</td></tr>';
+}
+function renderDatenpool(){ renderBelegAgg(); renderDpKpi(); renderDpTable(); renderAvTable(); }
 
 
 /* ============================================================
@@ -1620,7 +1833,7 @@ document.getElementById("dp-dokart-filter").querySelectorAll(".filter-chip").for
   chip.addEventListener("click", ()=>{
     activeDpDokArt = chip.dataset.dokart;
     document.querySelectorAll("#dp-dokart-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
-    renderDpKpi(); renderDpTable();
+    renderBelegAgg(); renderDpKpi(); renderDpTable();
   });
 });
 document.getElementById("dp-zielstatus-filter").querySelectorAll(".filter-chip").forEach(chip=>{
@@ -1634,7 +1847,7 @@ document.getElementById("dp-zeilentyp-filter").querySelectorAll(".filter-chip").
   chip.addEventListener("click", ()=>{
     activeDpZeilentyp = chip.dataset.zeilentyp;
     document.querySelectorAll("#dp-zeilentyp-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
-    renderDpKpi(); renderDpTable();
+    renderBelegAgg(); renderDpKpi(); renderDpTable();
   });
 });
 const dpDateInput = document.getElementById("dp-date-input");
@@ -1642,18 +1855,32 @@ dpDateInput.value = activeDpDate;
 dpDateInput.max = dpIsoToday();
 dpDateInput.addEventListener("change", ()=>{
   activeDpDate = dpDateInput.value || dpIsoToday();
-  renderDpKpi(); renderDpTable();
+  renderBelegAgg(); renderDpKpi(); renderDpTable();
 });
 document.getElementById("dp-date-today").addEventListener("click", ()=>{
   activeDpDate = dpIsoToday();
   dpDateInput.value = activeDpDate;
-  renderDpKpi(); renderDpTable();
+  renderBelegAgg(); renderDpKpi(); renderDpTable();
 });
 document.getElementById("dp-kanal-filter").querySelectorAll(".filter-chip").forEach(chip=>{
   chip.addEventListener("click", ()=>{
     activeDpKanal = chip.dataset.kanal;
     document.querySelectorAll("#dp-kanal-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
-    renderDpKpi(); renderDpTable();
+    renderBelegAgg(); renderDpKpi(); renderDpTable();
+  });
+});
+document.getElementById("dp-ish-filter").querySelectorAll(".filter-chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    activeDpIsh = chip.dataset.ish;
+    document.querySelectorAll("#dp-ish-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
+    renderBelegAgg(); renderDpKpi(); renderDpTable();
+  });
+});
+document.getElementById("beleg-agg-sicht-toggle").querySelectorAll(".filter-chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    activeBelegAggSicht = chip.dataset.sicht;
+    document.querySelectorAll("#beleg-agg-sicht-toggle .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
+    renderBelegAgg();
   });
 });
 document.getElementById("av-search").addEventListener("input", renderAvTable);
@@ -1662,6 +1889,13 @@ document.getElementById("dp-table-collapsed-hint").addEventListener("click", ()=
 document.getElementById("dp-ziffer-search").addEventListener("input", e=>{
   dpZifferQuery = e.target.value;
   renderDpKpi(); renderDpTable();
+});
+document.getElementById("dp-ziffer-sicht-toggle").querySelectorAll(".filter-chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    dpZifferSicht = chip.dataset.sicht;
+    document.querySelectorAll("#dp-ziffer-sicht-toggle .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
+    renderDpKpi(); renderDpTable();
+  });
 });
 document.getElementById("dp-vnr-search").addEventListener("input", e=>{
   dpVnrQuery = e.target.value;
