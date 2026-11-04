@@ -462,20 +462,6 @@
         </div>
       </div>
       <p class="subhead-sub dp-ziffer-hint">ISH/Padline ist ein Verarbeitungsverfahren, kein Eingangskanal — es kann in jedem Kanal auftreten und ist daher unabhängig vom Eingangskanal-Filter auswertbar.</p>
-      <div class="filters">
-        <span class="filter-dim-label">GO-Ziffer-Suche</span>
-        <input class="filter-search" id="dp-ziffer-search" type="search" placeholder="z. B. 1200 (Sonographie)…">
-        <div class="filter-group" id="dp-ziffer-sicht-toggle">
-          <button class="filter-chip" type="button" data-sicht="zeile" data-active="true">Zeilen-Sicht</button>
-          <button class="filter-chip" type="button" data-sicht="beleg">Beleg-Sicht</button>
-        </div>
-      </div>
-      <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht aus (Datenfeld-Dashboard weiter unten). Zeilen-Sicht: je Dok.-Art eine Zeile mit den Auswertungen der GO-Zeile selbst. Beleg-Sicht: Beispiel-Belege, die diese Ziffer enthalten, mit der Vollständigkeit des jeweils gesamten Belegs. Wirkt nicht auf die Beleg-Qualität-Zwischenebene oben.</p>
-      <div class="filters">
-        <span class="filter-dim-label">VNR-Suche</span>
-        <input class="filter-search" id="dp-vnr-search" type="search" placeholder="Versicherungsnummer eingeben, z. B. 552310-9…">
-      </div>
-      <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht aus und zeigt stattdessen alle im Datenpool vorliegenden eingereichten Belege dieser VNR mit ihren jeweiligen Datenfeld-Auswertungen (geht Dok.-Art- und GO-Ziffer-Suche vor; wirkt nicht auf die Beleg-Qualität-Zwischenebene oben).</p>
 
       <div class="subhead-row">
         <div class="subhead">Beleg-Qualität — aggregierte Zwischenebene</div>
@@ -511,7 +497,21 @@
           </button>
         </div>
       </div>
-      <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit, Befüllungsqualität und Erkennungsquote je angefordertem Datenfeld (inkl. AV-Zielstatus aus dem Extraktionskatalog und, bei Abrechnungspositionen, Zeilentyp). Reagiert auf die Filter oben (Dok.-Art, AV-Zielstatus, Zeilentyp, Datenpool-Stand, Eingangskanal, GO-Ziffer und VNR). Klick auf die Vollständigkeit öffnet die QSL-Verteilung inkl. Qualitätsschlüssel je Feld.</p>
+      <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit, Befüllungsqualität und Erkennungsquote je angefordertem Datenfeld (inkl. AV-Zielstatus aus dem Extraktionskatalog und, bei Abrechnungspositionen, Zeilentyp). Reagiert auf die Filter oben (Dok.-Art, AV-Zielstatus, Zeilentyp, Datenpool-Stand, Eingangskanal) sowie auf die GO-Ziffer- und VNR-Suche direkt unterhalb. Klick auf die Vollständigkeit öffnet die QSL-Verteilung inkl. Qualitätsschlüssel je Feld.</p>
+      <div class="filters">
+        <span class="filter-dim-label">GO-Ziffer-Suche</span>
+        <input class="filter-search" id="dp-ziffer-search" type="search" placeholder="z. B. 1200 (Sonographie)…">
+        <div class="filter-group" id="dp-ziffer-sicht-toggle">
+          <button class="filter-chip" type="button" data-sicht="zeile" data-active="true">Zeilen-Sicht</button>
+          <button class="filter-chip" type="button" data-sicht="beleg">Beleg-Sicht</button>
+        </div>
+      </div>
+      <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht unten aus. Zeilen-Sicht: je Dok.-Art eine Zeile mit den Auswertungen der GO-Zeile selbst. Beleg-Sicht: Beispiel-Belege, die diese Ziffer enthalten, mit der Vollständigkeit des jeweils gesamten Belegs. Wirkt nicht auf die Beleg-Qualität-Zwischenebene oben.</p>
+      <div class="filters">
+        <span class="filter-dim-label">VNR-Suche</span>
+        <input class="filter-search" id="dp-vnr-search" type="search" placeholder="Versicherungsnummer eingeben, z. B. 552310-9…">
+      </div>
+      <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht unten aus und zeigt stattdessen alle im Datenpool vorliegenden eingereichten Belege dieser VNR mit ihren jeweiligen Datenfeld-Auswertungen (geht Dok.-Art- und GO-Ziffer-Suche vor). Wirkt nicht auf die Beleg-Qualität-Zwischenebene oben.</p>
       <div class="table-wrap" id="dp-table-wrap">
         <table class="data-table">
           <thead id="dp-thead"></thead>
