@@ -130,7 +130,7 @@
   .beleg-agg-headline .num{font-size:2.1rem; font-weight:800; font-variant-numeric:tabular-nums; line-height:1;}
   .beleg-agg-headline .sub{font-size:.86rem; opacity:.88;}
   .beleg-agg-reason{font-size:.78rem; color:var(--ink-soft);}
-  .beleg-agg-zt{display:inline-flex; flex-wrap:wrap; gap:4px;}
+  .beleg-agg-zt{display:flex; flex-wrap:wrap; gap:4px;}
 
   /* ---------- Given/When/Then scenario box ---------- */
   .gwt-box{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; margin-bottom:20px; box-shadow:var(--shadow-sm);}
@@ -1710,7 +1710,7 @@ function renderBelegAgg(){
       '<td class="k-quelle">'+esc(r.dokArt)+'</td>'+
       '<td>'+bar(vollst)+'</td>'+
       '<td>'+(r.anzahlFehlend ? r.anzahlFehlend+' von '+r.feldAnzahl : '<span class="badge ok"><span class="dot"></span>Keine</span>')+'</td>'+
-      '<td class="beleg-agg-zt">'+r.zeilentypen.map(zt=>'<span class="badge info badge--sm">'+esc(zt)+'</span>').join("")+'</td>'+
+      '<td><div class="beleg-agg-zt">'+r.zeilentypen.map(zt=>'<span class="badge info badge--sm">'+esc(zt)+'</span>').join("")+'</div></td>'+
       '<td class="beleg-agg-reason">'+(r.grund ? esc(r.grund) : '—')+'</td>'+
     '</tr>';
   }).join("") : '<tr><td colspan="6" class="cell-empty">Keine Belege in dieser Auswahl.</td></tr>';
