@@ -466,7 +466,7 @@
       <div class="subhead-row">
         <div class="subhead">Beleg-Qualität — aggregierte Zwischenebene</div>
       </div>
-      <p class="subhead-sub">Zwischenebene zwischen Einzelfeldern und den Filterattributen: macht eine <b>absolute</b> Aussage zur Datenqualität je Beleg (nicht nur Prozent-Durchschnitt über Felder) und ist der Einstieg in die Ursachenanalyse. Beispiel-Stichprobe von <span id="beleg-agg-size"></span> Belegen — reagiert auf die Filter oben (Dok.-Art, Zeilentyp, Datenpool-Stand; Eingangskanal/ISH wirken zusätzlich auf die angezeigte Vollständigkeit je Beleg). AV-Zielstatus ist auf Belegebene nicht anwendbar (felderspezifisch).</p>
+      <p class="subhead-sub">Zwischenebene zwischen Einzelfeldern und den Filterattributen: macht eine <b>absolute</b> Aussage zur Datenqualität je Beleg (nicht nur Prozent-Durchschnitt über Felder) und ist der Einstieg in die Ursachenanalyse. Beispiel-Stichprobe von <span id="beleg-agg-size"></span> Belegen — reagiert auf die Filter oben: Dok.-Art, Zeilentyp und Datenpool-Stand grenzen die betrachteten Belege ein; Eingangskanal und Verarbeitungsverfahren (ISH/Padline) wirken zusätzlich auf die Vollständigkeit je Beleg und können dadurch auch die Vollständig-Quote verschieben. AV-Zielstatus ist auf Belegebene nicht anwendbar (felderspezifisch).</p>
       <div class="beleg-agg-headline" id="beleg-agg-headline"></div>
       <div class="kpi-row" id="beleg-agg-kpi"></div>
       <div class="filters">
@@ -1213,6 +1213,13 @@ const BELEG_AGG_GRUENDE = [
   "Name/Adresse des Leistungserbringers unvollständig",
   "Rechnungsbetrag und Summe der Einzelpositionen weichen voneinander ab",
 ];
+/* Vollständigkeits-Basisquote je Beleg: 80%. Jeder Beleg erhält deterministisch sowohl den
+   "wäre unvollständig"-Zweig (Vollständigkeit, fehlende Felder, Grund) als auch die Roll-Zahl
+   completeRoll. Ob ein Beleg tatsächlich als vollständig zählt, hängt vom aktuell gewählten
+   Eingangskanal/Verarbeitungsverfahren ab (siehe belegAggEffectiveComplete): deren Modifikatoren
+   verschieben die Vollständigkeits-Schwelle leicht nach oben/unten, sodass die Quote glaubwürdig
+   mit dem Kanal variiert, statt bei jedem Minus-Kanal schlagartig auf (nahe) 0 % zu fallen. */
+const BELEG_POOL_BASIS_QUOTE = 80;
 const BELEG_POOL = (function(){
   const pool = [];
   for(let i=0;i<BELEG_POOL_SIZE;i++){
@@ -1221,18 +1228,13 @@ const BELEG_POOL = (function(){
     const dok = DP_DOKARTEN[h("dok")%DP_DOKARTEN.length];
     const off = h("off")%120;
     const feldAnzahl = 14 + (h("n")%22);
-    const istVollstaendig = (h("complete")%100) < 80;
-    let vollst, anzahlFehlend, grund;
-    if(istVollstaendig){
-      vollst = 100; anzahlFehlend = 0; grund = null;
-    } else {
-      vollst = Math.round((60 + (h("v")%3500)/100)*10)/10;
-      anzahlFehlend = Math.max(1, Math.round(feldAnzahl*(100-vollst)/100));
-      grund = BELEG_AGG_GRUENDE[h("grund")%BELEG_AGG_GRUENDE.length];
-    }
-    const anzahlBefuellt = feldAnzahl - anzahlFehlend;
-    const befuell = Math.max(50, Math.min(100, vollst - (h("b")%300)/100));
-    const erkennung = Math.max(55, Math.min(100, vollst + 1 - (h("e")%250)/100));
+    const completeRoll = h("complete")%100;
+    const vollstIncomplete = Math.round((60 + (h("v")%3500)/100)*10)/10;
+    const anzahlFehlendIncomplete = Math.max(1, Math.round(feldAnzahl*(100-vollstIncomplete)/100));
+    const grundIncomplete = BELEG_AGG_GRUENDE[h("grund")%BELEG_AGG_GRUENDE.length];
+    const istVollstaendig = completeRoll < BELEG_POOL_BASIS_QUOTE;
+    const befuell = Math.max(50, Math.min(100, (istVollstaendig?100:vollstIncomplete) - (h("b")%300)/100));
+    const erkennung = Math.max(55, Math.min(100, (istVollstaendig?100:vollstIncomplete) + 1 - (h("e")%250)/100));
     const ztPool = DP_DOKART_ZEILENTYP_POOL[dok.code];
     const ztCount = 1 + (h("ztc")%2);
     const zeilentypen = [];
@@ -1247,9 +1249,10 @@ const BELEG_POOL = (function(){
     pool.push({
       id:"belegpool-"+i,
       belegId:"BLG-"+dpVnrPseudoDatum(off)+"-"+String(1000+(h("seq")%9000)),
-      dokArt:dok.label, off, feldAnzahl, anzahlBefuellt, anzahlFehlend,
-      istVollstaendig, vollst, befuell:Math.round(befuell*10)/10, erkennung:Math.round(erkennung*10)/10,
-      zeilentypen, grund,
+      dokArt:dok.label, off, feldAnzahl, completeRoll, istVollstaendig,
+      vollstIncomplete, anzahlFehlendIncomplete, grundIncomplete,
+      befuell:Math.round(befuell*10)/10, erkennung:Math.round(erkennung*10)/10,
+      zeilentypen,
     });
   }
   return pool;
@@ -1262,11 +1265,27 @@ function getFilteredBelegPool(){
   rows = rows.filter(r=>dpRowLieferdatum(r)<=activeDpDate);
   return rows;
 }
+/* Kanal-/ISH-Modifikatoren (vollst-Komponente) verschieben die Vollständigkeits-Basisquote von
+   80 % statt den Vollständigkeitswert jedes einzelnen Belegs separat zu kappen — so bleibt die
+   Verschiebung der Quote in der gleichen Größenordnung wie die Modifikatoren selbst (wenige
+   Prozentpunkte) statt bei einer harten 100%-Schwelle auf einen Schlag umzukippen. */
+function belegAggEffectiveQuote(){
+  let delta = 0;
+  if(activeDpKanal!=="alle") delta += DP_KANAL_MODIFIER[activeDpKanal].vollst;
+  if(activeDpIsh!=="alle") delta += DP_ISH_MODIFIER[activeDpIsh].vollst;
+  return Math.max(0, Math.min(100, BELEG_POOL_BASIS_QUOTE + delta));
+}
+function belegAggIstVollstaendig(r){
+  return r.completeRoll < belegAggEffectiveQuote();
+}
 function belegAggEffectiveVollst(r){
-  let v = r.vollst;
-  if(activeDpKanal!=="alle") v += DP_KANAL_MODIFIER[activeDpKanal].vollst;
-  if(activeDpIsh!=="alle") v += DP_ISH_MODIFIER[activeDpIsh].vollst;
-  return Math.max(0, Math.min(100, v));
+  return belegAggIstVollstaendig(r) ? 100 : r.vollstIncomplete;
+}
+function belegAggEffectiveFehlend(r){
+  return belegAggIstVollstaendig(r) ? 0 : r.anzahlFehlendIncomplete;
+}
+function belegAggEffectiveGrund(r){
+  return belegAggIstVollstaendig(r) ? null : r.grundIncomplete;
 }
 
 /* VNR-Suche: zu einer beliebig eingegebenen VNR werden deterministisch die im Datenpool
@@ -1669,18 +1688,20 @@ document.addEventListener("keydown", e=>{
 function renderBelegAgg(){
   document.getElementById("beleg-agg-size").textContent = BELEG_POOL_SIZE.toLocaleString("de-DE");
   const rows = getFilteredBelegPool();
-  const vollstaendig = rows.filter(r=>r.istVollstaendig);
+  const vollstaendig = rows.filter(r=>belegAggIstVollstaendig(r));
   const quote = rows.length ? (vollstaendig.length/rows.length*100) : 0;
   const dokNote = activeDpDokArt==="alle" ? "" : " · "+activeDpDokArt;
   const zeilentypNote = activeDpZeilentyp==="alle" ? "" : " · Zeilentyp: "+activeDpZeilentyp+" · "+ZEILENTYP_LABEL[activeDpZeilentyp];
+  const kanalNote = activeDpKanal==="alle" ? "" : " · "+DP_KANAL_LABEL[activeDpKanal];
+  const ishNote = activeDpIsh==="alle" ? "" : " · "+DP_ISH_LABEL[activeDpIsh];
 
   document.getElementById("beleg-agg-headline").innerHTML = rows.length
     ? '<span class="num">'+quote.toFixed(1).replace(".",",")+' %</span>'+
-      '<span class="sub">vollständig — '+vollstaendig.length.toLocaleString("de-DE")+' von '+rows.length.toLocaleString("de-DE")+' betrachteten Belegen'+dokNote+zeilentypNote+'</span>'
+      '<span class="sub">vollständig — '+vollstaendig.length.toLocaleString("de-DE")+' von '+rows.length.toLocaleString("de-DE")+' betrachteten Belegen'+dokNote+zeilentypNote+kanalNote+ishNote+'</span>'
     : '<span class="sub">Keine Belege in dieser Auswahl.</span>';
 
-  const avgBefuellt = rows.length ? rows.reduce((s,r)=>s+r.anzahlBefuellt,0)/rows.length : 0;
-  const avgFehlend = rows.length ? rows.reduce((s,r)=>s+r.anzahlFehlend,0)/rows.length : 0;
+  const avgBefuellt = rows.length ? rows.reduce((s,r)=>s+(r.feldAnzahl-belegAggEffectiveFehlend(r)),0)/rows.length : 0;
+  const avgFehlend = rows.length ? rows.reduce((s,r)=>s+belegAggEffectiveFehlend(r),0)/rows.length : 0;
   const unvollstCount = rows.length-vollstaendig.length;
   document.getElementById("beleg-agg-kpi").innerHTML = [
     ['Belege betrachtet', rows.length.toLocaleString("de-DE"), "info", false],
@@ -1700,18 +1721,20 @@ function renderBelegAgg(){
     renderBelegAgg();
   });
 
-  const sichtRows = activeBelegAggSicht==="unvollstaendig" ? rows.filter(r=>!r.istVollstaendig) : rows;
+  const sichtRows = activeBelegAggSicht==="unvollstaendig" ? rows.filter(r=>!belegAggIstVollstaendig(r)) : rows;
   const shown = sichtRows.slice(0, 50);
   document.getElementById("beleg-agg-count").textContent = sichtRows.length.toLocaleString("de-DE")+" Beleg(e)"+(sichtRows.length>50 ? " · Anzeige auf 50 begrenzt (Beispiel-Ausschnitt)" : "");
   document.getElementById("beleg-agg-body").innerHTML = shown.length ? shown.map(r=>{
     const vollst = belegAggEffectiveVollst(r);
+    const anzahlFehlend = belegAggEffectiveFehlend(r);
+    const grundText = belegAggEffectiveGrund(r);
     return '<tr>'+
       '<td class="mono">'+esc(r.belegId)+'</td>'+
       '<td class="k-quelle">'+esc(r.dokArt)+'</td>'+
       '<td>'+bar(vollst)+'</td>'+
-      '<td>'+(r.anzahlFehlend ? r.anzahlFehlend+' von '+r.feldAnzahl : '<span class="badge ok"><span class="dot"></span>Keine</span>')+'</td>'+
+      '<td>'+(anzahlFehlend ? anzahlFehlend+' von '+r.feldAnzahl : '<span class="badge ok"><span class="dot"></span>Keine</span>')+'</td>'+
       '<td><div class="beleg-agg-zt">'+r.zeilentypen.map(zt=>'<span class="badge info badge--sm">'+esc(zt)+'</span>').join("")+'</div></td>'+
-      '<td class="beleg-agg-reason">'+(r.grund ? esc(r.grund) : '—')+'</td>'+
+      '<td class="beleg-agg-reason">'+(grundText ? esc(grundText) : '—')+'</td>'+
     '</tr>';
   }).join("") : '<tr><td colspan="6" class="cell-empty">Keine Belege in dieser Auswahl.</td></tr>';
 }
