@@ -385,40 +385,9 @@
       <div class="kpi-row" id="dp-kpi"></div>
 
       <div class="subhead-row">
-        <div class="subhead">Beleg-Qualität — aggregierte Zwischenebene</div>
+        <div class="subhead">Filter</div>
       </div>
-      <p class="subhead-sub">Zwischenebene zwischen Einzelfeldern und den Filterattributen: macht eine <b>absolute</b> Aussage zur Datenqualität je Beleg (nicht nur Prozent-Durchschnitt über Felder) und ist der Einstieg in die Ursachenanalyse. Beispiel-Stichprobe von <span id="beleg-agg-size"></span> Belegen — filterbar nach Dok.-Art, Zeilentyp und Datenpool-Stand; Eingangskanal/ISH wirken zusätzlich auf die angezeigte Vollständigkeit je Beleg. AV-Zielstatus ist auf Belegebene nicht anwendbar (felderspezifisch).</p>
-      <div class="beleg-agg-headline" id="beleg-agg-headline"></div>
-      <div class="kpi-row" id="beleg-agg-kpi"></div>
-      <div class="filters">
-        <div class="filter-group" id="beleg-agg-sicht-toggle">
-          <button class="filter-chip" type="button" data-sicht="alle" data-active="true">Sicht 1 · Alle Belege</button>
-          <button class="filter-chip" type="button" data-sicht="unvollstaendig">Sicht 2 · Nur unvollständige Belege</button>
-        </div>
-        <span class="filter-count" id="beleg-agg-count"></span>
-      </div>
-      <div class="table-wrap">
-        <table class="data-table">
-          <thead><tr><th>Beleg-ID</th><th>Dok.-Art</th><th>Vollständigkeit</th><th>Fehlende Felder</th><th>Enthaltene Zeilentypen</th><th>Vermuteter Grund</th></tr></thead>
-          <tbody id="beleg-agg-body"></tbody>
-        </table>
-      </div>
-      <p class="subhead-sub dp-ziffer-hint">Hinweis zur technischen Komplexität (Workshop-Feedback): Ein echter Abgleich auf jeder tieferen Zeilenebene mit dem Datenpool ist deutlich aufwendiger als hier dargestellt. Diese Ansicht simuliert plausible Ergebnisse zur Veranschaulichung, kein Live-Abgleich. Ob die benötigten Attribute vom EM geliefert werden können, ist mit dem EM-Team zu klären (MVP-Annahme).</p>
-
-      <div class="subhead-row">
-        <div class="subhead">Datenpool-Dashboard je Datenfeld</div>
-        <div class="subhead-row-actions">
-          <button type="button" class="subhead-btn qsl-glossar-trigger">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 16.5h.01"/><circle cx="12" cy="12" r="9"/></svg>
-            QSL-Verzeichnis
-          </button>
-          <button type="button" class="subhead-btn" id="dp-table-toggle">
-            <svg class="icon" id="dp-table-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15 12 9l-6 6"/></svg>
-            <span id="dp-table-toggle-label">Tabelle einklappen</span>
-          </button>
-        </div>
-      </div>
-      <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit, Befüllungsqualität und Erkennungsquote je angefordertem Datenfeld (inkl. AV-Zielstatus aus dem Extraktionskatalog und, bei Abrechnungspositionen, Zeilentyp). Filterbar nach Dok.-Art, AV-Zielstatus, Zeilentyp, Datenpool-Stand, Eingangskanal, GO-Ziffer und VNR. Klick auf die Vollständigkeit öffnet die QSL-Verteilung inkl. Qualitätsschlüssel je Feld.</p>
+      <p class="subhead-sub">Diese Filter wirken sowohl auf die Beleg-Qualität (aggregierte Zwischenebene) als auch auf das Datenpool-Dashboard je Datenfeld weiter unten. Ausnahme: AV-Zielstatus ist auf Belegebene nicht anwendbar (felderspezifisch) und wirkt daher nur auf das Datenfeld-Dashboard.</p>
       <div class="filters">
         <span class="filter-dim-label">Dok.-Art</span>
         <div class="filter-group" id="dp-dokart-filter">
@@ -501,12 +470,48 @@
           <button class="filter-chip" type="button" data-sicht="beleg">Beleg-Sicht</button>
         </div>
       </div>
-      <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht aus. Zeilen-Sicht: je Dok.-Art eine Zeile mit den Auswertungen der GO-Zeile selbst. Beleg-Sicht: Beispiel-Belege, die diese Ziffer enthalten, mit der Vollständigkeit des jeweils gesamten Belegs.</p>
+      <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht aus (Datenfeld-Dashboard weiter unten). Zeilen-Sicht: je Dok.-Art eine Zeile mit den Auswertungen der GO-Zeile selbst. Beleg-Sicht: Beispiel-Belege, die diese Ziffer enthalten, mit der Vollständigkeit des jeweils gesamten Belegs. Wirkt nicht auf die Beleg-Qualität-Zwischenebene oben.</p>
       <div class="filters">
         <span class="filter-dim-label">VNR-Suche</span>
         <input class="filter-search" id="dp-vnr-search" type="search" placeholder="Versicherungsnummer eingeben, z. B. 552310-9…">
       </div>
-      <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht aus und zeigt stattdessen alle im Datenpool vorliegenden eingereichten Belege dieser VNR mit ihren jeweiligen Datenfeld-Auswertungen (geht Dok.-Art- und GO-Ziffer-Suche vor).</p>
+      <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht aus und zeigt stattdessen alle im Datenpool vorliegenden eingereichten Belege dieser VNR mit ihren jeweiligen Datenfeld-Auswertungen (geht Dok.-Art- und GO-Ziffer-Suche vor; wirkt nicht auf die Beleg-Qualität-Zwischenebene oben).</p>
+
+      <div class="subhead-row">
+        <div class="subhead">Beleg-Qualität — aggregierte Zwischenebene</div>
+      </div>
+      <p class="subhead-sub">Zwischenebene zwischen Einzelfeldern und den Filterattributen: macht eine <b>absolute</b> Aussage zur Datenqualität je Beleg (nicht nur Prozent-Durchschnitt über Felder) und ist der Einstieg in die Ursachenanalyse. Beispiel-Stichprobe von <span id="beleg-agg-size"></span> Belegen — reagiert auf die Filter oben (Dok.-Art, Zeilentyp, Datenpool-Stand; Eingangskanal/ISH wirken zusätzlich auf die angezeigte Vollständigkeit je Beleg). AV-Zielstatus ist auf Belegebene nicht anwendbar (felderspezifisch).</p>
+      <div class="beleg-agg-headline" id="beleg-agg-headline"></div>
+      <div class="kpi-row" id="beleg-agg-kpi"></div>
+      <div class="filters">
+        <div class="filter-group" id="beleg-agg-sicht-toggle">
+          <button class="filter-chip" type="button" data-sicht="alle" data-active="true">Sicht 1 · Alle Belege</button>
+          <button class="filter-chip" type="button" data-sicht="unvollstaendig">Sicht 2 · Nur unvollständige Belege</button>
+        </div>
+        <span class="filter-count" id="beleg-agg-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Beleg-ID</th><th>Dok.-Art</th><th>Vollständigkeit</th><th>Fehlende Felder</th><th>Enthaltene Zeilentypen</th><th>Vermuteter Grund</th></tr></thead>
+          <tbody id="beleg-agg-body"></tbody>
+        </table>
+      </div>
+      <p class="subhead-sub dp-ziffer-hint">Hinweis zur technischen Komplexität (Workshop-Feedback): Ein echter Abgleich auf jeder tieferen Zeilenebene mit dem Datenpool ist deutlich aufwendiger als hier dargestellt. Diese Ansicht simuliert plausible Ergebnisse zur Veranschaulichung, kein Live-Abgleich. Ob die benötigten Attribute vom EM geliefert werden können, ist mit dem EM-Team zu klären (MVP-Annahme).</p>
+
+      <div class="subhead-row">
+        <div class="subhead">Datenpool-Dashboard je Datenfeld</div>
+        <div class="subhead-row-actions">
+          <button type="button" class="subhead-btn qsl-glossar-trigger">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 16.5h.01"/><circle cx="12" cy="12" r="9"/></svg>
+            QSL-Verzeichnis
+          </button>
+          <button type="button" class="subhead-btn" id="dp-table-toggle">
+            <svg class="icon" id="dp-table-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15 12 9l-6 6"/></svg>
+            <span id="dp-table-toggle-label">Tabelle einklappen</span>
+          </button>
+        </div>
+      </div>
+      <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit, Befüllungsqualität und Erkennungsquote je angefordertem Datenfeld (inkl. AV-Zielstatus aus dem Extraktionskatalog und, bei Abrechnungspositionen, Zeilentyp). Reagiert auf die Filter oben (Dok.-Art, AV-Zielstatus, Zeilentyp, Datenpool-Stand, Eingangskanal, GO-Ziffer und VNR). Klick auf die Vollständigkeit öffnet die QSL-Verteilung inkl. Qualitätsschlüssel je Feld.</p>
       <div class="table-wrap" id="dp-table-wrap">
         <table class="data-table">
           <thead id="dp-thead"></thead>
