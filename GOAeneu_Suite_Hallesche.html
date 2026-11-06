@@ -1997,7 +1997,7 @@ function applyVerstoss(b, forcedSubtype){
       p.titel = "";
       addFlag(p,"violation","§12 Abs. 2 Nr. 3 GOÄneu","Titel der Leistungslegende/Kurzbezeichnung fehlt — Pflichtangabe.");
       pp.push({status:"violation", rule:"§12 Abs. 2 Nr. 3 GOÄneu", title:"Titel der Leistungslegende fehlt", detail:"Zu GOÄ-Nr. "+p.goaeNr+" fehlt der für den Patienten verständliche Titel bzw. die Kurzbezeichnung der Leistung. Das Gesetz verlangt „bei Leistungen deren Nummer, die Anzahl und den Titel der Leistungslegende“.",
-        kundentext:kt("Zur GOÄ-Nr. "+p.goaeNr+" fehlt die Kurzbezeichnung der Leistung auf der Rechnung. Ohne diese Angabe können wir nicht nachvollziehen, was genau erbracht wurde.","The short description of the service under GOÄ no. "+p.goaeNr+" is missing from the invoice. Without it we cannot determine what exactly was provided."),
+        kundentext:kt("Zur GOÄ-Nr. "+p.goaeNr+" fehlt die Kurzbezeichnung der Leistung auf der Rechnung. Ohne diese Angabe können wir nicht nachvollziehen, was genau erbracht wurde, und streichen diese Position.","The short description of the service under GOÄ no. "+p.goaeNr+" is missing from the invoice. Without it we cannot determine what exactly was provided, and we are removing this item."),
         korrektur:{typ:"streichen", posId:p.id}});
     } else if(subtype==="analog_ohne_praefix"){
       const a = b.fach.analog;
@@ -2007,13 +2007,13 @@ function applyVerstoss(b, forcedSubtype){
       addFlag(nl,"violation","§12 Abs. 4 Nr. 6 / Abs. 5 GOÄneu","Analog erbrachte Leistung ohne Präfix „A“ abgerechnet — Nummer und Bezeichnung der als gleichwertig erachteten Leistung fehlen der Kennzeichnung.");
       b.positionen.push(nl);
       pp.push({status:"violation", rule:"§12 Abs. 4 Nr. 6 / Abs. 5 GOÄneu", title:"Analogleistung nicht als solche gekennzeichnet", detail:"„"+a.echt+"“ wird über Nr. "+a.basisNr+" abgerechnet, ohne das Präfix „A“ zu setzen. §12 Abs.5 verlangt, dass die entsprechend bewertete Leistung „für den Zahlungspflichtigen verständlich“ sowie Nummer und Bezeichnung der als gleichwertig erachteten Leistung angegeben werden.",
-        kundentext:kt("Die Leistung „"+a.echt+"“ wurde über GOÄ-Nr. "+a.basisNr+" abgerechnet, ohne als Analogleistung (Präfix „A“) gekennzeichnet zu sein. Ohne diese Kennzeichnung können wir die Abrechnung nicht nachvollziehen.","The service “"+a.echt+"” was billed under GOÄ no. "+a.basisNr+" without being marked as an analogous service (prefix “A”). Without this label we cannot verify the billing."),
+        kundentext:kt("Die Leistung „"+a.echt+"“ wurde über GOÄ-Nr. "+a.basisNr+" abgerechnet, ohne als Analogleistung (Präfix „A“) gekennzeichnet zu sein. Ohne diese Kennzeichnung können wir die Abrechnung nicht nachvollziehen und erstatten diese Position zunächst nicht.","The service “"+a.echt+"” was billed under GOÄ no. "+a.basisNr+" without being marked as an analogous service (prefix “A”). Without this label we cannot verify the billing and are not reimbursing this item for now."),
         korrektur:{typ:"streichen", posId:nl.id}});
     } else if(subtype==="diagnose_fehlt_unbegruendet"){
       b.diagnose.text = ""; b.diagnose.icd = ""; b.diagnose.entfaellt = false; b.diagnose.entfaelltGrund = null;
       b.diagnoseFlag = true;
       pp.push({status:"violation", rule:"§12 Abs. 2 Nr. 1 GOÄneu (Pflichtangabe)", title:"Diagnoseangabe fehlt ohne erkennbaren Ausnahmegrund", detail:"Der Beleg enthält weder ICD-Code noch Klartext-Diagnose. Anders als beim Ausnahmefall „schutzwürdige Interessen“ ist hier kein Grund für das Entfallen dokumentiert — die Leistungen sind medizinisch nicht nachvollziehbar.",
-        kundentext:kt("Zu den abgerechneten Leistungen liegt keine Diagnose vor, sodass wir deren medizinische Notwendigkeit nicht prüfen können.","No diagnosis was provided for the billed services, so we cannot assess their medical necessity."),
+        kundentext:kt("Zu den abgerechneten Leistungen liegt keine Diagnose vor, sodass wir deren medizinische Notwendigkeit nicht prüfen können. Wir bitten um Nachreichung der Diagnose; bis dahin können wir die Rechnung nicht abschließend bearbeiten.","No diagnosis was provided for the billed services, so we cannot assess their medical necessity. Please submit the diagnosis; until then we are unable to finalise processing of the invoice."),
         korrektur:{typ:"gesamt"}});
     } else if(subtype==="ab_ohne_konkretisierung"){
       const p = pick(b.positionen.filter(x=>x.kind==="leistung"));
@@ -2035,7 +2035,7 @@ function applyVerstoss(b, forcedSubtype){
       else { sk.begruendung = pick(SACHKOSTEN_UNZULAESSIG); }
       addFlag(sk,"violation","§10 Abs. 2 GOÄneu","Diese Auslage ist im Gesetz ausdrücklich von der gesonderten Berechnung ausgeschlossen.");
       pp.push({status:"violation", rule:"§10 Abs. 2 GOÄneu", title:"Nicht berechnungsfähige Auslage abgerechnet", detail:"„"+sk.begruendung+"“ steht wortgleich auf der Ausschlussliste des §10 Abs.2 GOÄneu (u. a. Einmalspritzen, -kanülen, -handschuhe, Schnellverbandmaterial, Desinfektionsmittel). Diese Kosten sind mit der Gebühr bereits abgegolten und dürfen nicht gesondert als Auslage (Präfix „E“) berechnet werden.",
-        kundentext:kt("Die abgerechnete Auslage „"+sk.begruendung+"“ gehört zu den Kosten, die bereits mit der ärztlichen Gebühr abgegolten sind (§10 Abs. 2 GOÄneu), und darf deshalb nicht zusätzlich berechnet werden.","The billed expense “"+sk.begruendung+"” is among the costs already covered by the medical fee (§10 (2) GOÄneu) and therefore cannot be charged separately."),
+        kundentext:kt("Die abgerechnete Auslage „"+sk.begruendung+"“ gehört zu den Kosten, die bereits mit der ärztlichen Gebühr abgegolten sind (§10 Abs. 2 GOÄneu), und darf deshalb nicht zusätzlich berechnet werden. Wir streichen diese Position.","The billed expense “"+sk.begruendung+"” is among the costs already covered by the medical fee (§10 (2) GOÄneu) and therefore cannot be charged separately. We are removing this item."),
         korrektur:{typ:"streichen", posId:sk.id}});
     } else if(subtype==="hv_verbotenes_kapitel"){
       const p = pick(b.positionen.filter(x=>x.kind==="leistung"));
