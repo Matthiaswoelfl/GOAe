@@ -900,9 +900,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   .diff-col.new .diff-label{color:var(--cat-ok);}
   .tarif-note{display:inline-flex; align-items:center; gap:5px; font-size:.74rem; color:var(--ink-soft);}
   .tarif-note svg{width:13px; height:13px; color:var(--accent-strong);}
-  .diff-col .chg{font-weight:700; text-decoration-thickness:2px; text-underline-offset:2px; border-radius:2px;}
-  .diff-col.old .chg{color:var(--cat-violation); text-decoration:line-through solid var(--cat-violation);}
-  .diff-col.new .chg{color:var(--cat-ok); text-decoration:underline dashed var(--cat-ok);}
   .changed-terms{display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 4px;}
   .changed-term{display:inline-flex; align-items:center; gap:6px; font-size:.76rem; padding:5px 10px; border-radius:999px; background:var(--bg); border:1px solid var(--card-border); color:var(--ink-soft);}
   .changed-term .old-t{color:var(--cat-violation); text-decoration:line-through;}
@@ -3151,9 +3148,6 @@ function wordDiff(oldText, newText){
   while(j<m){ newOut.push({t:newTok[j],same:false}); j++; }
   return {oldOut, newOut};
 }
-function renderDiffTokens(tokens){
-  return tokens.map(tok=> tok.same || /^\s+$/.test(tok.t) ? esc(tok.t) : '<span class="chg">'+esc(tok.t)+'</span>').join("");
-}
 function changedTermPairs(oldOut, newOut){
   const oldWords = oldOut.filter(t=>!t.same && !/^\s+$/.test(t.t));
   const newWords = newOut.filter(t=>!t.same && !/^\s+$/.test(t.t));
@@ -3213,8 +3207,8 @@ function renderPrDetail(){
       '</div>'+
       '<div class="finding-reason"><b>Warum GOÄ-Bezug:</b> '+esc(f.grund)+'</div>'+
       '<div class="diff-block">'+
-        '<div class="diff-col old"><span class="diff-label">Bisheriger Text</span>'+renderDiffTokens(oldOut)+'</div>'+
-        '<div class="diff-col new"><span class="diff-label">Vorschlag neue Formulierung</span>'+renderDiffTokens(newOut)+'</div>'+
+        '<div class="diff-col old"><span class="diff-label">Bisheriger Text</span>'+esc(f.auszug)+'</div>'+
+        '<div class="diff-col new"><span class="diff-label">Vorschlag neue Formulierung</span>'+esc(f.vorschlag)+'</div>'+
       '</div>'+
       (pairs.length ? '<div class="changed-terms">'+pairs.map(p=>
         '<span class="changed-term">'+
