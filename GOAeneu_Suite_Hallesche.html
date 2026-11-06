@@ -1259,6 +1259,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
                   <option value="verstoss_analog">Fehlendes Präfix „A“ bei Analogleistung</option>
                   <option value="verstoss_titel">Titel der Leistungslegende fehlt</option>
                   <option value="verstoss_minderung">Pflichtminderung bei stationärer Behandlung fehlt</option>
+                  <option value="verstoss_bmi_unter">Sonographie: BMI-Zuschlag trotz BMI unter 40</option>
+                  <option value="verstoss_bmi_fehlt">Sonographie: BMI-Zuschlag ohne Angabe der Körpermaße</option>
                 </optgroup>
                 <optgroup label="Ausnahmefall">
                   <option value="ausnahme_notfall">Notfallbehandlung ohne Honorarvereinbarung</option>
@@ -2635,6 +2637,8 @@ const KT_SZENARIEN = {
   verstoss_analog:       {kategorie:"verstoss", forcedSubtype:["analog_ohne_praefix"]},
   verstoss_titel:        {kategorie:"verstoss", forcedSubtype:["titel_fehlt"]},
   verstoss_minderung:    {kategorie:"verstoss", forcedSubtype:["minderung_fehlt"]},
+  verstoss_bmi_unter:    {kategorie:"verstoss", forcedSubtype:["bmi_unter_schwelle"]},
+  verstoss_bmi_fehlt:    {kategorie:"verstoss", forcedSubtype:["bmi_pflichtangabe_fehlt"]},
   ausnahme_notfall:      {kategorie:"ausnahme", forcedSubtype:"notfall_ohne_hv"},
   ausnahme_verlangen:    {kategorie:"ausnahme", forcedSubtype:"verlangensleistung"},
   ausnahme_schutzwuerdig:{kategorie:"ausnahme", forcedSubtype:"diagnose_schutzwuerdig"},
@@ -2678,6 +2682,11 @@ function kombinationsausschlussText(a,b){
 
 const KT_FREITEXT_HINTS = [
   {re:/25\s*[- ]?km/i, id:"grenz_wegegeld25"},
+  /* BMI-Nennungen zuerst spezifisch auslegen, bevor die generische grenz_bmi-Regel greift:
+     eindeutig UNTER dem Schwellenwert (40) -> echter Verstoß, hartes Ablehnungsschreiben;
+     Körpermaße fehlen ganz -> ebenfalls Verstoß; nur "am Schwellenwert"/unklar -> Grenzfall. */
+  {re:/bmi[^.]{0,25}(unter|kleiner|niedriger|unterhalb|<)\s*40|(unter|kleiner|niedriger|unterhalb|<)\s*40[^.]{0,20}bmi/i, id:"verstoss_bmi_unter"},
+  {re:/bmi[^.]{0,25}(fehlt|fehlend|fehlen|keine angabe|ohne angabe|nicht angegeben)|körpermaße[^.]{0,20}(fehlt|fehlend|fehlen)/i, id:"verstoss_bmi_fehlt"},
   {re:/bmi/i, id:"grenz_bmi"},
   {re:/50\s*minuten|psychotherap/i, id:"grenz_psycho"},
   {re:/a-?präfix.*(fehlt|fehlend)|fehlend\w*\s+a-?präfix|analogleistung.*(fehlt|fehlend|ohne präfix)/i, id:"verstoss_analog"},
