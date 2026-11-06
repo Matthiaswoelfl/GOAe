@@ -900,6 +900,30 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   .diff-col.new .diff-label{color:var(--cat-ok);}
   .tarif-note{display:inline-flex; align-items:center; gap:5px; font-size:.74rem; color:var(--ink-soft);}
   .tarif-note svg{width:13px; height:13px; color:var(--accent-strong);}
+  .diff-col .chg{font-weight:700; text-decoration-thickness:2px; text-underline-offset:2px; border-radius:2px;}
+  .diff-col.old .chg{color:var(--cat-violation); text-decoration:line-through solid var(--cat-violation);}
+  .diff-col.new .chg{color:var(--cat-ok); text-decoration:underline dashed var(--cat-ok);}
+  .changed-terms{display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 4px;}
+  .changed-term{display:inline-flex; align-items:center; gap:6px; font-size:.76rem; padding:5px 10px; border-radius:999px; background:var(--bg); border:1px solid var(--card-border); color:var(--ink-soft);}
+  .changed-term .old-t{color:var(--cat-violation); text-decoration:line-through;}
+  .changed-term .new-t{color:var(--cat-ok); font-weight:700;}
+  .kt-edit-wrap{margin-top:16px;}
+  .kt-edit-wrap .section-label{margin-bottom:6px;}
+  .kt-edit-actions{display:flex; justify-content:flex-end; margin-top:8px;}
+  .qs-block{margin-top:18px; padding-top:14px; border-top:1px solid var(--card-border);}
+  .qs-head{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+  .qs-head-label{font:700 .68rem "Source Sans 3"; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft);}
+  .qs-pill{font:700 .68rem "Source Sans 3"; padding:3px 10px; border-radius:999px; background:var(--cat-boundary-bg); color:var(--cat-boundary);}
+  .qs-pill.ok{background:var(--cat-ok-bg); color:var(--cat-ok);}
+  .qs-item{display:flex; align-items:flex-start; gap:9px; font-size:.82rem; color:var(--ink-soft); padding:7px 0;}
+  .qs-item svg{width:16px; height:16px; flex:none; margin-top:1px;}
+  .qs-item.ok svg{color:var(--cat-ok);}
+  .qs-item.info svg{color:var(--cat-boundary);}
+  .qs-item b{color:var(--ink); font-weight:600;}
+  .pr-status-toggle{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;}
+  .pr-status-btn{font:600 .82rem "Source Sans 3",sans-serif; padding:8px 16px; border-radius:8px; border:1px solid var(--card-border); background:var(--card-bg); color:var(--ink); cursor:pointer;}
+  .pr-status-btn[data-active="true"]{background:var(--accent); border-color:var(--accent); color:var(--accent-contrast);}
+  .pr-status-btn:not([data-active="true"]):hover{border-color:var(--accent); color:var(--accent);}
 
   /* Schulungsunterlage */
   .training-doc{background:var(--paper); border:1px solid var(--paper-edge); border-radius:14px; padding:clamp(18px,3vw,30px); color:var(--ink-doc); font-family:"Source Serif 4",Georgia,serif; box-shadow:var(--shadow-doc);}
@@ -3102,11 +3126,86 @@ function selectPrRow(id){
   renderPrDetail();
 }
 
+/* Wort-Diff (LCS) zwischen Alttext und Formulierungsvorschlag — hebt genau die geänderten
+   Wörter hervor statt nur zwei unzusammenhängende Textblöcke nebeneinanderzustellen. Bei
+   Formulierungen, die fast komplett neu geschrieben sind (kaum gemeinsame Wörter), wird auf die
+   Begriffs-Chips verzichtet, da eine Liste "geänderter Begriffe" dort nicht aussagekräftig wäre —
+   die Hervorhebung im Fließtext bleibt davon unberührt. */
+function wordDiff(oldText, newText){
+  const oldTok = oldText.split(/(\s+)/).filter(t=>t!=="");
+  const newTok = newText.split(/(\s+)/).filter(t=>t!=="");
+  const n = oldTok.length, m = newTok.length;
+  const dp = Array.from({length:n+1}, ()=>new Array(m+1).fill(0));
+  for(let i=n-1;i>=0;i--){
+    for(let j=m-1;j>=0;j--){
+      dp[i][j] = oldTok[i]===newTok[j] ? dp[i+1][j+1]+1 : Math.max(dp[i+1][j], dp[i][j+1]);
+    }
+  }
+  let i=0,j=0; const oldOut=[], newOut=[];
+  while(i<n && j<m){
+    if(oldTok[i]===newTok[j]){ oldOut.push({t:oldTok[i],same:true}); newOut.push({t:newTok[j],same:true}); i++; j++; }
+    else if(dp[i+1][j] >= dp[i][j+1]){ oldOut.push({t:oldTok[i],same:false}); i++; }
+    else { newOut.push({t:newTok[j],same:false}); j++; }
+  }
+  while(i<n){ oldOut.push({t:oldTok[i],same:false}); i++; }
+  while(j<m){ newOut.push({t:newTok[j],same:false}); j++; }
+  return {oldOut, newOut};
+}
+function renderDiffTokens(tokens){
+  return tokens.map(tok=> tok.same || /^\s+$/.test(tok.t) ? esc(tok.t) : '<span class="chg">'+esc(tok.t)+'</span>').join("");
+}
+function changedTermPairs(oldOut, newOut){
+  const oldWords = oldOut.filter(t=>!t.same && !/^\s+$/.test(t.t));
+  const newWords = newOut.filter(t=>!t.same && !/^\s+$/.test(t.t));
+  const totalOldWords = oldOut.filter(t=>!/^\s+$/.test(t.t)).length;
+  /* Gate auf den Alttext-Anteil statt auf beide Seiten: ein Vorschlag darf durchaus einen
+     zusätzlichen erklärenden Satz ergänzen (viele "neue" Wörter) und trotzdem als gezielte
+     Änderung an wenigen Stellen des Originaltexts gelten — nur wenn der Originaltext selbst
+     großteils umgeschrieben wurde, ist eine Begriffs-Chip-Liste nicht mehr aussagekräftig. */
+  if(!totalOldWords || oldWords.length/totalOldWords > 0.5) return [];
+  function phrases(toks, srcOut){
+    const out = []; let cur = [];
+    srcOut.forEach(tok=>{
+      if(!tok.same && !/^\s+$/.test(tok.t)) cur.push(tok.t);
+      else if(cur.length){ out.push(cur.join(" ")); cur=[]; }
+    });
+    if(cur.length) out.push(cur.join(" "));
+    return out;
+  }
+  const oldPhrases = phrases(oldWords, oldOut);
+  const newPhrases = phrases(newWords, newOut);
+  const len = Math.max(oldPhrases.length, newPhrases.length);
+  const pairs = [];
+  for(let k=0;k<len;k++) pairs.push({oldP:oldPhrases[k]||null, newP:newPhrases[k]||null});
+  return pairs.slice(0,6);
+}
+function qsChecklist(f){
+  const items = [];
+  items.push({ok:true, html:"Formulierungsvorschlag bezieht sich erkennbar auf GOÄneu-Inhalte, kein unklarer Rest-Bezug."});
+  if(f.tarifBezug) items.push({ok:true, html:"Berücksichtigt aktuelle tarifliche Leistungen."});
+  if(f.status==="neu" || f.status==="offen"){
+    items.push({info:true, html:"Entscheidung offen (<b>"+esc(f.sourceTitel)+"</b>): „"+esc(f.pfad)+"“ — automatischer Vorschlag noch nicht freigegeben."});
+  } else if(f.status==="in Prüfung"){
+    items.push({info:true, html:"Fachliche Prüfung läuft — Freigabe steht noch aus."});
+  } else if(f.status==="übernommen"){
+    items.push({ok:true, html:"Formulierung wurde bereits fachlich übernommen."});
+  }
+  if(f.goaBezug==="mittelbar") items.push({info:true, html:"Nur mittelbarer GOÄ-Bezug — Relevanz vor Freigabe gegenlesen."});
+  return items;
+}
 function renderPrDetail(){
   const detail = document.getElementById("pr-detail");
   const f = PR_ROWS.find(r=>r.id===prState.selected);
   if(!f){ detail.innerHTML = ""; return; }
   if(f.training){ detail.innerHTML = renderTrainingDoc(f.training); return; }
+  if(f.edited===undefined) f.edited = "";
+  if(f.reviewStatus===undefined) f.reviewStatus = "offen";
+  const {oldOut, newOut} = wordDiff(f.auszug, f.vorschlag);
+  const pairs = changedTermPairs(oldOut, newOut);
+  const qsItems = qsChecklist(f);
+  const hasEdit = f.edited.trim().length>0;
+  const qsSubject = hasEdit ? "Überarbeitung durch Nutzer" : "Automatischer Vorschlag (noch keine Überarbeitung)";
+  const qsPillLabel = f.reviewStatus==="freigegeben" ? "Freigegeben" : hasEdit ? "In Bearbeitung" : "Ausstehend";
   detail.innerHTML =
     '<div class="finding-card">'+
       '<div class="finding-head"><span class="finding-loc">'+esc(f.pfad)+'</span>'+
@@ -3114,10 +3213,48 @@ function renderPrDetail(){
       '</div>'+
       '<div class="finding-reason"><b>Warum GOÄ-Bezug:</b> '+esc(f.grund)+'</div>'+
       '<div class="diff-block">'+
-        '<div class="diff-col old"><span class="diff-label">Bisheriger Text</span>'+esc(f.auszug)+'</div>'+
-        '<div class="diff-col new"><span class="diff-label">Vorschlag neue Formulierung</span>'+esc(f.vorschlag)+'</div>'+
+        '<div class="diff-col old"><span class="diff-label">Bisheriger Text</span>'+renderDiffTokens(oldOut)+'</div>'+
+        '<div class="diff-col new"><span class="diff-label">Vorschlag neue Formulierung</span>'+renderDiffTokens(newOut)+'</div>'+
+      '</div>'+
+      (pairs.length ? '<div class="changed-terms">'+pairs.map(p=>
+        '<span class="changed-term">'+
+          (p.oldP?'<span class="old-t">'+esc(p.oldP)+'</span>':'<span class="old-t">—</span>')+
+          '<span>→</span>'+
+          (p.newP?'<span class="new-t">'+esc(p.newP)+'</span>':'<span class="new-t">entfällt</span>')+
+        '</span>'
+      ).join("")+'</div>' : '')+
+      '<div class="kt-edit-wrap">'+
+        '<div class="section-label">Überarbeiteter Text</div>'+
+        '<textarea class="textarea-field" id="pr-edit-text" rows="4" placeholder="Noch keine Überarbeitung — Text hier erfassen oder den Vorschlag übernehmen.">'+esc(f.edited)+'</textarea>'+
+        '<div class="kt-edit-actions"><button type="button" class="btn btn-ghost" id="pr-edit-apply">Vorschlag übernehmen</button></div>'+
+      '</div>'+
+      '<div class="qs-block">'+
+        '<div class="qs-head"><span class="qs-head-label">Qualitätssicherung — Prüfgegenstand: '+esc(qsSubject)+'</span><span class="qs-pill'+(qsPillLabel==="Freigegeben"?" ok":"")+'">'+esc(qsPillLabel)+'</span></div>'+
+        qsItems.map(it=>'<div class="qs-item '+(it.ok?"ok":"info")+'">'+ICONS[it.ok?"ok":"boundary"]+'<span>'+it.html+'</span></div>').join("")+
+      '</div>'+
+      '<div class="pr-status-toggle" id="pr-review-status">'+
+        ["offen","in_ueberarbeitung","freigegeben"].map(st=>
+          '<button type="button" class="pr-status-btn" data-status="'+st+'" data-active="'+(f.reviewStatus===st)+'">'+
+            (st==="offen"?"Offen":st==="in_ueberarbeitung"?"In Überarbeitung":"Freigegeben")+
+          '</button>'
+        ).join("")+
       '</div>'+
     '</div>';
+
+  const applyBtn = document.getElementById("pr-edit-apply");
+  const editArea = document.getElementById("pr-edit-text");
+  if(applyBtn && editArea) applyBtn.addEventListener("click", ()=>{
+    editArea.value = f.vorschlag;
+    f.edited = f.vorschlag;
+    renderPrDetail();
+  });
+  if(editArea) editArea.addEventListener("input", ()=>{ f.edited = editArea.value; });
+  document.querySelectorAll("#pr-review-status .pr-status-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      f.reviewStatus = btn.dataset.status;
+      renderPrDetail();
+    });
+  });
 }
 
 function prCsvField(v){
