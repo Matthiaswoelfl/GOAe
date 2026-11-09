@@ -133,10 +133,6 @@
   .beleg-agg-zt{display:flex; flex-wrap:wrap; gap:4px;}
 
   /* ---------- Given/When/Then scenario box ---------- */
-  .gwt-box{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; margin-bottom:20px; box-shadow:var(--shadow-sm);}
-  .gwt-row{display:flex; gap:12px; padding:6px 0; font-size:.85rem; line-height:1.55;}
-  .gwt-row + .gwt-row{border-top:1px dashed var(--border);}
-  .gwt-tag{flex:none; width:76px; font-weight:800; font-size:.7rem; text-transform:uppercase; letter-spacing:.04em; color:var(--orange); padding-top:2px;}
   .gwt-then-list{margin:4px 0 0; padding-left:18px; columns:2; column-gap:22px;}
   .gwt-then-list li{font-size:.82rem; color:var(--ink); line-height:1.55; break-inside:avoid; margin-bottom:3px;}
   @media (max-width:760px){ .gwt-then-list{columns:1;} }
@@ -373,13 +369,7 @@
     <div class="view-wrap">
       <div class="view-head">
         <h1>Prüfung Datenpool und Auswertbarkeit der Datenqualität</h1>
-        <p>Zielbild grundsätzlich für alle Dokumentarten, aktueller Fokus auf die 6 neuen GOÄ-Dok.-Arten. Zweck: Identifikation von Ursachen und Fehlerquellen im EM — bis auf Belegebene —, nicht nur Anzeige übergeordneter KPIs. Bewertung der Vollständigkeit, Befüllungsqualität und Erkennungsquote tagesaktuell auf Datenfeld- und Belegebene.</p>
-      </div>
-
-      <div class="gwt-box">
-        <div class="gwt-row"><span class="gwt-tag">Gegeben</span><span>Das EM hat Daten in den Datenpool eingespeist, die anschließend in SMILE weiterverarbeitet werden sollen.</span></div>
-        <div class="gwt-row"><span class="gwt-tag">Wenn</span><span>Ein Datensatz zu einem Beleg im Datenpool vorliegt.</span></div>
-        <div class="gwt-row"><span class="gwt-tag">Dann</span><span>führt der DQM u. a. folgende Prüfungen/Auswertungen durch und zeigt die Ergebnisse an — siehe Auswertungskatalog unten.</span></div>
+        <p>Zielbild grundsätzlich für alle Dokumentarten, aktueller Fokus auf die 6 neuen GOÄ-Dok.-Arten. Zweck: Identifikation von Ursachen und Fehlerquellen im EM — bis auf Belegebene —, nicht nur Anzeige übergeordneter KPIs. Dieser Stand zeigt zunächst die Belegsicht (Beleg-Qualität, siehe unten); die Anzeige der einzelnen Datenfelder im Datenpool-Dashboard ist als nächster Ausbauschritt vorgesehen.</p>
       </div>
 
       <div class="kpi-row" id="dp-kpi"></div>
@@ -1501,15 +1491,20 @@ function renderDpKpi(){
   const avg = k => rows.length ? (rows.reduce((s,r)=>s+dpEffectiveValue(r,k),0)/rows.length) : 0;
   const kanalSuffix = activeDpKanal==="alle" ? "" : " · Kanal: "+DP_KANAL_LABEL[activeDpKanal];
   const felderLabel = mode==="ziffer" ? (dpZifferSicht==="beleg" ? "Belege mit dieser GO-Ziffer" : "Treffer GO-Ziffer-Suche") : mode==="vnr" ? "Belege zu dieser VNR" : "Angeforderte Datenfelder";
-  document.getElementById("dp-kpi").innerHTML = [
-    ['Ø Vollständigkeit', rows.length?avg("vollst").toFixed(1).replace(".",",")+" %":"—", rows.length&&avg("vollst")>=90?"ok":"warn"],
-    ['Ø Befüllungsqualität', rows.length?avg("befuell").toFixed(1).replace(".",",")+" %":"—", rows.length&&avg("befuell")>=90?"ok":"warn"],
-    ['Ø Erkennungsquote', rows.length?avg("erkennung").toFixed(1).replace(".",",")+" %":"—", rows.length&&avg("erkennung")>=90?"ok":"warn"],
-    [felderLabel, rows.length+(mode==="normal"?" von "+DATENPOOL_FELDER.length:"")+kanalSuffix, "info"],
-  ].map(([l,v,c])=>'<div class="kpi-tile"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></div>').join("")+
+  document.getElementById("dp-kpi").innerHTML =
+    (rows.length
+      ? '<button type="button" class="kpi-tile kpi-tile--click" id="dp-kpi-vollst-btn" title="Klicken für QSL-Verteilung über alle aktuell gefilterten Datenfelder"><div class="kpi-num '+(avg("vollst")>=90?"ok":"warn")+'">'+avg("vollst").toFixed(1).replace(".",",")+' %</div><div class="kpi-label">Ø Vollständigkeit</div></button>'
+      : '<div class="kpi-tile"><div class="kpi-num warn">—</div><div class="kpi-label">Ø Vollständigkeit</div></div>')+
+    [
+      ['Ø Befüllungsqualität', rows.length?avg("befuell").toFixed(1).replace(".",",")+" %":"—", rows.length&&avg("befuell")>=90?"ok":"warn"],
+      ['Ø Erkennungsquote', rows.length?avg("erkennung").toFixed(1).replace(".",",")+" %":"—", rows.length&&avg("erkennung")>=90?"ok":"warn"],
+      [felderLabel, rows.length+(mode==="normal"?" von "+DATENPOOL_FELDER.length:"")+kanalSuffix, "info"],
+    ].map(([l,v,c])=>'<div class="kpi-tile"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></div>').join("")+
   '<div class="kpi-tile kpi-tile--wide"><div class="kpi-num info">'+fmtDateDe(activeDpDate)+'</div>'+
     '<div class="kpi-label">Datenpool-Stand</div>'+
     '<div class="kpi-tile-note">Datum, an dem das Datenfeld in den Datenpool geliefert wurde.</div></div>';
+  const vollstBtn = document.getElementById("dp-kpi-vollst-btn");
+  if(vollstBtn) vollstBtn.addEventListener("click", openQslModalAggregate);
 }
 function renderDpThead(){
   const mode = dpMode();
@@ -1630,6 +1625,39 @@ function donutSegments(dist, n){
   return circles+
     '<text x="'+cx+'" y="'+(cy-2)+'" text-anchor="middle" class="donut-center-num">'+n.toLocaleString("de-DE")+'</text>'+
     '<text x="'+cx+'" y="'+(cy+11)+'" text-anchor="middle" class="donut-center-lbl">Datensätze</text>';
+}
+/* Aggregierte QSL-Verteilung über alle aktuell gefilterten Datenfelder (Zeilen-Sicht/VNR
+   eingeschlossen), gewichtet nach der jeweiligen Datensatzmenge je Zeile — ermöglicht den
+   Einstieg in die QSL-Logik direkt über die Ø-Vollständigkeit-Kachel oben, nicht erst über eine
+   einzelne Zeile weiter unten in der Tabelle. */
+function aggregateQslDistribution(rows){
+  const totalN = rows.reduce((s,r)=>s+r.n,0);
+  const dist = {};
+  QSL_KATEGORIEN.forEach(k=>{
+    dist[k.key] = totalN ? Math.round((rows.reduce((s,r)=>s+r.n*(r.qsl[k.key]||0),0)/totalN)*10)/10 : 0;
+  });
+  return {dist, totalN};
+}
+function openQslModalAggregate(){
+  const rows = getFilteredDpRows();
+  if(!rows.length) return;
+  const {dist, totalN} = aggregateQslDistribution(rows);
+  const mode = dpMode();
+  const scopeLabel = mode==="ziffer" ? "alle "+rows.length.toLocaleString("de-DE")+" Treffer der GO-Ziffer-Suche" : mode==="vnr" ? "alle Datenfelder dieser VNR" : "alle "+rows.length.toLocaleString("de-DE")+" aktuell gefilterten Datenfelder";
+  const dokNote = activeDpDokArt==="alle" ? "" : " · "+activeDpDokArt;
+  const kanalNote = activeDpKanal==="alle" ? "" : " · Kanal: "+DP_KANAL_LABEL[activeDpKanal];
+  document.getElementById("qsl-modal-title").textContent = "QSL-Verteilung — Ø Vollständigkeit";
+  document.getElementById("qsl-modal-sub").textContent = "Aggregiert über "+scopeLabel+dokNote+kanalNote+" · "+totalN.toLocaleString("de-DE")+" betrachtete Datensätze";
+  document.getElementById("qsl-donut-svg").innerHTML = donutSegments(dist, totalN);
+  document.getElementById("qsl-legend").innerHTML = QSL_KATEGORIEN.map(k=>{
+    const pct = dist[k.key]||0;
+    const count = Math.round(totalN*pct/100);
+    return '<li><span class="qsl-swatch" style="background:var(--qsl-'+k.slot+');"></span>'+
+      '<span><span class="qsl-legend-label">'+esc(k.label)+'</span>'+
+      '<span class="qsl-legend-val">'+pct.toFixed(1).replace(".",",")+' % · '+count.toLocaleString("de-DE")+'</span>'+
+      '<span class="qsl-legend-qsl">Qualitätsschlüssel: '+esc(k.qsl)+'</span></span></li>';
+  }).join("");
+  document.getElementById("qsl-modal").hidden = false;
 }
 function openQslModal(rowId){
   const row = getFilteredDpRows().find(r=>r.id===rowId);
