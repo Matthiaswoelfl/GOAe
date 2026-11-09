@@ -126,7 +126,10 @@
   .beleg-agg-headline{
     display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; background:var(--navy); color:#fff;
     border-radius:var(--radius); padding:18px 22px; margin-bottom:16px;
+    border:none; width:100%; font:inherit; text-align:left; cursor:pointer;
+    transition:box-shadow .12s ease, transform .1s ease;
   }
+  .beleg-agg-headline:hover{box-shadow:0 3px 10px rgba(20,25,40,.25); transform:translateY(-1px);}
   .beleg-agg-headline .num{font-size:2.1rem; font-weight:800; font-variant-numeric:tabular-nums; line-height:1;}
   .beleg-agg-headline .sub{font-size:.86rem; opacity:.88;}
   .beleg-agg-reason{font-size:.78rem; color:var(--ink-soft);}
@@ -457,7 +460,7 @@
         <div class="subhead">Beleg-Qualität — aggregierte Zwischenebene</div>
       </div>
       <p class="subhead-sub">Zwischenebene zwischen Einzelfeldern und den Filterattributen: macht eine <b>absolute</b> Aussage zur Datenqualität je Beleg (nicht nur Prozent-Durchschnitt über Felder) und ist der Einstieg in die Ursachenanalyse. Beispiel-Stichprobe von <span id="beleg-agg-size"></span> Belegen — reagiert auf die Filter oben: Dok.-Art, Zeilentyp und Datenpool-Stand grenzen die betrachteten Belege ein; Eingangskanal und Verarbeitungsverfahren (ISH/Padline) wirken zusätzlich auf die Vollständigkeit je Beleg und können dadurch auch die Vollständig-Quote verschieben. AV-Zielstatus ist auf Belegebene nicht anwendbar (felderspezifisch).</p>
-      <div class="beleg-agg-headline" id="beleg-agg-headline"></div>
+      <button type="button" class="beleg-agg-headline" id="beleg-agg-headline" title="Klicken für QSL-Verteilung über alle aktuell gefilterten Belege"></button>
       <div class="kpi-row" id="beleg-agg-kpi"></div>
       <div class="filters">
         <div class="filter-group" id="beleg-agg-sicht-toggle">
@@ -1210,6 +1213,35 @@ const BELEG_AGG_GRUENDE = [
    verschieben die Vollständigkeits-Schwelle leicht nach oben/unten, sodass die Quote glaubwürdig
    mit dem Kanal variiert, statt bei jedem Minus-Kanal schlagartig auf (nahe) 0 % zu fallen. */
 const BELEG_POOL_BASIS_QUOTE = 80;
+/* Synthetische QSL-Verteilung je Beleg: wie bei den Datenfeldern sechs Kategorien, die auf 100 %
+   summieren, hier aber hash-generiert statt aus dem realen Feldkatalog übernommen (für
+   Belegebene liegen keine echten QSL-Verteilungen vor). Höhere Basis-Vollständigkeit verschiebt
+   die Gewichtung plausibel Richtung "Sicher gefunden", niedrigere Richtung "Unsicher"/"Nicht
+   gefunden"/"Manuell korrigiert" — konsistent mit der Grundannahme, dass Erkennungsqualität und
+   strukturelle Vollständigkeit korrelieren. */
+function belegQslDistribution(h, baseVollst){
+  const raw = {
+    sicher: 6 + (h("qs")%14),
+    unsicher: 2 + (h("qu")%10),
+    nicht: 1 + (h("qn")%8),
+    korrigiert: 2 + (h("qk")%10),
+    bestaetigt: 1 + (h("qb")%8),
+    sonstige: 1 + (h("qo")%6),
+  };
+  raw.sicher *= 1 + baseVollst/55;
+  raw.unsicher *= 1 + (100-baseVollst)/45;
+  raw.nicht *= 1 + (100-baseVollst)/35;
+  raw.korrigiert *= 1 + (100-baseVollst)/60;
+  const sum = Object.values(raw).reduce((a,b)=>a+b,0);
+  const keys = Object.keys(raw);
+  const pct = {};
+  let used = 0;
+  keys.forEach((k,idx)=>{
+    if(idx===keys.length-1){ pct[k] = Math.max(0, 100-used); }
+    else { const v = Math.round(raw[k]/sum*100); pct[k]=v; used+=v; }
+  });
+  return pct;
+}
 const BELEG_POOL = (function(){
   const pool = [];
   for(let i=0;i<BELEG_POOL_SIZE;i++){
@@ -1236,13 +1268,14 @@ const BELEG_POOL = (function(){
       const fehlerZt = (h("fehlertyp2")%2===0) ? "20" : "21";
       if(!zeilentypen.includes(fehlerZt)) zeilentypen.push(fehlerZt);
     }
+    const qsl = belegQslDistribution(h, istVollstaendig?100:vollstIncomplete);
     pool.push({
       id:"belegpool-"+i,
       belegId:"BLG-"+dpVnrPseudoDatum(off)+"-"+String(1000+(h("seq")%9000)),
       dokArt:dok.label, off, feldAnzahl, completeRoll, istVollstaendig,
       vollstIncomplete, anzahlFehlendIncomplete, grundIncomplete,
       befuell:Math.round(befuell*10)/10, erkennung:Math.round(erkennung*10)/10,
-      zeilentypen,
+      zeilentypen, qsl,
     });
   }
   return pool;
@@ -1630,11 +1663,12 @@ function donutSegments(dist, n){
    eingeschlossen), gewichtet nach der jeweiligen Datensatzmenge je Zeile — ermöglicht den
    Einstieg in die QSL-Logik direkt über die Ø-Vollständigkeit-Kachel oben, nicht erst über eine
    einzelne Zeile weiter unten in der Tabelle. */
-function aggregateQslDistribution(rows){
-  const totalN = rows.reduce((s,r)=>s+r.n,0);
+function aggregateQslDistribution(rows, weightOf){
+  const w = weightOf || (r=>r.n);
+  const totalN = rows.reduce((s,r)=>s+w(r),0);
   const dist = {};
   QSL_KATEGORIEN.forEach(k=>{
-    dist[k.key] = totalN ? Math.round((rows.reduce((s,r)=>s+r.n*(r.qsl[k.key]||0),0)/totalN)*10)/10 : 0;
+    dist[k.key] = totalN ? Math.round((rows.reduce((s,r)=>s+w(r)*(r.qsl[k.key]||0),0)/totalN)*10)/10 : 0;
   });
   return {dist, totalN};
 }
@@ -1648,6 +1682,25 @@ function openQslModalAggregate(){
   const kanalNote = activeDpKanal==="alle" ? "" : " · Kanal: "+DP_KANAL_LABEL[activeDpKanal];
   document.getElementById("qsl-modal-title").textContent = "QSL-Verteilung — Ø Vollständigkeit";
   document.getElementById("qsl-modal-sub").textContent = "Aggregiert über "+scopeLabel+dokNote+kanalNote+" · "+totalN.toLocaleString("de-DE")+" betrachtete Datensätze";
+  document.getElementById("qsl-donut-svg").innerHTML = donutSegments(dist, totalN);
+  document.getElementById("qsl-legend").innerHTML = QSL_KATEGORIEN.map(k=>{
+    const pct = dist[k.key]||0;
+    const count = Math.round(totalN*pct/100);
+    return '<li><span class="qsl-swatch" style="background:var(--qsl-'+k.slot+');"></span>'+
+      '<span><span class="qsl-legend-label">'+esc(k.label)+'</span>'+
+      '<span class="qsl-legend-val">'+pct.toFixed(1).replace(".",",")+' % · '+count.toLocaleString("de-DE")+'</span>'+
+      '<span class="qsl-legend-qsl">Qualitätsschlüssel: '+esc(k.qsl)+'</span></span></li>';
+  }).join("");
+  document.getElementById("qsl-modal").hidden = false;
+}
+function openQslModalAggregateBeleg(){
+  const rows = getFilteredBelegPool();
+  if(!rows.length) return;
+  const {dist, totalN} = aggregateQslDistribution(rows, r=>r.feldAnzahl);
+  const dokNote = activeDpDokArt==="alle" ? "" : " · "+activeDpDokArt;
+  const zeilentypNote = activeDpZeilentyp==="alle" ? "" : " · Zeilentyp: "+activeDpZeilentyp+" · "+ZEILENTYP_LABEL[activeDpZeilentyp];
+  document.getElementById("qsl-modal-title").textContent = "QSL-Verteilung — Beleg-Qualität";
+  document.getElementById("qsl-modal-sub").textContent = "Aggregiert über alle "+rows.length.toLocaleString("de-DE")+" aktuell gefilterten Belege"+dokNote+zeilentypNote+" · "+totalN.toLocaleString("de-DE")+" betrachtete Datenfelder";
   document.getElementById("qsl-donut-svg").innerHTML = donutSegments(dist, totalN);
   document.getElementById("qsl-legend").innerHTML = QSL_KATEGORIEN.map(k=>{
     const pct = dist[k.key]||0;
@@ -1690,6 +1743,7 @@ function openQslGlossar(){
 function closeQslGlossar(){ document.getElementById("qsl-glossar-modal").hidden = true; }
 function closeQslModal(){ document.getElementById("qsl-modal").hidden = true; }
 document.getElementById("qsl-modal-close").addEventListener("click", closeQslModal);
+document.getElementById("beleg-agg-headline").addEventListener("click", openQslModalAggregateBeleg);
 document.getElementById("qsl-modal").addEventListener("click", e=>{
   if(e.target.id==="qsl-modal") closeQslModal();
 });
