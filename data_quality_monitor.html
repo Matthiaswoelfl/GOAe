@@ -111,6 +111,10 @@
   .disclaimer b{color:var(--orange);}
 
   .view-wrap{padding:22px clamp(16px,3vw,32px) 60px; max-width:1180px; margin:0 auto; width:100%;}
+  .mvp-tabs{display:inline-flex; gap:4px; background:var(--surface); border:1px solid var(--border); padding:4px; border-radius:999px; margin-bottom:14px;}
+  .mvp-tab-btn{appearance:none; border:0; background:none; font:inherit; font-size:.82rem; font-weight:700; color:var(--ink-soft); padding:8px 16px; border-radius:999px; cursor:pointer; transition:background .15s ease, color .15s ease;}
+  .mvp-tab-btn[data-active="true"]{background:var(--orange); color:#fff;}
+  .mvp-tab-btn:not([data-active="true"]):hover{background:var(--surface-2);}
   .view-head h1{margin:0 0 6px; font-size:1.3rem; font-weight:800;}
   .view-head p{margin:0 0 18px; color:var(--ink-soft); font-size:.88rem; max-width:80ch; line-height:1.6;}
 
@@ -126,10 +130,7 @@
   .beleg-agg-headline{
     display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; background:var(--navy); color:#fff;
     border-radius:var(--radius); padding:18px 22px; margin-bottom:16px;
-    border:none; width:100%; font:inherit; text-align:left; cursor:pointer;
-    transition:box-shadow .12s ease, transform .1s ease;
   }
-  .beleg-agg-headline:hover{box-shadow:0 3px 10px rgba(20,25,40,.25); transform:translateY(-1px);}
   .beleg-agg-headline .num{font-size:2.1rem; font-weight:800; font-variant-numeric:tabular-nums; line-height:1;}
   .beleg-agg-headline .sub{font-size:.86rem; opacity:.88;}
   .beleg-agg-reason{font-size:.78rem; color:var(--ink-soft);}
@@ -370,17 +371,20 @@
   <!-- ================= TAB 2: DATENPOOL & AUSWERTBARKEIT ================= -->
   <section id="view-datenpool">
     <div class="view-wrap">
-      <div class="view-head">
-        <h1>Prüfung Datenpool und Auswertbarkeit der Datenqualität</h1>
-        <p>Zielbild grundsätzlich für alle Dokumentarten, aktueller Fokus auf die 6 neuen GOÄ-Dok.-Arten. Zweck: Identifikation von Ursachen und Fehlerquellen im EM — bis auf Belegebene —, nicht nur Anzeige übergeordneter KPIs. Dieser Stand zeigt zunächst die Belegsicht (Beleg-Qualität, siehe unten); die Anzeige der einzelnen Datenfelder im Datenpool-Dashboard ist als nächster Ausbauschritt vorgesehen.</p>
+      <div class="mvp-tabs" id="dp-mvp-tabs">
+        <button type="button" class="mvp-tab-btn" data-mvp="mvp1" data-active="true">MVP1 · Belegebene</button>
+        <button type="button" class="mvp-tab-btn" data-mvp="mvp2">MVP2 · Datenfeldebene</button>
       </div>
 
-      <div class="kpi-row" id="dp-kpi"></div>
+      <div class="view-head">
+        <h1>Prüfung Datenpool und Auswertbarkeit der Datenqualität</h1>
+        <p>Zielbild grundsätzlich für alle Dokumentarten, aktueller Fokus auf die 6 neuen GOÄ-Dok.-Arten. Zweck: Identifikation von Ursachen und Fehlerquellen im EM — bis auf Belegebene —, nicht nur Anzeige übergeordneter KPIs. MVP1 zeigt zunächst die Belegsicht (Beleg-Qualität); MVP2 ergänzt perspektivisch die Anzeige der einzelnen Datenfelder im Datenpool-Dashboard — per Reiter oben umschaltbar.</p>
+      </div>
 
       <div class="subhead-row">
         <div class="subhead">Filter</div>
       </div>
-      <p class="subhead-sub">Diese Filter wirken sowohl auf die Beleg-Qualität (aggregierte Zwischenebene) als auch auf das Datenpool-Dashboard je Datenfeld weiter unten. Ausnahme: AV-Zielstatus ist auf Belegebene nicht anwendbar (felderspezifisch) und wirkt daher nur auf das Datenfeld-Dashboard.</p>
+      <p class="subhead-sub">Diese Filter wirken sowohl auf die Beleg-Qualität (MVP1) als auch auf das Datenpool-Dashboard je Datenfeld (MVP2).</p>
       <div class="filters">
         <span class="filter-dim-label">Dok.-Art</span>
         <div class="filter-group" id="dp-dokart-filter">
@@ -391,19 +395,6 @@
           <button class="filter-chip" type="button" data-dokart="RE Kieferorthopädie neu (3567)">RE Kieferorthopädie neu (3567)</button>
           <button class="filter-chip" type="button" data-dokart="HKP Zahn neu (3501)">HKP Zahn neu (3501)</button>
           <button class="filter-chip" type="button" data-dokart="HKP KFO neu (3502)">HKP KFO neu (3502)</button>
-        </div>
-      </div>
-      <div class="filters">
-        <span class="filter-dim-label">AV-Zielstatus</span>
-        <div class="filter-group" id="dp-zielstatus-filter">
-          <button class="filter-chip" type="button" data-ziel="alle" data-active="true">Alle</button>
-          <button class="filter-chip" type="button" data-ziel="M">M</button>
-          <button class="filter-chip" type="button" data-ziel="K">K</button>
-          <button class="filter-chip" type="button" data-ziel="K**">K**</button>
-          <button class="filter-chip" type="button" data-ziel="MbA">MbA</button>
-          <button class="filter-chip" type="button" data-ziel="SWH">SWH</button>
-          <button class="filter-chip" type="button" data-ziel="TM">TM</button>
-          <button class="filter-chip" type="button" data-ziel="P">P</button>
         </div>
       </div>
       <div class="filters">
@@ -456,75 +447,94 @@
       </div>
       <p class="subhead-sub dp-ziffer-hint">ISH/Padline ist ein Verarbeitungsverfahren, kein Eingangskanal — es kann in jedem Kanal auftreten und ist daher unabhängig vom Eingangskanal-Filter auswertbar.</p>
 
-      <div class="subhead-row">
-        <div class="subhead">Beleg-Qualität — aggregierte Zwischenebene</div>
-      </div>
-      <p class="subhead-sub">Zwischenebene zwischen Einzelfeldern und den Filterattributen: macht eine <b>absolute</b> Aussage zur Datenqualität je Beleg (nicht nur Prozent-Durchschnitt über Felder) und ist der Einstieg in die Ursachenanalyse. Beispiel-Stichprobe von <span id="beleg-agg-size"></span> Belegen — reagiert auf die Filter oben: Dok.-Art, Zeilentyp und Datenpool-Stand grenzen die betrachteten Belege ein; Eingangskanal und Verarbeitungsverfahren (ISH/Padline) wirken zusätzlich auf die Vollständigkeit je Beleg und können dadurch auch die Vollständig-Quote verschieben. AV-Zielstatus ist auf Belegebene nicht anwendbar (felderspezifisch).</p>
-      <button type="button" class="beleg-agg-headline" id="beleg-agg-headline" title="Klicken für QSL-Verteilung über alle aktuell gefilterten Belege"></button>
-      <div class="kpi-row" id="beleg-agg-kpi"></div>
-      <div class="filters">
-        <div class="filter-group" id="beleg-agg-sicht-toggle">
-          <button class="filter-chip" type="button" data-sicht="alle" data-active="true">Sicht 1 · Alle Belege</button>
-          <button class="filter-chip" type="button" data-sicht="unvollstaendig">Sicht 2 · Nur unvollständige Belege</button>
+      <div id="mvp1-panel">
+        <div class="subhead-row">
+          <div class="subhead">Beleg-Qualität — aggregierte Zwischenebene</div>
         </div>
-        <span class="filter-count" id="beleg-agg-count"></span>
+        <p class="subhead-sub">Zwischenebene zwischen Einzelfeldern und den Filterattributen: macht eine <b>absolute</b> Aussage zur Datenqualität je Beleg (nicht nur Prozent-Durchschnitt über Felder) und ist der Einstieg in die Ursachenanalyse. Beispiel-Stichprobe von <span id="beleg-agg-size"></span> Belegen — reagiert auf die Filter oben: Dok.-Art, Zeilentyp und Datenpool-Stand grenzen die betrachteten Belege ein; Eingangskanal und Verarbeitungsverfahren (ISH/Padline) wirken zusätzlich auf die Vollständigkeit je Beleg und können dadurch auch die Vollständig-Quote verschieben. Klick auf die Vollständigkeit je Beleg öffnet die QSL-Verteilung inkl. Qualitätsschlüssel.</p>
+        <div class="beleg-agg-headline" id="beleg-agg-headline"></div>
+        <div class="kpi-row" id="beleg-agg-kpi"></div>
+        <div class="filters">
+          <div class="filter-group" id="beleg-agg-sicht-toggle">
+            <button class="filter-chip" type="button" data-sicht="alle" data-active="true">Sicht 1 · Alle Belege</button>
+            <button class="filter-chip" type="button" data-sicht="unvollstaendig">Sicht 2 · Nur unvollständige Belege</button>
+          </div>
+          <span class="filter-count" id="beleg-agg-count"></span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Beleg-ID</th><th>Dok.-Art</th><th>Vollständigkeit</th><th>Fehlende Felder</th><th>Enthaltene Zeilentypen</th><th>Vermuteter Grund</th></tr></thead>
+            <tbody id="beleg-agg-body"></tbody>
+          </table>
+        </div>
+        <p class="subhead-sub dp-ziffer-hint">Hinweis zur technischen Komplexität (Workshop-Feedback): Ein echter Abgleich auf jeder tieferen Zeilenebene mit dem Datenpool ist deutlich aufwendiger als hier dargestellt. Diese Ansicht simuliert plausible Ergebnisse zur Veranschaulichung, kein Live-Abgleich. Ob die benötigten Attribute vom EM geliefert werden können, ist mit dem EM-Team zu klären (MVP-Annahme).</p>
       </div>
-      <div class="table-wrap">
-        <table class="data-table">
-          <thead><tr><th>Beleg-ID</th><th>Dok.-Art</th><th>Vollständigkeit</th><th>Fehlende Felder</th><th>Enthaltene Zeilentypen</th><th>Vermuteter Grund</th></tr></thead>
-          <tbody id="beleg-agg-body"></tbody>
-        </table>
-      </div>
-      <p class="subhead-sub dp-ziffer-hint">Hinweis zur technischen Komplexität (Workshop-Feedback): Ein echter Abgleich auf jeder tieferen Zeilenebene mit dem Datenpool ist deutlich aufwendiger als hier dargestellt. Diese Ansicht simuliert plausible Ergebnisse zur Veranschaulichung, kein Live-Abgleich. Ob die benötigten Attribute vom EM geliefert werden können, ist mit dem EM-Team zu klären (MVP-Annahme).</p>
 
-      <div class="subhead-row">
-        <div class="subhead">Datenpool-Dashboard je Datenfeld</div>
-        <div class="subhead-row-actions">
-          <button type="button" class="subhead-btn qsl-glossar-trigger">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 16.5h.01"/><circle cx="12" cy="12" r="9"/></svg>
-            QSL-Verzeichnis
-          </button>
-          <button type="button" class="subhead-btn" id="dp-table-toggle">
-            <svg class="icon" id="dp-table-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15 12 9l-6 6"/></svg>
-            <span id="dp-table-toggle-label">Tabelle einklappen</span>
-          </button>
+      <div id="mvp2-panel" hidden>
+        <div class="filters">
+          <span class="filter-dim-label">AV-Zielstatus</span>
+          <div class="filter-group" id="dp-zielstatus-filter">
+            <button class="filter-chip" type="button" data-ziel="alle" data-active="true">Alle</button>
+            <button class="filter-chip" type="button" data-ziel="M">M</button>
+            <button class="filter-chip" type="button" data-ziel="K">K</button>
+            <button class="filter-chip" type="button" data-ziel="K**">K**</button>
+            <button class="filter-chip" type="button" data-ziel="MbA">MbA</button>
+            <button class="filter-chip" type="button" data-ziel="SWH">SWH</button>
+            <button class="filter-chip" type="button" data-ziel="TM">TM</button>
+            <button class="filter-chip" type="button" data-ziel="P">P</button>
+          </div>
         </div>
-      </div>
-      <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit, Befüllungsqualität und Erkennungsquote je angefordertem Datenfeld (inkl. AV-Zielstatus aus dem Extraktionskatalog und, bei Abrechnungspositionen, Zeilentyp). Reagiert auf die Filter oben (Dok.-Art, AV-Zielstatus, Zeilentyp, Datenpool-Stand, Eingangskanal) sowie auf die GO-Ziffer- und VNR-Suche direkt unterhalb. Klick auf die Vollständigkeit öffnet die QSL-Verteilung inkl. Qualitätsschlüssel je Feld.</p>
-      <div class="filters">
-        <span class="filter-dim-label">GO-Ziffer-Suche</span>
-        <input class="filter-search" id="dp-ziffer-search" type="search" placeholder="z. B. 1200 (Sonographie)…">
-        <div class="filter-group" id="dp-ziffer-sicht-toggle">
-          <button class="filter-chip" type="button" data-sicht="zeile" data-active="true">Zeilen-Sicht</button>
-          <button class="filter-chip" type="button" data-sicht="beleg">Beleg-Sicht</button>
-        </div>
-      </div>
-      <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht unten aus. Zeilen-Sicht: je Dok.-Art eine Zeile mit den Auswertungen der GO-Zeile selbst. Beleg-Sicht: Beispiel-Belege, die diese Ziffer enthalten, mit der Vollständigkeit des jeweils gesamten Belegs. Wirkt nicht auf die Beleg-Qualität-Zwischenebene oben.</p>
-      <div class="filters">
-        <span class="filter-dim-label">VNR-Suche</span>
-        <input class="filter-search" id="dp-vnr-search" type="search" placeholder="Versicherungsnummer eingeben, z. B. 552310-9…">
-      </div>
-      <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht unten aus und zeigt stattdessen alle im Datenpool vorliegenden eingereichten Belege dieser VNR mit ihren jeweiligen Datenfeld-Auswertungen (geht Dok.-Art- und GO-Ziffer-Suche vor). Wirkt nicht auf die Beleg-Qualität-Zwischenebene oben.</p>
-      <div class="table-wrap" id="dp-table-wrap">
-        <table class="data-table">
-          <thead id="dp-thead"></thead>
-          <tbody id="dp-body"></tbody>
-        </table>
-      </div>
-      <button type="button" class="dp-table-collapsed-hint" id="dp-table-collapsed-hint" hidden></button>
+        <p class="subhead-sub dp-ziffer-hint">AV-Zielstatus ist auf Belegebene (MVP1) nicht anwendbar (felderspezifisch) und wirkt daher nur hier auf MVP2.</p>
 
-      <div class="subhead">Auswertungskatalog</div>
-      <p class="subhead-sub">Beispielhafte Auswertungsmöglichkeiten des DQM auf dem Datenpool. Die Einträge der Kategorie „Anzeige" sind klickbar (Aktiv/Inaktiv) und blenden die jeweilige Spalte im Datenpool-Dashboard oben ein oder aus.</p>
-      <div class="av-visible-cols" id="av-visible-cols"></div>
-      <div class="filters">
-        <input class="filter-search" id="av-search" type="search" placeholder="Auswertungskatalog durchsuchen…">
-        <span class="filter-count" id="av-count"></span>
-      </div>
-      <div class="table-wrap">
-        <table class="data-table">
-          <thead><tr><th>Kategorie</th><th>Auswertung</th><th>Beschreibung</th><th>Status</th></tr></thead>
-          <tbody id="av-body"></tbody>
-        </table>
+        <div class="subhead-row">
+          <div class="subhead">Datenpool-Dashboard je Datenfeld</div>
+          <div class="subhead-row-actions">
+            <button type="button" class="subhead-btn qsl-glossar-trigger">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 16.5h.01"/><circle cx="12" cy="12" r="9"/></svg>
+              QSL-Verzeichnis
+            </button>
+            <button type="button" class="subhead-btn" id="dp-table-toggle">
+              <svg class="icon" id="dp-table-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15 12 9l-6 6"/></svg>
+              <span id="dp-table-toggle-label">Tabelle einklappen</span>
+            </button>
+          </div>
+        </div>
+        <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit, Befüllungsqualität und Erkennungsquote je angefordertem Datenfeld (inkl. AV-Zielstatus aus dem Extraktionskatalog und, bei Abrechnungspositionen, Zeilentyp). Reagiert auf die Filter oben (Dok.-Art, AV-Zielstatus, Zeilentyp, Datenpool-Stand, Eingangskanal) sowie auf die GO-Ziffer- und VNR-Suche direkt unterhalb. Klick auf die Vollständigkeit öffnet die QSL-Verteilung inkl. Qualitätsschlüssel je Feld.</p>
+        <div class="filters">
+          <span class="filter-dim-label">GO-Ziffer-Suche</span>
+          <input class="filter-search" id="dp-ziffer-search" type="search" placeholder="z. B. 1200 (Sonographie)…">
+          <div class="filter-group" id="dp-ziffer-sicht-toggle">
+            <button class="filter-chip" type="button" data-sicht="zeile" data-active="true">Zeilen-Sicht</button>
+            <button class="filter-chip" type="button" data-sicht="beleg">Beleg-Sicht</button>
+          </div>
+        </div>
+        <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht unten aus. Zeilen-Sicht: je Dok.-Art eine Zeile mit den Auswertungen der GO-Zeile selbst. Beleg-Sicht: Beispiel-Belege, die diese Ziffer enthalten, mit der Vollständigkeit des jeweils gesamten Belegs. Wirkt nicht auf die Beleg-Qualität-Zwischenebene (MVP1).</p>
+        <div class="filters">
+          <span class="filter-dim-label">VNR-Suche</span>
+          <input class="filter-search" id="dp-vnr-search" type="search" placeholder="Versicherungsnummer eingeben, z. B. 552310-9…">
+        </div>
+        <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht unten aus und zeigt stattdessen alle im Datenpool vorliegenden eingereichten Belege dieser VNR mit ihren jeweiligen Datenfeld-Auswertungen (geht Dok.-Art- und GO-Ziffer-Suche vor). Wirkt nicht auf die Beleg-Qualität-Zwischenebene (MVP1).</p>
+        <div class="table-wrap" id="dp-table-wrap">
+          <table class="data-table">
+            <thead id="dp-thead"></thead>
+            <tbody id="dp-body"></tbody>
+          </table>
+        </div>
+        <button type="button" class="dp-table-collapsed-hint" id="dp-table-collapsed-hint" hidden></button>
+
+        <div class="subhead">Auswertungskatalog</div>
+        <p class="subhead-sub">Beispielhafte Auswertungsmöglichkeiten des DQM auf dem Datenpool. Die Einträge der Kategorie „Anzeige" sind klickbar (Aktiv/Inaktiv) und blenden die jeweilige Spalte im Datenpool-Dashboard oben ein oder aus.</p>
+        <div class="av-visible-cols" id="av-visible-cols"></div>
+        <div class="filters">
+          <input class="filter-search" id="av-search" type="search" placeholder="Auswertungskatalog durchsuchen…">
+          <span class="filter-count" id="av-count"></span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Kategorie</th><th>Auswertung</th><th>Beschreibung</th><th>Status</th></tr></thead>
+            <tbody id="av-body"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </section>
@@ -1518,27 +1528,6 @@ function getFilteredDpRows(){
   rows = rows.filter(r=>dpRowLieferdatum(r)<=activeDpDate);
   return rows;
 }
-function renderDpKpi(){
-  const rows = getFilteredDpRows();
-  const mode = dpMode();
-  const avg = k => rows.length ? (rows.reduce((s,r)=>s+dpEffectiveValue(r,k),0)/rows.length) : 0;
-  const kanalSuffix = activeDpKanal==="alle" ? "" : " · Kanal: "+DP_KANAL_LABEL[activeDpKanal];
-  const felderLabel = mode==="ziffer" ? (dpZifferSicht==="beleg" ? "Belege mit dieser GO-Ziffer" : "Treffer GO-Ziffer-Suche") : mode==="vnr" ? "Belege zu dieser VNR" : "Angeforderte Datenfelder";
-  document.getElementById("dp-kpi").innerHTML =
-    (rows.length
-      ? '<button type="button" class="kpi-tile kpi-tile--click" id="dp-kpi-vollst-btn" title="Klicken für QSL-Verteilung über alle aktuell gefilterten Datenfelder"><div class="kpi-num '+(avg("vollst")>=90?"ok":"warn")+'">'+avg("vollst").toFixed(1).replace(".",",")+' %</div><div class="kpi-label">Ø Vollständigkeit</div></button>'
-      : '<div class="kpi-tile"><div class="kpi-num warn">—</div><div class="kpi-label">Ø Vollständigkeit</div></div>')+
-    [
-      ['Ø Befüllungsqualität', rows.length?avg("befuell").toFixed(1).replace(".",",")+" %":"—", rows.length&&avg("befuell")>=90?"ok":"warn"],
-      ['Ø Erkennungsquote', rows.length?avg("erkennung").toFixed(1).replace(".",",")+" %":"—", rows.length&&avg("erkennung")>=90?"ok":"warn"],
-      [felderLabel, rows.length+(mode==="normal"?" von "+DATENPOOL_FELDER.length:"")+kanalSuffix, "info"],
-    ].map(([l,v,c])=>'<div class="kpi-tile"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></div>').join("")+
-  '<div class="kpi-tile kpi-tile--wide"><div class="kpi-num info">'+fmtDateDe(activeDpDate)+'</div>'+
-    '<div class="kpi-label">Datenpool-Stand</div>'+
-    '<div class="kpi-tile-note">Datum, an dem das Datenfeld in den Datenpool geliefert wurde.</div></div>';
-  const vollstBtn = document.getElementById("dp-kpi-vollst-btn");
-  if(vollstBtn) vollstBtn.addEventListener("click", openQslModalAggregate);
-}
 function renderDpThead(){
   const mode = dpMode();
   const label = mode==="ziffer" ? (dpZifferSicht==="beleg" ? "Beleg mit dieser GO-Ziffer" : "GO-Zeile") : mode==="vnr" ? "Eingereichter Beleg" : "Datenfeld";
@@ -1659,59 +1648,6 @@ function donutSegments(dist, n){
     '<text x="'+cx+'" y="'+(cy-2)+'" text-anchor="middle" class="donut-center-num">'+n.toLocaleString("de-DE")+'</text>'+
     '<text x="'+cx+'" y="'+(cy+11)+'" text-anchor="middle" class="donut-center-lbl">Datensätze</text>';
 }
-/* Aggregierte QSL-Verteilung über alle aktuell gefilterten Datenfelder (Zeilen-Sicht/VNR
-   eingeschlossen), gewichtet nach der jeweiligen Datensatzmenge je Zeile — ermöglicht den
-   Einstieg in die QSL-Logik direkt über die Ø-Vollständigkeit-Kachel oben, nicht erst über eine
-   einzelne Zeile weiter unten in der Tabelle. */
-function aggregateQslDistribution(rows, weightOf){
-  const w = weightOf || (r=>r.n);
-  const totalN = rows.reduce((s,r)=>s+w(r),0);
-  const dist = {};
-  QSL_KATEGORIEN.forEach(k=>{
-    dist[k.key] = totalN ? Math.round((rows.reduce((s,r)=>s+w(r)*(r.qsl[k.key]||0),0)/totalN)*10)/10 : 0;
-  });
-  return {dist, totalN};
-}
-function openQslModalAggregate(){
-  const rows = getFilteredDpRows();
-  if(!rows.length) return;
-  const {dist, totalN} = aggregateQslDistribution(rows);
-  const mode = dpMode();
-  const scopeLabel = mode==="ziffer" ? "alle "+rows.length.toLocaleString("de-DE")+" Treffer der GO-Ziffer-Suche" : mode==="vnr" ? "alle Datenfelder dieser VNR" : "alle "+rows.length.toLocaleString("de-DE")+" aktuell gefilterten Datenfelder";
-  const dokNote = activeDpDokArt==="alle" ? "" : " · "+activeDpDokArt;
-  const kanalNote = activeDpKanal==="alle" ? "" : " · Kanal: "+DP_KANAL_LABEL[activeDpKanal];
-  document.getElementById("qsl-modal-title").textContent = "QSL-Verteilung — Ø Vollständigkeit";
-  document.getElementById("qsl-modal-sub").textContent = "Aggregiert über "+scopeLabel+dokNote+kanalNote+" · "+totalN.toLocaleString("de-DE")+" betrachtete Datensätze";
-  document.getElementById("qsl-donut-svg").innerHTML = donutSegments(dist, totalN);
-  document.getElementById("qsl-legend").innerHTML = QSL_KATEGORIEN.map(k=>{
-    const pct = dist[k.key]||0;
-    const count = Math.round(totalN*pct/100);
-    return '<li><span class="qsl-swatch" style="background:var(--qsl-'+k.slot+');"></span>'+
-      '<span><span class="qsl-legend-label">'+esc(k.label)+'</span>'+
-      '<span class="qsl-legend-val">'+pct.toFixed(1).replace(".",",")+' % · '+count.toLocaleString("de-DE")+'</span>'+
-      '<span class="qsl-legend-qsl">Qualitätsschlüssel: '+esc(k.qsl)+'</span></span></li>';
-  }).join("");
-  document.getElementById("qsl-modal").hidden = false;
-}
-function openQslModalAggregateBeleg(){
-  const rows = getFilteredBelegPool();
-  if(!rows.length) return;
-  const {dist, totalN} = aggregateQslDistribution(rows, r=>r.feldAnzahl);
-  const dokNote = activeDpDokArt==="alle" ? "" : " · "+activeDpDokArt;
-  const zeilentypNote = activeDpZeilentyp==="alle" ? "" : " · Zeilentyp: "+activeDpZeilentyp+" · "+ZEILENTYP_LABEL[activeDpZeilentyp];
-  document.getElementById("qsl-modal-title").textContent = "QSL-Verteilung — Beleg-Qualität";
-  document.getElementById("qsl-modal-sub").textContent = "Aggregiert über alle "+rows.length.toLocaleString("de-DE")+" aktuell gefilterten Belege"+dokNote+zeilentypNote+" · "+totalN.toLocaleString("de-DE")+" betrachtete Datenfelder";
-  document.getElementById("qsl-donut-svg").innerHTML = donutSegments(dist, totalN);
-  document.getElementById("qsl-legend").innerHTML = QSL_KATEGORIEN.map(k=>{
-    const pct = dist[k.key]||0;
-    const count = Math.round(totalN*pct/100);
-    return '<li><span class="qsl-swatch" style="background:var(--qsl-'+k.slot+');"></span>'+
-      '<span><span class="qsl-legend-label">'+esc(k.label)+'</span>'+
-      '<span class="qsl-legend-val">'+pct.toFixed(1).replace(".",",")+' % · '+count.toLocaleString("de-DE")+'</span>'+
-      '<span class="qsl-legend-qsl">Qualitätsschlüssel: '+esc(k.qsl)+'</span></span></li>';
-  }).join("");
-  document.getElementById("qsl-modal").hidden = false;
-}
 function openQslModal(rowId){
   const row = getFilteredDpRows().find(r=>r.id===rowId);
   if(!row) return;
@@ -1722,6 +1658,25 @@ function openQslModal(rowId){
   document.getElementById("qsl-legend").innerHTML = QSL_KATEGORIEN.map(k=>{
     const pct = row.qsl[k.key]||0;
     const count = Math.round(row.n*pct/100);
+    return '<li><span class="qsl-swatch" style="background:var(--qsl-'+k.slot+');"></span>'+
+      '<span><span class="qsl-legend-label">'+esc(k.label)+'</span>'+
+      '<span class="qsl-legend-val">'+pct+' % · '+count.toLocaleString("de-DE")+'</span>'+
+      '<span class="qsl-legend-qsl">Qualitätsschlüssel: '+esc(k.qsl)+'</span></span></li>';
+  }).join("");
+  document.getElementById("qsl-modal").hidden = false;
+}
+/* QSL-Verteilung je einzelnem Beleg in der Beleg-Qualität-Zwischenebene (MVP1) — gleiches Muster
+   wie openQslModal() für die Datenfeld-Tabelle (MVP2), hier aber je Beleg statt je Datenfeld. */
+function openQslModalBeleg(rowId){
+  const row = getFilteredBelegPool().find(r=>r.id===rowId);
+  if(!row) return;
+  const n = row.feldAnzahl;
+  document.getElementById("qsl-modal-title").textContent = "QSL-Verteilung — "+row.belegId;
+  document.getElementById("qsl-modal-sub").textContent = row.dokArt+" · Vollständigkeit "+belegAggEffectiveVollst(row).toFixed(1).replace(".",",")+" % · "+n.toLocaleString("de-DE")+" Datenfelder in diesem Beleg";
+  document.getElementById("qsl-donut-svg").innerHTML = donutSegments(row.qsl, n);
+  document.getElementById("qsl-legend").innerHTML = QSL_KATEGORIEN.map(k=>{
+    const pct = row.qsl[k.key]||0;
+    const count = Math.round(n*pct/100);
     return '<li><span class="qsl-swatch" style="background:var(--qsl-'+k.slot+');"></span>'+
       '<span><span class="qsl-legend-label">'+esc(k.label)+'</span>'+
       '<span class="qsl-legend-val">'+pct+' % · '+count.toLocaleString("de-DE")+'</span>'+
@@ -1743,7 +1698,6 @@ function openQslGlossar(){
 function closeQslGlossar(){ document.getElementById("qsl-glossar-modal").hidden = true; }
 function closeQslModal(){ document.getElementById("qsl-modal").hidden = true; }
 document.getElementById("qsl-modal-close").addEventListener("click", closeQslModal);
-document.getElementById("beleg-agg-headline").addEventListener("click", openQslModalAggregateBeleg);
 document.getElementById("qsl-modal").addEventListener("click", e=>{
   if(e.target.id==="qsl-modal") closeQslModal();
 });
@@ -1813,14 +1767,17 @@ function renderBelegAgg(){
     return '<tr>'+
       '<td class="mono">'+esc(r.belegId)+'</td>'+
       '<td class="k-quelle">'+esc(r.dokArt)+'</td>'+
-      '<td>'+bar(vollst)+'</td>'+
+      '<td><button type="button" class="qsl-trigger" data-rowid="'+esc(r.id)+'" title="QSL-Verteilung anzeigen">'+bar(vollst)+icon("pie")+'</button></td>'+
       '<td>'+(anzahlFehlend ? anzahlFehlend+' von '+r.feldAnzahl : '<span class="badge ok"><span class="dot"></span>Keine</span>')+'</td>'+
       '<td><div class="beleg-agg-zt">'+r.zeilentypen.map(zt=>'<span class="badge info badge--sm">'+esc(zt)+'</span>').join("")+'</div></td>'+
       '<td class="beleg-agg-reason">'+(grundText ? esc(grundText) : '—')+'</td>'+
     '</tr>';
   }).join("") : '<tr><td colspan="6" class="cell-empty">Keine Belege in dieser Auswahl.</td></tr>';
+  document.querySelectorAll("#beleg-agg-body .qsl-trigger").forEach(btn=>{
+    btn.addEventListener("click", ()=>openQslModalBeleg(btn.dataset.rowid));
+  });
 }
-function renderDatenpool(){ renderBelegAgg(); renderDpKpi(); renderDpTable(); renderAvTable(); }
+function renderDatenpool(){ renderBelegAgg(); renderDpTable(); renderAvTable(); }
 
 
 /* ============================================================
@@ -1943,21 +1900,21 @@ document.getElementById("dp-dokart-filter").querySelectorAll(".filter-chip").for
   chip.addEventListener("click", ()=>{
     activeDpDokArt = chip.dataset.dokart;
     document.querySelectorAll("#dp-dokart-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
-    renderBelegAgg(); renderDpKpi(); renderDpTable();
+    renderBelegAgg(); renderDpTable();
   });
 });
 document.getElementById("dp-zielstatus-filter").querySelectorAll(".filter-chip").forEach(chip=>{
   chip.addEventListener("click", ()=>{
     activeDpZielstatus = chip.dataset.ziel;
     document.querySelectorAll("#dp-zielstatus-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
-    renderDpKpi(); renderDpTable();
+    renderDpTable();
   });
 });
 document.getElementById("dp-zeilentyp-filter").querySelectorAll(".filter-chip").forEach(chip=>{
   chip.addEventListener("click", ()=>{
     activeDpZeilentyp = chip.dataset.zeilentyp;
     document.querySelectorAll("#dp-zeilentyp-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
-    renderBelegAgg(); renderDpKpi(); renderDpTable();
+    renderBelegAgg(); renderDpTable();
   });
 });
 const dpDateInput = document.getElementById("dp-date-input");
@@ -1965,25 +1922,25 @@ dpDateInput.value = activeDpDate;
 dpDateInput.max = dpIsoToday();
 dpDateInput.addEventListener("change", ()=>{
   activeDpDate = dpDateInput.value || dpIsoToday();
-  renderBelegAgg(); renderDpKpi(); renderDpTable();
+  renderBelegAgg(); renderDpTable();
 });
 document.getElementById("dp-date-today").addEventListener("click", ()=>{
   activeDpDate = dpIsoToday();
   dpDateInput.value = activeDpDate;
-  renderBelegAgg(); renderDpKpi(); renderDpTable();
+  renderBelegAgg(); renderDpTable();
 });
 document.getElementById("dp-kanal-filter").querySelectorAll(".filter-chip").forEach(chip=>{
   chip.addEventListener("click", ()=>{
     activeDpKanal = chip.dataset.kanal;
     document.querySelectorAll("#dp-kanal-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
-    renderBelegAgg(); renderDpKpi(); renderDpTable();
+    renderBelegAgg(); renderDpTable();
   });
 });
 document.getElementById("dp-ish-filter").querySelectorAll(".filter-chip").forEach(chip=>{
   chip.addEventListener("click", ()=>{
     activeDpIsh = chip.dataset.ish;
     document.querySelectorAll("#dp-ish-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
-    renderBelegAgg(); renderDpKpi(); renderDpTable();
+    renderBelegAgg(); renderDpTable();
   });
 });
 document.getElementById("beleg-agg-sicht-toggle").querySelectorAll(".filter-chip").forEach(chip=>{
@@ -1998,18 +1955,18 @@ document.getElementById("dp-table-toggle").addEventListener("click", ()=>setDpTa
 document.getElementById("dp-table-collapsed-hint").addEventListener("click", ()=>setDpTableCollapsed(false));
 document.getElementById("dp-ziffer-search").addEventListener("input", e=>{
   dpZifferQuery = e.target.value;
-  renderDpKpi(); renderDpTable();
+  renderDpTable();
 });
 document.getElementById("dp-ziffer-sicht-toggle").querySelectorAll(".filter-chip").forEach(chip=>{
   chip.addEventListener("click", ()=>{
     dpZifferSicht = chip.dataset.sicht;
     document.querySelectorAll("#dp-ziffer-sicht-toggle .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
-    renderDpKpi(); renderDpTable();
+    renderDpTable();
   });
 });
 document.getElementById("dp-vnr-search").addEventListener("input", e=>{
   dpVnrQuery = e.target.value;
-  renderDpKpi(); renderDpTable();
+  renderDpTable();
 });
 
 document.getElementById("sd-filter").querySelectorAll(".filter-chip").forEach(chip=>{
@@ -2018,6 +1975,15 @@ document.getElementById("sd-filter").querySelectorAll(".filter-chip").forEach(ch
     document.querySelectorAll("#sd-filter .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
     renderSdTable();
   });
+});
+
+function switchDpMvp(mvp){
+  document.querySelectorAll("#dp-mvp-tabs .mvp-tab-btn").forEach(b=>b.dataset.active = (b.dataset.mvp===mvp) ? "true":"false");
+  document.getElementById("mvp1-panel").hidden = (mvp!=="mvp1");
+  document.getElementById("mvp2-panel").hidden = (mvp!=="mvp2");
+}
+document.querySelectorAll("#dp-mvp-tabs .mvp-tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>switchDpMvp(btn.dataset.mvp));
 });
 
 renderDatenpool();
