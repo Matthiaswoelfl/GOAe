@@ -378,7 +378,7 @@
 
       <div class="view-head">
         <h1>Prüfung Datenpool und Auswertbarkeit der Datenqualität</h1>
-        <p>Zielbild grundsätzlich für alle Dokumentarten, aktueller Fokus auf die 6 neuen GOÄ-Dok.-Arten. Zweck: Identifikation von Ursachen und Fehlerquellen im EM — bis auf Belegebene —, nicht nur Anzeige übergeordneter KPIs. MVP1 zeigt zunächst die Belegsicht (Beleg-Qualität); MVP2 ergänzt perspektivisch die Anzeige der einzelnen Datenfelder im Datenpool-Dashboard — per Reiter oben umschaltbar.</p>
+        <p>Zielbild grundsätzlich für alle Dokumentarten, aktueller Fokus auf 2 der 6 neuen GOÄ-Dok.-Arten (ambulant, stationär). Zweck: Identifikation von Ursachen und Fehlerquellen im EM — bis auf Belegebene —, nicht nur Anzeige übergeordneter KPIs. MVP1 zeigt zunächst die Belegsicht (Beleg-Qualität); MVP2 ergänzt perspektivisch die Anzeige der einzelnen Datenfelder im Datenpool-Dashboard — per Reiter oben umschaltbar.</p>
       </div>
 
       <div class="subhead-row">
@@ -391,10 +391,6 @@
           <button class="filter-chip" type="button" data-dokart="alle" data-active="true">Alle Dok.-Arten</button>
           <button class="filter-chip" type="button" data-dokart="RE ambulant neu (3552)">RE ambulant neu (3552)</button>
           <button class="filter-chip" type="button" data-dokart="RE stationär neu (3549)">RE stationär neu (3549)</button>
-          <button class="filter-chip" type="button" data-dokart="RE Zahnarzt neu (3559)">RE Zahnarzt neu (3559)</button>
-          <button class="filter-chip" type="button" data-dokart="RE Kieferorthopädie neu (3567)">RE Kieferorthopädie neu (3567)</button>
-          <button class="filter-chip" type="button" data-dokart="HKP Zahn neu (3501)">HKP Zahn neu (3501)</button>
-          <button class="filter-chip" type="button" data-dokart="HKP KFO neu (3502)">HKP KFO neu (3502)</button>
         </div>
       </div>
       <div class="filters">
@@ -499,7 +495,7 @@
             </button>
           </div>
         </div>
-        <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit, Befüllungsqualität und Erkennungsquote je angefordertem Datenfeld (inkl. AV-Zielstatus aus dem Extraktionskatalog und, bei Abrechnungspositionen, Zeilentyp). Reagiert auf die Filter oben (Dok.-Art, AV-Zielstatus, Zeilentyp, Datenpool-Stand, Eingangskanal) sowie auf die GO-Ziffer- und VNR-Suche direkt unterhalb. Klick auf die Vollständigkeit öffnet die QSL-Verteilung inkl. Qualitätsschlüssel je Feld.</p>
+        <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit und Anzahl (Häufigkeit im Datenpool) je angefordertem Datenfeld (inkl. AV-Zielstatus aus dem Extraktionskatalog und, bei Abrechnungspositionen, Zeilentyp). Reagiert auf die Filter oben (Dok.-Art, AV-Zielstatus, Zeilentyp, Datenpool-Stand, Eingangskanal) sowie auf die GO-Ziffer- und VNR-Suche direkt unterhalb. Klick auf die Vollständigkeit öffnet die QSL-Verteilung inkl. Qualitätsschlüssel je Feld.</p>
         <div class="filters">
           <span class="filter-dim-label">GO-Ziffer-Suche</span>
           <input class="filter-search" id="dp-ziffer-search" type="search" placeholder="z. B. 1200 (Sonographie)…">
@@ -593,7 +589,7 @@
       </div>
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>Beleg-ID</th><th>Dok.-Art</th><th>Datenfeld</th><th>EM-Anforderung</th><th>SMILE-Anforderung</th><th>QSL (EM)</th><th>Wert Datenpool</th><th>Wert SMILE / Ablage</th><th>Delta</th><th>Änderungstyp</th><th>Zeitpunkt</th></tr></thead>
+          <thead><tr><th>Beleg-ID</th><th>Dok.-Art</th><th>Datenfeld</th><th>AV-Zielstatus</th><th>QSL (EM)</th><th>Wert Datenpool</th><th>Wert SMILE / Ablage</th><th>Delta</th><th>Änderungstyp</th><th>Zeitpunkt</th></tr></thead>
           <tbody id="sd-body"></tbody>
         </table>
       </div>
@@ -744,8 +740,9 @@ const QSL_GLOSSAR = [
 ];
 
 /* Angeforderte Datenfelder: die 6 universellen (dok.-artübergreifenden) Erfassungsfelder,
-   gefolgt von allen 288 Datenfeldanforderungen aus dem Modul „Feldkatalog GOÄ & KI"
-   (GOÄ-Extraktionskatalog) für die 6 neuen GOÄ-Dok.-Arten, bei denen im Extraktionskatalog
+   gefolgt von den Datenfeldanforderungen aus dem Modul „Feldkatalog GOÄ & KI"
+   (GOÄ-Extraktionskatalog) für die aktuell im Mockup modellierten 2 der 6 neuen
+   GOÄ-Dok.-Arten (ambulant, stationär), bei denen im Extraktionskatalog
    ein AV-Zielstatus (Zielbild GOÄ-Novelle) definiert ist: M, K, K**, MbA, SWH, TM oder P.
    req = Kann-/Mussfeld-Zuordnung aus "rel" (relevant -> muss, relevant bei Angabe -> bedingt,
    optional -> kann). off = Tage vor "heute", an denen das Feld in den Datenpool geliefert wurde
@@ -757,100 +754,6 @@ const DATENPOOL_FELDER = [
   {id:"univ-4",feld:"Leistungserbringer (LE)",dokArt:"Alle Dok.-Arten",zielstatus:null,req:null,vollst:95.5,befuell:93.8,erkennung:94.4,quelle:"erfassung",n:1142,off:400,qsl:{sicher:79,unsicher:9,nicht:2,korrigiert:6,bestaetigt:3,sonstige:1}},
   {id:"univ-5",feld:"Eingangskanal",dokArt:"Alle Dok.-Arten",zielstatus:null,req:null,vollst:100.0,befuell:100.0,erkennung:100.0,quelle:"erfassung",n:1142,off:400,qsl:{sicher:97,unsicher:0,nicht:0,korrigiert:1,bestaetigt:1,sonstige:1}},
   {id:"univ-6",feld:"Behandlungsdatum",dokArt:"Alle Dok.-Arten",zielstatus:null,req:null,vollst:99.6,befuell:99.1,erkennung:99.4,quelle:"erfassung",n:1142,off:400,qsl:{sicher:89,unsicher:4,nicht:1,korrigiert:3,bestaetigt:2,sonstige:1}},
-{id:"3567-10",feld:"Name, Adresse",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"K",req:"bedingt",vollst:91.9,befuell:88.7,erkennung:90.3,quelle:"av",n:54,off:79,qsl:{sicher:68,unsicher:11,nicht:7,korrigiert:14,bestaetigt:0,sonstige:0}},
-  {id:"3567-42",feld:"Umsatzsteuer für GOÄ-Leistungen in %",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"bedingt",vollst:92.8,befuell:89.8,erkennung:90.3,quelle:"av",n:54,off:74,qsl:{sicher:79,unsicher:9,nicht:3,korrigiert:8,bestaetigt:1,sonstige:0}},
-  {id:"3567-43",feld:"Umsatzsteuer für GOÄ-Leistungen in €",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"bedingt",vollst:87.3,befuell:84.0,erkennung:86.2,quelle:"av",n:54,off:7,qsl:{sicher:74,unsicher:7,nicht:1,korrigiert:7,bestaetigt:3,sonstige:8}},
-  {id:"3567-61",feld:"Umsatzsteuer für GOZ-Leistungen in %",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"K",req:"bedingt",vollst:89.1,befuell:83.8,erkennung:90.7,quelle:"av",n:54,off:35,qsl:{sicher:75,unsicher:3,nicht:6,korrigiert:1,bestaetigt:5,sonstige:10}},
-  {id:"3567-62",feld:"Umsatzsteuer für GOZ-Leistungen in €",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"K",req:"bedingt",vollst:95.7,befuell:90.4,erkennung:93.4,quelle:"av",n:54,off:47,qsl:{sicher:76,unsicher:5,nicht:3,korrigiert:13,bestaetigt:3,sonstige:0}},
-  {id:"3567-65",feld:"Abzüglich Vorleistung anderer Kostenträger/Vorauszahlungen",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"MbA",req:"bedingt",vollst:87.7,befuell:85.4,erkennung:85.8,quelle:"av",n:54,off:77,qsl:{sicher:80,unsicher:4,nicht:3,korrigiert:3,bestaetigt:4,sonstige:6}},
-  {id:"3567-11",feld:"Kontoinhaber/-in",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"MbA",req:"bedingt",vollst:85.8,befuell:81.2,erkennung:85.8,quelle:"av",n:54,off:24,qsl:{sicher:77,unsicher:7,nicht:6,korrigiert:9,bestaetigt:1,sonstige:0}},
-  {id:"3567-13",feld:"IBAN",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"MbA",req:"bedingt",vollst:88.0,befuell:85.0,erkennung:88.0,quelle:"av",n:54,off:30,qsl:{sicher:75,unsicher:6,nicht:5,korrigiert:13,bestaetigt:1,sonstige:0}},
-  {id:"3567-14",feld:"BIC",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"K",req:"kann",vollst:86.1,befuell:84.1,erkennung:83.1,quelle:"av",n:54,off:22,qsl:{sicher:74,unsicher:11,nicht:3,korrigiert:11,bestaetigt:1,sonstige:0}},
-  {id:"3567-9",feld:"BSNR Betriebsstättennummer",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"TM",req:"kann",vollst:83.8,befuell:80.0,erkennung:85.6,quelle:"av",n:54,off:17,qsl:{sicher:72,unsicher:13,nicht:7,korrigiert:6,bestaetigt:1,sonstige:1}},
-  {id:"3567-19",feld:"ICD10 Code",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"muss",vollst:89.5,befuell:85.3,erkennung:88.4,quelle:"av",n:54,off:89,qsl:{sicher:64,unsicher:13,nicht:3,korrigiert:15,bestaetigt:5,sonstige:0}},
-  {id:"3567-20",feld:"Diagnose Klartext",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"K**",req:"muss",vollst:92.0,befuell:87.1,erkennung:91.9,quelle:"av",n:54,off:91,qsl:{sicher:70,unsicher:11,nicht:4,korrigiert:15,bestaetigt:0,sonstige:0}},
-  {id:"3567-21",feld:"Zusatzkennzeichen Diagnosesicherheit",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"SWH",req:"kann",vollst:90.8,befuell:88.1,erkennung:88.3,quelle:"av",n:54,off:93,qsl:{sicher:80,unsicher:6,nicht:5,korrigiert:6,bestaetigt:2,sonstige:1}},
-  {id:"3567-22",feld:"Lokalisierung",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"SWH",req:"kann",vollst:90.0,befuell:85.8,erkennung:87.7,quelle:"av",n:54,off:76,qsl:{sicher:73,unsicher:8,nicht:0,korrigiert:14,bestaetigt:5,sonstige:0}},
-  {id:"3567-18",feld:"Name, Adresse, LANR (Lebenslange Arztnummer), BSNR (Betriebsstättennummer)",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"K",req:"kann",vollst:90.5,befuell:87.5,erkennung:86.9,quelle:"av",n:54,off:29,qsl:{sicher:77,unsicher:11,nicht:6,korrigiert:4,bestaetigt:2,sonstige:0}},
-  {id:"3567-27",feld:"Behandlungsdatum",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"muss",vollst:98.5,befuell:93.4,erkennung:95.9,quelle:"av",n:54,off:71,qsl:{sicher:76,unsicher:17,nicht:3,korrigiert:1,bestaetigt:3,sonstige:0}},
-  {id:"3567-28",feld:"Anzahl",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"muss",vollst:92.4,befuell:89.1,erkennung:90.9,quelle:"av",n:54,off:89,qsl:{sicher:68,unsicher:16,nicht:2,korrigiert:14,bestaetigt:0,sonstige:0}},
-  {id:"3567-29",feld:"Präfix(e)",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"bedingt",vollst:90.4,befuell:88.2,erkennung:90.0,quelle:"av",n:54,off:52,qsl:{sicher:76,unsicher:8,nicht:7,korrigiert:6,bestaetigt:0,sonstige:3}},
-  {id:"3567-30",feld:"GOÄ-Nummer",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"bedingt",vollst:90.1,befuell:85.1,erkennung:91.8,quelle:"av",n:54,off:34,qsl:{sicher:77,unsicher:4,nicht:2,korrigiert:13,bestaetigt:4,sonstige:0}},
-  {id:"3567-31",feld:"Titel der Leistungslegende/Kurzbezeichnung",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"K**",req:"muss",vollst:87.4,befuell:83.9,erkennung:85.2,quelle:"av",n:54,off:85,qsl:{sicher:73,unsicher:7,nicht:3,korrigiert:13,bestaetigt:1,sonstige:3}},
-  {id:"3567-32",feld:"Begründung",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"K**",req:"bedingt",vollst:85.0,befuell:82.3,erkennung:86.5,quelle:"av",n:54,off:90,qsl:{sicher:64,unsicher:10,nicht:7,korrigiert:14,bestaetigt:5,sonstige:0}},
-  {id:"3567-33",feld:"Dauer gemäß Leistungslegende",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"P",req:"bedingt",vollst:80.9,befuell:76.2,erkennung:80.2,quelle:"av",n:54,off:13,qsl:{sicher:68,unsicher:8,nicht:2,korrigiert:15,bestaetigt:4,sonstige:3}},
-  {id:"3567-34",feld:"Faktor-Grund",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"P",req:"bedingt",vollst:85.0,befuell:79.9,erkennung:83.7,quelle:"av",n:54,off:15,qsl:{sicher:72,unsicher:6,nicht:5,korrigiert:14,bestaetigt:3,sonstige:0}},
-  {id:"3567-35",feld:"GO Faktor",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"bedingt",vollst:91.1,befuell:88.0,erkennung:90.4,quelle:"av",n:54,off:59,qsl:{sicher:82,unsicher:6,nicht:7,korrigiert:4,bestaetigt:1,sonstige:0}},
-  {id:"3567-36",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"P",req:"bedingt",vollst:87.5,befuell:84.2,erkennung:86.4,quelle:"av",n:54,off:79,qsl:{sicher:73,unsicher:6,nicht:0,korrigiert:5,bestaetigt:5,sonstige:11}},
-  {id:"3567-37",feld:"Betrag EUR",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"bedingt",vollst:81.1,befuell:77.1,erkennung:81.4,quelle:"av",n:54,off:8,qsl:{sicher:66,unsicher:14,nicht:2,korrigiert:2,bestaetigt:3,sonstige:13}},
-  {id:"3567-47",feld:"Behandlungsdatum",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"muss",vollst:88.3,befuell:84.4,erkennung:85.3,quelle:"av",n:54,off:30,qsl:{sicher:73,unsicher:5,nicht:3,korrigiert:5,bestaetigt:4,sonstige:10}},
-  {id:"3567-48",feld:"Anzahl",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"muss",vollst:78.7,befuell:74.2,erkennung:81.3,quelle:"av",n:54,off:80,qsl:{sicher:71,unsicher:11,nicht:2,korrigiert:12,bestaetigt:4,sonstige:0}},
-  {id:"3567-49",feld:"Präfix(e)",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"bedingt",vollst:85.3,befuell:82.2,erkennung:85.6,quelle:"av",n:54,off:54,qsl:{sicher:77,unsicher:11,nicht:2,korrigiert:3,bestaetigt:0,sonstige:7}},
-  {id:"3567-50",feld:"GOZ Nummer",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"muss",vollst:95.6,befuell:92.6,erkennung:97.8,quelle:"av",n:54,off:45,qsl:{sicher:74,unsicher:13,nicht:7,korrigiert:6,bestaetigt:0,sonstige:0}},
-  {id:"3567-51",feld:"Titel der Leistungslegende/Kurzbezeichnung",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"K**",req:"muss",vollst:95.8,befuell:93.7,erkennung:95.2,quelle:"av",n:54,off:17,qsl:{sicher:71,unsicher:17,nicht:1,korrigiert:6,bestaetigt:5,sonstige:0}},
-  {id:"3567-52",feld:"Begründung",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"K**",req:"bedingt",vollst:82.0,befuell:79.2,erkennung:82.8,quelle:"av",n:54,off:60,qsl:{sicher:73,unsicher:5,nicht:7,korrigiert:10,bestaetigt:2,sonstige:3}},
-  {id:"3567-53",feld:"Zahn/Region",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"bedingt",vollst:92.8,befuell:89.5,erkennung:91.5,quelle:"av",n:54,off:95,qsl:{sicher:69,unsicher:11,nicht:2,korrigiert:13,bestaetigt:5,sonstige:0}},
-  {id:"3567-54",feld:"GO Faktor",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"muss",vollst:97.3,befuell:94.2,erkennung:93.7,quelle:"av",n:54,off:63,qsl:{sicher:65,unsicher:13,nicht:6,korrigiert:14,bestaetigt:2,sonstige:0}},
-  {id:"3567-55",feld:"lfd. Nummer (Zahn-) Ärztin/Arzt",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"P",req:"bedingt",vollst:95.6,befuell:91.0,erkennung:94.1,quelle:"av",n:54,off:44,qsl:{sicher:83,unsicher:6,nicht:5,korrigiert:3,bestaetigt:3,sonstige:0}},
-  {id:"3567-56",feld:"Betrag EUR",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"bedingt",vollst:85.7,befuell:81.2,erkennung:84.9,quelle:"av",n:54,off:49,qsl:{sicher:65,unsicher:15,nicht:7,korrigiert:10,bestaetigt:3,sonstige:0}},
-  {id:"3567-7",feld:"Name, Adresse",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"muss",vollst:87.8,befuell:83.6,erkennung:87.7,quelle:"av",n:54,off:76,qsl:{sicher:67,unsicher:19,nicht:5,korrigiert:9,bestaetigt:0,sonstige:0}},
-  {id:"3567-15",feld:"Pos_LNR`s Nachname, Vorname, Geburtsdatum",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"muss",vollst:94.1,befuell:91.2,erkennung:93.3,quelle:"av",n:54,off:11,qsl:{sicher:81,unsicher:12,nicht:6,korrigiert:1,bestaetigt:0,sonstige:0}},
-  {id:"3567-6",feld:"Rechnungsbetrag",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"muss",vollst:81.3,befuell:78.9,erkennung:81.6,quelle:"av",n:54,off:41,qsl:{sicher:71,unsicher:4,nicht:5,korrigiert:9,bestaetigt:2,sonstige:9}},
-  {id:"3567-2",feld:"Rechnungsdatum",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"K",req:"muss",vollst:88.3,befuell:84.4,erkennung:87.6,quelle:"av",n:54,off:17,qsl:{sicher:61,unsicher:12,nicht:7,korrigiert:15,bestaetigt:5,sonstige:0}},
-  {id:"3567-1",feld:"Name, Adresse",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"muss",vollst:81.8,befuell:77.2,erkennung:81.4,quelle:"av",n:54,off:86,qsl:{sicher:67,unsicher:8,nicht:6,korrigiert:14,bestaetigt:5,sonstige:0}},
-  {id:"3567-3",feld:"Rechnungsnummer",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"M",req:"muss",vollst:95.3,befuell:93.1,erkennung:94.4,quelle:"av",n:54,off:39,qsl:{sicher:73,unsicher:9,nicht:3,korrigiert:12,bestaetigt:3,sonstige:0}},
-  {id:"3567-67",feld:"Sonstiger Hinweis",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"K",req:"kann",vollst:78.7,befuell:74.4,erkennung:80.2,quelle:"av",n:54,off:40,qsl:{sicher:64,unsicher:13,nicht:3,korrigiert:15,bestaetigt:5,sonstige:0}},
-  {id:"3567-17",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"K",req:"bedingt",vollst:90.7,befuell:86.9,erkennung:87.5,quelle:"av",n:54,off:90,qsl:{sicher:72,unsicher:14,nicht:5,korrigiert:7,bestaetigt:2,sonstige:0}},
-  {id:"3567-16",feld:"Vorname, Name, LANR (Lebenslange Arztnummer)",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"K",req:"muss",vollst:89.7,befuell:87.2,erkennung:87.4,quelle:"av",n:54,off:17,qsl:{sicher:78,unsicher:4,nicht:3,korrigiert:14,bestaetigt:1,sonstige:0}},
-  {id:"3567-4",feld:"Verwendungszweck",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"K",req:"kann",vollst:83.8,befuell:79.8,erkennung:83.2,quelle:"av",n:54,off:67,qsl:{sicher:69,unsicher:3,nicht:3,korrigiert:1,bestaetigt:1,sonstige:23}},
-  {id:"3567-5",feld:"Zahlungsziel",dokArt:"RE Kieferorthopädie neu (3567)",zielstatus:"K",req:"kann",vollst:90.4,befuell:86.5,erkennung:89.0,quelle:"av",n:54,off:25,qsl:{sicher:79,unsicher:5,nicht:1,korrigiert:10,bestaetigt:0,sonstige:5}},
-  {id:"3559-10",feld:"Name, Adresse",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"K",req:"bedingt",vollst:90.9,befuell:88.0,erkennung:91.2,quelle:"av",n:86,off:73,qsl:{sicher:69,unsicher:20,nicht:1,korrigiert:9,bestaetigt:1,sonstige:0}},
-  {id:"3559-42",feld:"Umsatzsteuer für GOÄ-Leistungen in %",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"bedingt",vollst:80.6,befuell:76.4,erkennung:81.0,quelle:"av",n:86,off:37,qsl:{sicher:70,unsicher:16,nicht:0,korrigiert:11,bestaetigt:1,sonstige:2}},
-  {id:"3559-43",feld:"Umsatzsteuer für GOÄ-Leistungen in €",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"bedingt",vollst:93.0,befuell:88.4,erkennung:91.7,quelle:"av",n:86,off:87,qsl:{sicher:81,unsicher:3,nicht:1,korrigiert:14,bestaetigt:1,sonstige:0}},
-  {id:"3559-61",feld:"Umsatzsteuer für GOZ-Leistungen in %",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"K",req:"bedingt",vollst:88.7,befuell:83.9,erkennung:91.1,quelle:"av",n:86,off:34,qsl:{sicher:79,unsicher:11,nicht:4,korrigiert:3,bestaetigt:3,sonstige:0}},
-  {id:"3559-62",feld:"Umsatzsteuer für GOZ-Leistungen in €",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"K",req:"bedingt",vollst:90.3,befuell:87.1,erkennung:89.0,quelle:"av",n:86,off:84,qsl:{sicher:76,unsicher:12,nicht:7,korrigiert:1,bestaetigt:4,sonstige:0}},
-  {id:"3559-65",feld:"Abzüglich Vorleistung anderer Kostenträger/Vorauszahlungen",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"MbA",req:"bedingt",vollst:80.3,befuell:77.0,erkennung:80.6,quelle:"av",n:86,off:43,qsl:{sicher:71,unsicher:11,nicht:6,korrigiert:10,bestaetigt:2,sonstige:0}},
-  {id:"3559-11",feld:"Kontoinhaber/-in",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"MbA",req:"bedingt",vollst:83.5,befuell:78.2,erkennung:83.5,quelle:"av",n:86,off:7,qsl:{sicher:77,unsicher:11,nicht:1,korrigiert:5,bestaetigt:1,sonstige:5}},
-  {id:"3559-13",feld:"IBAN",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"MbA",req:"bedingt",vollst:96.7,befuell:92.2,erkennung:97.2,quelle:"av",n:86,off:89,qsl:{sicher:66,unsicher:17,nicht:2,korrigiert:11,bestaetigt:4,sonstige:0}},
-  {id:"3559-14",feld:"BIC",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"K",req:"kann",vollst:87.2,befuell:85.1,erkennung:85.2,quelle:"av",n:86,off:45,qsl:{sicher:79,unsicher:4,nicht:3,korrigiert:10,bestaetigt:0,sonstige:4}},
-  {id:"3559-9",feld:"BSNR Betriebsstättennummer",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"TM",req:"kann",vollst:81.5,befuell:76.5,erkennung:79.6,quelle:"av",n:86,off:57,qsl:{sicher:73,unsicher:14,nicht:3,korrigiert:6,bestaetigt:4,sonstige:0}},
-  {id:"3559-19",feld:"ICD10 Code",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"muss",vollst:86.4,befuell:81.4,erkennung:84.9,quelle:"av",n:86,off:41,qsl:{sicher:72,unsicher:18,nicht:3,korrigiert:1,bestaetigt:5,sonstige:1}},
-  {id:"3559-20",feld:"Diagnose Klartext",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"K**",req:"muss",vollst:95.2,befuell:92.6,erkennung:94.2,quelle:"av",n:86,off:11,qsl:{sicher:61,unsicher:16,nicht:4,korrigiert:15,bestaetigt:4,sonstige:0}},
-  {id:"3559-21",feld:"Zusatzkennzeichen Diagnosesicherheit",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"SWH",req:"kann",vollst:93.2,befuell:89.6,erkennung:91.0,quelle:"av",n:86,off:91,qsl:{sicher:80,unsicher:12,nicht:3,korrigiert:2,bestaetigt:3,sonstige:0}},
-  {id:"3559-22",feld:"Lokalisierung",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"SWH",req:"kann",vollst:80.8,befuell:78.8,erkennung:80.2,quelle:"av",n:86,off:32,qsl:{sicher:68,unsicher:11,nicht:2,korrigiert:3,bestaetigt:2,sonstige:14}},
-  {id:"3559-18",feld:"Name, Adresse, LANR (Lebenslange Arztnummer), BSNR (Betriebsstättennummer)",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"K",req:"kann",vollst:85.4,befuell:81.1,erkennung:85.0,quelle:"av",n:86,off:88,qsl:{sicher:73,unsicher:8,nicht:0,korrigiert:5,bestaetigt:0,sonstige:14}},
-  {id:"3559-27",feld:"Behandlungsdatum",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"muss",vollst:91.6,befuell:86.3,erkennung:91.6,quelle:"av",n:86,off:45,qsl:{sicher:74,unsicher:9,nicht:0,korrigiert:13,bestaetigt:4,sonstige:0}},
-  {id:"3559-28",feld:"Anzahl",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"muss",vollst:84.7,befuell:79.9,erkennung:85.5,quelle:"av",n:86,off:68,qsl:{sicher:75,unsicher:8,nicht:5,korrigiert:6,bestaetigt:5,sonstige:1}},
-  {id:"3559-29",feld:"Präfix(e)",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"bedingt",vollst:87.1,befuell:82.2,erkennung:86.1,quelle:"av",n:86,off:36,qsl:{sicher:79,unsicher:11,nicht:1,korrigiert:5,bestaetigt:0,sonstige:4}},
-  {id:"3559-30",feld:"GOÄ-Nummer",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"bedingt",vollst:94.3,befuell:89.0,erkennung:95.1,quelle:"av",n:86,off:40,qsl:{sicher:68,unsicher:11,nicht:4,korrigiert:14,bestaetigt:3,sonstige:0}},
-  {id:"3559-31",feld:"Titel der Leistungslegende/Kurzbezeichnung",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"K**",req:"muss",vollst:93.3,befuell:89.9,erkennung:93.2,quelle:"av",n:86,off:69,qsl:{sicher:84,unsicher:5,nicht:0,korrigiert:10,bestaetigt:1,sonstige:0}},
-  {id:"3559-32",feld:"Begründung",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"K**",req:"bedingt",vollst:84.8,befuell:80.9,erkennung:85.5,quelle:"av",n:86,off:67,qsl:{sicher:75,unsicher:9,nicht:6,korrigiert:10,bestaetigt:0,sonstige:0}},
-  {id:"3559-33",feld:"Dauer gemäß Leistungslegende",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"P",req:"bedingt",vollst:90.4,befuell:88.0,erkennung:90.8,quelle:"av",n:86,off:67,qsl:{sicher:76,unsicher:7,nicht:1,korrigiert:12,bestaetigt:2,sonstige:2}},
-  {id:"3559-34",feld:"Faktor-Grund",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"P",req:"bedingt",vollst:88.4,befuell:83.1,erkennung:88.6,quelle:"av",n:86,off:85,qsl:{sicher:58,unsicher:20,nicht:7,korrigiert:11,bestaetigt:4,sonstige:0}},
-  {id:"3559-35",feld:"GO Faktor",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"bedingt",vollst:90.0,befuell:87.1,erkennung:88.8,quelle:"av",n:86,off:11,qsl:{sicher:71,unsicher:10,nicht:3,korrigiert:14,bestaetigt:2,sonstige:0}},
-  {id:"3559-36",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"P",req:"bedingt",vollst:82.6,befuell:80.2,erkennung:80.2,quelle:"av",n:86,off:26,qsl:{sicher:74,unsicher:17,nicht:1,korrigiert:2,bestaetigt:3,sonstige:3}},
-  {id:"3559-37",feld:"Betrag EUR",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"bedingt",vollst:82.6,befuell:78.3,erkennung:80.9,quelle:"av",n:86,off:91,qsl:{sicher:70,unsicher:14,nicht:0,korrigiert:3,bestaetigt:0,sonstige:13}},
-  {id:"3559-47",feld:"Behandlungsdatum",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"muss",vollst:86.9,befuell:82.3,erkennung:88.2,quelle:"av",n:86,off:34,qsl:{sicher:79,unsicher:8,nicht:2,korrigiert:6,bestaetigt:2,sonstige:3}},
-  {id:"3559-48",feld:"Anzahl",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"muss",vollst:80.9,befuell:77.0,erkennung:81.1,quelle:"av",n:86,off:63,qsl:{sicher:70,unsicher:10,nicht:0,korrigiert:13,bestaetigt:0,sonstige:7}},
-  {id:"3559-49",feld:"Präfix(e)",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"bedingt",vollst:84.2,befuell:81.5,erkennung:82.8,quelle:"av",n:86,off:56,qsl:{sicher:65,unsicher:18,nicht:3,korrigiert:9,bestaetigt:5,sonstige:0}},
-  {id:"3559-50",feld:"GOZ Nummer",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"muss",vollst:96.7,befuell:93.5,erkennung:94.2,quelle:"av",n:86,off:51,qsl:{sicher:82,unsicher:6,nicht:7,korrigiert:2,bestaetigt:3,sonstige:0}},
-  {id:"3559-51",feld:"Titel der Leistungslegende/Kurzbezeichnung",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"K**",req:"muss",vollst:83.1,befuell:78.5,erkennung:80.9,quelle:"av",n:86,off:33,qsl:{sicher:68,unsicher:16,nicht:4,korrigiert:2,bestaetigt:5,sonstige:5}},
-  {id:"3559-52",feld:"Begründung",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"K**",req:"bedingt",vollst:80.2,befuell:77.2,erkennung:80.8,quelle:"av",n:86,off:16,qsl:{sicher:69,unsicher:16,nicht:0,korrigiert:13,bestaetigt:2,sonstige:0}},
-  {id:"3559-53",feld:"Zahn/Region",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"bedingt",vollst:80.3,befuell:76.3,erkennung:81.5,quelle:"av",n:86,off:82,qsl:{sicher:74,unsicher:3,nicht:0,korrigiert:4,bestaetigt:2,sonstige:17}},
-  {id:"3559-54",feld:"GO Faktor",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"muss",vollst:95.3,befuell:91.6,erkennung:92.5,quelle:"av",n:86,off:34,qsl:{sicher:70,unsicher:20,nicht:5,korrigiert:3,bestaetigt:2,sonstige:0}},
-  {id:"3559-55",feld:"lfd. Nummer (Zahn-) Ärztin/Arzt",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"P",req:"bedingt",vollst:94.5,befuell:90.5,erkennung:94.7,quelle:"av",n:86,off:58,qsl:{sicher:83,unsicher:6,nicht:6,korrigiert:4,bestaetigt:0,sonstige:1}},
-  {id:"3559-56",feld:"Betrag EUR",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"bedingt",vollst:94.8,befuell:90.3,erkennung:92.7,quelle:"av",n:86,off:22,qsl:{sicher:84,unsicher:10,nicht:1,korrigiert:2,bestaetigt:3,sonstige:0}},
-  {id:"3559-7",feld:"Name, Adresse",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"muss",vollst:97.2,befuell:93.0,erkennung:96.1,quelle:"av",n:86,off:75,qsl:{sicher:75,unsicher:10,nicht:1,korrigiert:9,bestaetigt:5,sonstige:0}},
-  {id:"3559-15",feld:"Pos_LNR`s Nachname, Vorname, Geburtsdatum",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"muss",vollst:96.7,befuell:94.3,erkennung:97.2,quelle:"av",n:86,off:26,qsl:{sicher:82,unsicher:6,nicht:2,korrigiert:8,bestaetigt:2,sonstige:0}},
-  {id:"3559-6",feld:"Rechnungsbetrag",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"muss",vollst:89.5,befuell:86.2,erkennung:91.5,quelle:"av",n:86,off:85,qsl:{sicher:79,unsicher:9,nicht:2,korrigiert:6,bestaetigt:2,sonstige:2}},
-  {id:"3559-2",feld:"Rechnungsdatum",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"K",req:"muss",vollst:82.5,befuell:78.7,erkennung:82.4,quelle:"av",n:86,off:56,qsl:{sicher:70,unsicher:3,nicht:4,korrigiert:12,bestaetigt:2,sonstige:9}},
-  {id:"3559-1",feld:"Name, Adresse",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"muss",vollst:89.9,befuell:85.8,erkennung:90.5,quelle:"av",n:86,off:77,qsl:{sicher:77,unsicher:14,nicht:5,korrigiert:1,bestaetigt:3,sonstige:0}},
-  {id:"3559-3",feld:"Rechnungsnummer",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"M",req:"muss",vollst:87.4,befuell:84.2,erkennung:84.2,quelle:"av",n:86,off:34,qsl:{sicher:70,unsicher:13,nicht:2,korrigiert:11,bestaetigt:4,sonstige:0}},
-  {id:"3559-67",feld:"Sonstiger Hinweis",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"K",req:"kann",vollst:84.5,befuell:80.6,erkennung:83.7,quelle:"av",n:86,off:93,qsl:{sicher:70,unsicher:17,nicht:3,korrigiert:5,bestaetigt:5,sonstige:0}},
-  {id:"3559-17",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"K",req:"bedingt",vollst:85.6,befuell:82.8,erkennung:86.9,quelle:"av",n:86,off:54,qsl:{sicher:56,unsicher:20,nicht:6,korrigiert:13,bestaetigt:5,sonstige:0}},
-  {id:"3559-16",feld:"Vorname, Name, LANR (Lebenslange Arztnummer)",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"K",req:"muss",vollst:95.3,befuell:91.5,erkennung:94.7,quelle:"av",n:86,off:2,qsl:{sicher:73,unsicher:15,nicht:0,korrigiert:9,bestaetigt:3,sonstige:0}},
-  {id:"3559-4",feld:"Verwendungszweck",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"K",req:"kann",vollst:75.5,befuell:72.2,erkennung:74.6,quelle:"av",n:86,off:87,qsl:{sicher:61,unsicher:14,nicht:5,korrigiert:15,bestaetigt:5,sonstige:0}},
-  {id:"3559-5",feld:"Zahlungsziel",dokArt:"RE Zahnarzt neu (3559)",zielstatus:"K",req:"kann",vollst:82.3,befuell:77.7,erkennung:81.7,quelle:"av",n:86,off:63,qsl:{sicher:67,unsicher:14,nicht:0,korrigiert:5,bestaetigt:1,sonstige:13}},
   {id:"3552-10",feld:"Name, Adresse",dokArt:"RE ambulant neu (3552)",zielstatus:"K",req:"bedingt",vollst:91.6,befuell:86.5,erkennung:92.3,quelle:"av",n:612,off:76,qsl:{sicher:69,unsicher:20,nicht:2,korrigiert:8,bestaetigt:1,sonstige:0}},
   {id:"3552-42",feld:"Umsatzsteuer für GOÄ-Leistungen in %",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"bedingt",vollst:86.8,befuell:82.6,erkennung:86.4,quelle:"av",n:612,off:84,qsl:{sicher:64,unsicher:12,nicht:6,korrigiert:15,bestaetigt:3,sonstige:0}},
   {id:"3552-43",feld:"Umsatzsteuer für GOÄ-Leistungen in €",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"bedingt",vollst:89.0,befuell:85.9,erkennung:90.5,quelle:"av",n:612,off:47,qsl:{sicher:77,unsicher:4,nicht:3,korrigiert:5,bestaetigt:0,sonstige:11}},
@@ -957,94 +860,6 @@ const DATENPOOL_FELDER = [
   {id:"3549-16",feld:"Vorname, Name, LANR (Lebenslange Arztnummer)",dokArt:"RE stationär neu (3549)",zielstatus:"K",req:"muss",vollst:89.6,befuell:86.3,erkennung:89.1,quelle:"av",n:158,off:28,qsl:{sicher:75,unsicher:18,nicht:3,korrigiert:4,bestaetigt:0,sonstige:0}},
   {id:"3549-4",feld:"Verwendungszweck",dokArt:"RE stationär neu (3549)",zielstatus:"K",req:"kann",vollst:90.4,befuell:88.0,erkennung:87.4,quelle:"av",n:158,off:36,qsl:{sicher:76,unsicher:9,nicht:0,korrigiert:11,bestaetigt:2,sonstige:2}},
   {id:"3549-5",feld:"Zahlungsziel",dokArt:"RE stationär neu (3549)",zielstatus:"K",req:"kann",vollst:80.3,befuell:78.1,erkennung:77.5,quelle:"av",n:158,off:86,qsl:{sicher:73,unsicher:3,nicht:5,korrigiert:13,bestaetigt:1,sonstige:5}},
-  {id:"3502-10",feld:"Name, Adresse",dokArt:"HKP KFO neu (3502)",zielstatus:"K",req:"bedingt",vollst:80.1,befuell:75.9,erkennung:80.0,quelle:"av",n:39,off:7,qsl:{sicher:67,unsicher:8,nicht:3,korrigiert:2,bestaetigt:4,sonstige:16}},
-  {id:"3502-42",feld:"Umsatzsteuer für GOÄ-Leistungen in %",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"bedingt",vollst:85.1,befuell:82.5,erkennung:86.0,quelle:"av",n:39,off:91,qsl:{sicher:77,unsicher:12,nicht:7,korrigiert:4,bestaetigt:0,sonstige:0}},
-  {id:"3502-43",feld:"Umsatzsteuer für GOÄ-Leistungen in €",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"bedingt",vollst:95.6,befuell:91.8,erkennung:94.1,quelle:"av",n:39,off:95,qsl:{sicher:72,unsicher:8,nicht:7,korrigiert:13,bestaetigt:0,sonstige:0}},
-  {id:"3502-61",feld:"Umsatzsteuer für GOZ-Leistungen in %",dokArt:"HKP KFO neu (3502)",zielstatus:"K",req:"bedingt",vollst:93.0,befuell:90.1,erkennung:93.1,quelle:"av",n:39,off:95,qsl:{sicher:70,unsicher:13,nicht:4,korrigiert:12,bestaetigt:1,sonstige:0}},
-  {id:"3502-62",feld:"Umsatzsteuer für GOZ-Leistungen in €",dokArt:"HKP KFO neu (3502)",zielstatus:"K",req:"bedingt",vollst:81.0,befuell:75.7,erkennung:82.7,quelle:"av",n:39,off:53,qsl:{sicher:63,unsicher:17,nicht:7,korrigiert:13,bestaetigt:0,sonstige:0}},
-  {id:"3502-65",feld:"Abzüglich Vorleistung anderer Kostenträger/Vorauszahlungen",dokArt:"HKP KFO neu (3502)",zielstatus:"MbA",req:"bedingt",vollst:90.8,befuell:85.6,erkennung:87.2,quelle:"av",n:39,off:12,qsl:{sicher:65,unsicher:19,nicht:2,korrigiert:11,bestaetigt:3,sonstige:0}},
-  {id:"3502-2",feld:"Ausstellungsdatum",dokArt:"HKP KFO neu (3502)",zielstatus:"K",req:"muss",vollst:97.1,befuell:93.2,erkennung:94.8,quelle:"av",n:39,off:19,qsl:{sicher:56,unsicher:19,nicht:6,korrigiert:14,bestaetigt:5,sonstige:0}},
-  {id:"3502-11",feld:"Kontoinhaber/-in",dokArt:"HKP KFO neu (3502)",zielstatus:"MbA",req:"bedingt",vollst:93.0,befuell:89.2,erkennung:93.4,quelle:"av",n:39,off:57,qsl:{sicher:72,unsicher:8,nicht:2,korrigiert:15,bestaetigt:3,sonstige:0}},
-  {id:"3502-13",feld:"IBAN",dokArt:"HKP KFO neu (3502)",zielstatus:"MbA",req:"bedingt",vollst:84.8,befuell:80.9,erkennung:83.8,quelle:"av",n:39,off:80,qsl:{sicher:70,unsicher:14,nicht:6,korrigiert:2,bestaetigt:1,sonstige:7}},
-  {id:"3502-14",feld:"BIC",dokArt:"HKP KFO neu (3502)",zielstatus:"K",req:"kann",vollst:93.3,befuell:88.5,erkennung:92.2,quelle:"av",n:39,off:32,qsl:{sicher:64,unsicher:16,nicht:6,korrigiert:11,bestaetigt:3,sonstige:0}},
-  {id:"3502-9",feld:"BSNR Betriebsstättennummer",dokArt:"HKP KFO neu (3502)",zielstatus:"TM",req:"kann",vollst:81.9,befuell:77.2,erkennung:80.2,quelle:"av",n:39,off:69,qsl:{sicher:73,unsicher:13,nicht:4,korrigiert:2,bestaetigt:3,sonstige:5}},
-  {id:"3502-20",feld:"Diagnose Klartext",dokArt:"HKP KFO neu (3502)",zielstatus:"K**",req:"muss",vollst:89.4,befuell:84.7,erkennung:90.0,quelle:"av",n:39,off:43,qsl:{sicher:80,unsicher:4,nicht:3,korrigiert:1,bestaetigt:2,sonstige:10}},
-  {id:"3502-21",feld:"Zusatzkennzeichen Diagnosesicherheit",dokArt:"HKP KFO neu (3502)",zielstatus:"SWH",req:"kann",vollst:80.5,befuell:77.6,erkennung:80.9,quelle:"av",n:39,off:90,qsl:{sicher:67,unsicher:14,nicht:6,korrigiert:10,bestaetigt:3,sonstige:0}},
-  {id:"3502-22",feld:"Lokalisierung",dokArt:"HKP KFO neu (3502)",zielstatus:"SWH",req:"kann",vollst:79.5,befuell:76.8,erkennung:76.8,quelle:"av",n:39,off:50,qsl:{sicher:60,unsicher:20,nicht:3,korrigiert:12,bestaetigt:5,sonstige:0}},
-  {id:"3502-18",feld:"Name, Adresse, LANR (Lebenslange Arztnummer), BSNR (Betriebsstättennummer)",dokArt:"HKP KFO neu (3502)",zielstatus:"K",req:"kann",vollst:75.4,befuell:72.6,erkennung:76.6,quelle:"av",n:39,off:80,qsl:{sicher:59,unsicher:18,nicht:5,korrigiert:13,bestaetigt:5,sonstige:0}},
-  {id:"3502-27",feld:"Behandlungsdatum",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"muss",vollst:89.3,befuell:86.4,erkennung:89.8,quelle:"av",n:39,off:13,qsl:{sicher:76,unsicher:3,nicht:6,korrigiert:4,bestaetigt:1,sonstige:10}},
-  {id:"3502-28",feld:"Anzahl",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"muss",vollst:93.3,befuell:91.0,erkennung:91.6,quelle:"av",n:39,off:35,qsl:{sicher:67,unsicher:11,nicht:3,korrigiert:14,bestaetigt:5,sonstige:0}},
-  {id:"3502-29",feld:"Präfix(e)",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"bedingt",vollst:89.4,befuell:85.7,erkennung:86.8,quelle:"av",n:39,off:6,qsl:{sicher:72,unsicher:17,nicht:3,korrigiert:3,bestaetigt:5,sonstige:0}},
-  {id:"3502-30",feld:"GOÄ-Nummer",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"bedingt",vollst:82.7,befuell:79.0,erkennung:82.2,quelle:"av",n:39,off:69,qsl:{sicher:73,unsicher:6,nicht:7,korrigiert:4,bestaetigt:0,sonstige:10}},
-  {id:"3502-31",feld:"Titel der Leistungslegende/Kurzbezeichnung",dokArt:"HKP KFO neu (3502)",zielstatus:"K**",req:"muss",vollst:79.0,befuell:76.2,erkennung:80.4,quelle:"av",n:39,off:12,qsl:{sicher:73,unsicher:9,nicht:4,korrigiert:11,bestaetigt:1,sonstige:2}},
-  {id:"3502-32",feld:"Begründung",dokArt:"HKP KFO neu (3502)",zielstatus:"K**",req:"bedingt",vollst:85.6,befuell:81.3,erkennung:84.8,quelle:"av",n:39,off:38,qsl:{sicher:77,unsicher:15,nicht:4,korrigiert:2,bestaetigt:1,sonstige:1}},
-  {id:"3502-33",feld:"Dauer gemäß Leistungslegende",dokArt:"HKP KFO neu (3502)",zielstatus:"P",req:"bedingt",vollst:80.9,befuell:77.1,erkennung:79.1,quelle:"av",n:39,off:48,qsl:{sicher:67,unsicher:14,nicht:5,korrigiert:7,bestaetigt:4,sonstige:3}},
-  {id:"3502-34",feld:"Faktor-Grund",dokArt:"HKP KFO neu (3502)",zielstatus:"P",req:"bedingt",vollst:86.7,befuell:82.3,erkennung:85.4,quelle:"av",n:39,off:43,qsl:{sicher:80,unsicher:14,nicht:2,korrigiert:1,bestaetigt:1,sonstige:2}},
-  {id:"3502-35",feld:"GO Faktor",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"bedingt",vollst:95.4,befuell:91.5,erkennung:94.0,quelle:"av",n:39,off:21,qsl:{sicher:66,unsicher:19,nicht:0,korrigiert:11,bestaetigt:4,sonstige:0}},
-  {id:"3502-36",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"HKP KFO neu (3502)",zielstatus:"P",req:"bedingt",vollst:83.2,befuell:79.8,erkennung:81.2,quelle:"av",n:39,off:77,qsl:{sicher:71,unsicher:15,nicht:4,korrigiert:9,bestaetigt:1,sonstige:0}},
-  {id:"3502-37",feld:"Betrag EUR",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"bedingt",vollst:82.5,befuell:78.0,erkennung:79.5,quelle:"av",n:39,off:17,qsl:{sicher:69,unsicher:15,nicht:4,korrigiert:8,bestaetigt:4,sonstige:0}},
-  {id:"3502-47",feld:"Behandlungsdatum",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"muss",vollst:87.8,befuell:84.2,erkennung:86.8,quelle:"av",n:39,off:37,qsl:{sicher:80,unsicher:10,nicht:1,korrigiert:2,bestaetigt:0,sonstige:7}},
-  {id:"3502-48",feld:"Anzahl",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"muss",vollst:93.1,befuell:89.7,erkennung:94.9,quelle:"av",n:39,off:27,qsl:{sicher:79,unsicher:7,nicht:7,korrigiert:1,bestaetigt:2,sonstige:4}},
-  {id:"3502-49",feld:"Präfix(e)",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"bedingt",vollst:90.7,befuell:88.4,erkennung:88.7,quelle:"av",n:39,off:75,qsl:{sicher:83,unsicher:4,nicht:1,korrigiert:4,bestaetigt:1,sonstige:7}},
-  {id:"3502-50",feld:"GOZ Nummer",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"muss",vollst:89.4,befuell:87.4,erkennung:87.3,quelle:"av",n:39,off:36,qsl:{sicher:75,unsicher:13,nicht:0,korrigiert:9,bestaetigt:3,sonstige:0}},
-  {id:"3502-51",feld:"Titel der Leistungslegende/Kurzbezeichnung",dokArt:"HKP KFO neu (3502)",zielstatus:"K**",req:"muss",vollst:94.0,befuell:89.6,erkennung:96.7,quelle:"av",n:39,off:16,qsl:{sicher:69,unsicher:10,nicht:5,korrigiert:15,bestaetigt:1,sonstige:0}},
-  {id:"3502-52",feld:"Begründung",dokArt:"HKP KFO neu (3502)",zielstatus:"K**",req:"bedingt",vollst:86.9,befuell:84.8,erkennung:85.2,quelle:"av",n:39,off:8,qsl:{sicher:72,unsicher:9,nicht:2,korrigiert:3,bestaetigt:5,sonstige:9}},
-  {id:"3502-53",feld:"Zahn/Region",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"bedingt",vollst:81.1,befuell:77.6,erkennung:79.5,quelle:"av",n:39,off:78,qsl:{sicher:68,unsicher:15,nicht:3,korrigiert:12,bestaetigt:2,sonstige:0}},
-  {id:"3502-54",feld:"GO Faktor",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"muss",vollst:98.3,befuell:95.8,erkennung:96.7,quelle:"av",n:39,off:63,qsl:{sicher:72,unsicher:18,nicht:1,korrigiert:5,bestaetigt:4,sonstige:0}},
-  {id:"3502-55",feld:"lfd. Nummer (Zahn-) Ärztin/Arzt",dokArt:"HKP KFO neu (3502)",zielstatus:"P",req:"bedingt",vollst:81.5,befuell:76.1,erkennung:81.1,quelle:"av",n:39,off:15,qsl:{sicher:71,unsicher:13,nicht:0,korrigiert:12,bestaetigt:1,sonstige:3}},
-  {id:"3502-56",feld:"Betrag EUR",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"bedingt",vollst:81.0,befuell:76.3,erkennung:80.9,quelle:"av",n:39,off:74,qsl:{sicher:70,unsicher:15,nicht:5,korrigiert:10,bestaetigt:0,sonstige:0}},
-  {id:"3502-3",feld:"HKP Nr.",dokArt:"HKP KFO neu (3502)",zielstatus:"K",req:"muss",vollst:96.8,befuell:92.0,erkennung:95.8,quelle:"av",n:39,off:61,qsl:{sicher:72,unsicher:19,nicht:2,korrigiert:4,bestaetigt:3,sonstige:0}},
-  {id:"3502-7",feld:"Name, Adresse",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"muss",vollst:95.4,befuell:91.1,erkennung:94.8,quelle:"av",n:39,off:44,qsl:{sicher:78,unsicher:14,nicht:1,korrigiert:4,bestaetigt:3,sonstige:0}},
-  {id:"3502-15",feld:"Pos_LNR`s Nachname, Vorname, Geburtsdatum",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"muss",vollst:92.7,befuell:88.3,erkennung:93.4,quelle:"av",n:39,off:82,qsl:{sicher:78,unsicher:18,nicht:0,korrigiert:3,bestaetigt:1,sonstige:0}},
-  {id:"3502-6",feld:"Rechnungsbetrag",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"muss",vollst:82.6,befuell:79.8,erkennung:80.0,quelle:"av",n:39,off:30,qsl:{sicher:70,unsicher:6,nicht:6,korrigiert:8,bestaetigt:0,sonstige:10}},
-  {id:"3502-1",feld:"Name, Adresse",dokArt:"HKP KFO neu (3502)",zielstatus:"M",req:"muss",vollst:81.7,befuell:78.6,erkennung:82.4,quelle:"av",n:39,off:41,qsl:{sicher:69,unsicher:12,nicht:1,korrigiert:5,bestaetigt:4,sonstige:9}},
-  {id:"3502-67",feld:"Sonstiger Hinweis",dokArt:"HKP KFO neu (3502)",zielstatus:"K",req:"kann",vollst:85.2,befuell:80.5,erkennung:83.9,quelle:"av",n:39,off:63,qsl:{sicher:74,unsicher:11,nicht:3,korrigiert:6,bestaetigt:0,sonstige:6}},
-  {id:"3502-17",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"HKP KFO neu (3502)",zielstatus:"K",req:"bedingt",vollst:82.1,befuell:77.9,erkennung:81.5,quelle:"av",n:39,off:81,qsl:{sicher:68,unsicher:17,nicht:6,korrigiert:5,bestaetigt:4,sonstige:0}},
-  {id:"3502-16",feld:"Vorname, Name, LANR (Lebenslange Arztnummer)",dokArt:"HKP KFO neu (3502)",zielstatus:"K",req:"muss",vollst:79.8,befuell:77.2,erkennung:80.3,quelle:"av",n:39,off:6,qsl:{sicher:73,unsicher:10,nicht:1,korrigiert:10,bestaetigt:0,sonstige:6}},
-  {id:"3501-10",feld:"Name, Adresse",dokArt:"HKP Zahn neu (3501)",zielstatus:"K",req:"bedingt",vollst:91.9,befuell:86.7,erkennung:90.9,quelle:"av",n:71,off:4,qsl:{sicher:71,unsicher:8,nicht:6,korrigiert:10,bestaetigt:5,sonstige:0}},
-  {id:"3501-42",feld:"Umsatzsteuer für GOÄ-Leistungen in %",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"bedingt",vollst:84.5,befuell:80.8,erkennung:82.2,quelle:"av",n:71,off:81,qsl:{sicher:60,unsicher:20,nicht:7,korrigiert:11,bestaetigt:2,sonstige:0}},
-  {id:"3501-43",feld:"Umsatzsteuer für GOÄ-Leistungen in €",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"bedingt",vollst:97.5,befuell:95.1,erkennung:97.0,quelle:"av",n:71,off:54,qsl:{sicher:85,unsicher:4,nicht:0,korrigiert:11,bestaetigt:0,sonstige:0}},
-  {id:"3501-61",feld:"Umsatzsteuer für GOZ-Leistungen in %",dokArt:"HKP Zahn neu (3501)",zielstatus:"K",req:"bedingt",vollst:84.4,befuell:80.1,erkennung:83.0,quelle:"av",n:71,off:59,qsl:{sicher:72,unsicher:17,nicht:6,korrigiert:3,bestaetigt:2,sonstige:0}},
-  {id:"3501-62",feld:"Umsatzsteuer für GOZ-Leistungen in €",dokArt:"HKP Zahn neu (3501)",zielstatus:"K",req:"bedingt",vollst:86.0,befuell:83.4,erkennung:85.4,quelle:"av",n:71,off:55,qsl:{sicher:71,unsicher:19,nicht:1,korrigiert:9,bestaetigt:0,sonstige:0}},
-  {id:"3501-65",feld:"Abzüglich Vorleistung anderer Kostenträger/Vorauszahlungen",dokArt:"HKP Zahn neu (3501)",zielstatus:"MbA",req:"bedingt",vollst:83.6,befuell:80.2,erkennung:82.4,quelle:"av",n:71,off:33,qsl:{sicher:77,unsicher:8,nicht:5,korrigiert:4,bestaetigt:0,sonstige:6}},
-  {id:"3501-2",feld:"Ausstellungsdatum",dokArt:"HKP Zahn neu (3501)",zielstatus:"K",req:"muss",vollst:97.4,befuell:95.1,erkennung:95.5,quelle:"av",n:71,off:31,qsl:{sicher:82,unsicher:4,nicht:7,korrigiert:2,bestaetigt:5,sonstige:0}},
-  {id:"3501-11",feld:"Kontoinhaber/-in",dokArt:"HKP Zahn neu (3501)",zielstatus:"MbA",req:"bedingt",vollst:95.1,befuell:89.8,erkennung:96.7,quelle:"av",n:71,off:74,qsl:{sicher:80,unsicher:8,nicht:4,korrigiert:2,bestaetigt:0,sonstige:6}},
-  {id:"3501-13",feld:"IBAN",dokArt:"HKP Zahn neu (3501)",zielstatus:"MbA",req:"bedingt",vollst:86.1,befuell:81.8,erkennung:86.4,quelle:"av",n:71,off:33,qsl:{sicher:74,unsicher:18,nicht:3,korrigiert:4,bestaetigt:1,sonstige:0}},
-  {id:"3501-14",feld:"BIC",dokArt:"HKP Zahn neu (3501)",zielstatus:"K",req:"kann",vollst:82.9,befuell:78.3,erkennung:82.4,quelle:"av",n:71,off:6,qsl:{sicher:69,unsicher:15,nicht:7,korrigiert:9,bestaetigt:0,sonstige:0}},
-  {id:"3501-9",feld:"BSNR Betriebsstättennummer",dokArt:"HKP Zahn neu (3501)",zielstatus:"TM",req:"kann",vollst:76.3,befuell:71.5,erkennung:75.3,quelle:"av",n:71,off:32,qsl:{sicher:67,unsicher:14,nicht:3,korrigiert:14,bestaetigt:2,sonstige:0}},
-  {id:"3501-20",feld:"Diagnose Klartext",dokArt:"HKP Zahn neu (3501)",zielstatus:"K**",req:"muss",vollst:87.1,befuell:81.9,erkennung:89.6,quelle:"av",n:71,off:36,qsl:{sicher:68,unsicher:16,nicht:5,korrigiert:11,bestaetigt:0,sonstige:0}},
-  {id:"3501-21",feld:"Zusatzkennzeichen Diagnosesicherheit",dokArt:"HKP Zahn neu (3501)",zielstatus:"SWH",req:"kann",vollst:80.6,befuell:76.3,erkennung:80.0,quelle:"av",n:71,off:93,qsl:{sicher:67,unsicher:11,nicht:5,korrigiert:13,bestaetigt:4,sonstige:0}},
-  {id:"3501-22",feld:"Lokalisierung",dokArt:"HKP Zahn neu (3501)",zielstatus:"SWH",req:"kann",vollst:95.0,befuell:90.0,erkennung:91.7,quelle:"av",n:71,off:38,qsl:{sicher:85,unsicher:9,nicht:3,korrigiert:1,bestaetigt:1,sonstige:1}},
-  {id:"3501-18",feld:"Name, Adresse, LANR (Lebenslange Arztnummer), BSNR (Betriebsstättennummer)",dokArt:"HKP Zahn neu (3501)",zielstatus:"K",req:"kann",vollst:79.8,befuell:75.0,erkennung:79.7,quelle:"av",n:71,off:56,qsl:{sicher:65,unsicher:14,nicht:3,korrigiert:8,bestaetigt:1,sonstige:9}},
-  {id:"3501-27",feld:"Behandlungsdatum",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"muss",vollst:84.5,befuell:80.4,erkennung:84.0,quelle:"av",n:71,off:8,qsl:{sicher:71,unsicher:4,nicht:5,korrigiert:9,bestaetigt:5,sonstige:6}},
-  {id:"3501-28",feld:"Anzahl",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"muss",vollst:86.2,befuell:81.4,erkennung:86.2,quelle:"av",n:71,off:2,qsl:{sicher:78,unsicher:15,nicht:0,korrigiert:4,bestaetigt:3,sonstige:0}},
-  {id:"3501-29",feld:"Präfix(e)",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"bedingt",vollst:86.7,befuell:81.4,erkennung:86.4,quelle:"av",n:71,off:10,qsl:{sicher:71,unsicher:9,nicht:3,korrigiert:15,bestaetigt:2,sonstige:0}},
-  {id:"3501-30",feld:"GOÄ-Nummer",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"bedingt",vollst:96.5,befuell:91.3,erkennung:96.9,quelle:"av",n:71,off:24,qsl:{sicher:67,unsicher:17,nicht:4,korrigiert:11,bestaetigt:1,sonstige:0}},
-  {id:"3501-31",feld:"Titel der Leistungslegende/Kurzbezeichnung",dokArt:"HKP Zahn neu (3501)",zielstatus:"K**",req:"muss",vollst:80.7,befuell:75.2,erkennung:79.7,quelle:"av",n:71,off:8,qsl:{sicher:72,unsicher:5,nicht:5,korrigiert:6,bestaetigt:2,sonstige:10}},
-  {id:"3501-32",feld:"Begründung",dokArt:"HKP Zahn neu (3501)",zielstatus:"K**",req:"bedingt",vollst:79.9,befuell:74.8,erkennung:80.6,quelle:"av",n:71,off:11,qsl:{sicher:71,unsicher:17,nicht:4,korrigiert:5,bestaetigt:3,sonstige:0}},
-  {id:"3501-33",feld:"Dauer gemäß Leistungslegende",dokArt:"HKP Zahn neu (3501)",zielstatus:"P",req:"bedingt",vollst:89.7,befuell:85.6,erkennung:91.5,quelle:"av",n:71,off:89,qsl:{sicher:75,unsicher:6,nicht:7,korrigiert:7,bestaetigt:0,sonstige:5}},
-  {id:"3501-34",feld:"Faktor-Grund",dokArt:"HKP Zahn neu (3501)",zielstatus:"P",req:"bedingt",vollst:92.8,befuell:87.7,erkennung:92.4,quelle:"av",n:71,off:60,qsl:{sicher:78,unsicher:13,nicht:3,korrigiert:5,bestaetigt:1,sonstige:0}},
-  {id:"3501-35",feld:"GO Faktor",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"bedingt",vollst:87.2,befuell:85.1,erkennung:87.0,quelle:"av",n:71,off:39,qsl:{sicher:71,unsicher:8,nicht:6,korrigiert:11,bestaetigt:4,sonstige:0}},
-  {id:"3501-36",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"HKP Zahn neu (3501)",zielstatus:"P",req:"bedingt",vollst:88.7,befuell:84.3,erkennung:87.0,quelle:"av",n:71,off:69,qsl:{sicher:74,unsicher:15,nicht:0,korrigiert:10,bestaetigt:1,sonstige:0}},
-  {id:"3501-37",feld:"Betrag EUR",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"bedingt",vollst:84.9,befuell:82.8,erkennung:84.0,quelle:"av",n:71,off:30,qsl:{sicher:71,unsicher:7,nicht:7,korrigiert:10,bestaetigt:5,sonstige:0}},
-  {id:"3501-47",feld:"Behandlungsdatum",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"muss",vollst:93.4,befuell:89.8,erkennung:90.2,quelle:"av",n:71,off:22,qsl:{sicher:76,unsicher:15,nicht:1,korrigiert:8,bestaetigt:0,sonstige:0}},
-  {id:"3501-48",feld:"Anzahl",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"muss",vollst:92.1,befuell:89.2,erkennung:90.7,quelle:"av",n:71,off:38,qsl:{sicher:74,unsicher:5,nicht:7,korrigiert:9,bestaetigt:5,sonstige:0}},
-  {id:"3501-49",feld:"Präfix(e)",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"bedingt",vollst:83.6,befuell:81.1,erkennung:80.2,quelle:"av",n:71,off:3,qsl:{sicher:77,unsicher:5,nicht:2,korrigiert:7,bestaetigt:1,sonstige:8}},
-  {id:"3501-50",feld:"GOZ Nummer",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"muss",vollst:96.4,befuell:92.4,erkennung:98.5,quelle:"av",n:71,off:42,qsl:{sicher:76,unsicher:6,nicht:5,korrigiert:8,bestaetigt:5,sonstige:0}},
-  {id:"3501-51",feld:"Titel der Leistungslegende/Kurzbezeichnung",dokArt:"HKP Zahn neu (3501)",zielstatus:"K**",req:"muss",vollst:84.7,befuell:79.8,erkennung:85.0,quelle:"av",n:71,off:38,qsl:{sicher:77,unsicher:3,nicht:1,korrigiert:12,bestaetigt:3,sonstige:4}},
-  {id:"3501-52",feld:"Begründung",dokArt:"HKP Zahn neu (3501)",zielstatus:"K**",req:"bedingt",vollst:88.0,befuell:83.2,erkennung:90.3,quelle:"av",n:71,off:87,qsl:{sicher:60,unsicher:17,nicht:5,korrigiert:14,bestaetigt:4,sonstige:0}},
-  {id:"3501-53",feld:"Zahn/Region",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"bedingt",vollst:79.2,befuell:77.0,erkennung:80.0,quelle:"av",n:71,off:54,qsl:{sicher:70,unsicher:9,nicht:0,korrigiert:12,bestaetigt:1,sonstige:8}},
-  {id:"3501-54",feld:"GO Faktor",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"muss",vollst:87.0,befuell:82.7,erkennung:84.9,quelle:"av",n:71,off:72,qsl:{sicher:74,unsicher:9,nicht:4,korrigiert:13,bestaetigt:0,sonstige:0}},
-  {id:"3501-55",feld:"lfd. Nummer (Zahn-) Ärztin/Arzt",dokArt:"HKP Zahn neu (3501)",zielstatus:"P",req:"bedingt",vollst:80.4,befuell:76.4,erkennung:80.1,quelle:"av",n:71,off:57,qsl:{sicher:65,unsicher:19,nicht:1,korrigiert:11,bestaetigt:4,sonstige:0}},
-  {id:"3501-56",feld:"Betrag EUR",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"bedingt",vollst:77.6,befuell:72.3,erkennung:78.7,quelle:"av",n:71,off:83,qsl:{sicher:64,unsicher:5,nicht:4,korrigiert:6,bestaetigt:5,sonstige:16}},
-  {id:"3501-3",feld:"HKP Nr.",dokArt:"HKP Zahn neu (3501)",zielstatus:"K",req:"muss",vollst:91.4,befuell:87.2,erkennung:88.7,quelle:"av",n:71,off:26,qsl:{sicher:72,unsicher:20,nicht:2,korrigiert:6,bestaetigt:0,sonstige:0}},
-  {id:"3501-7",feld:"Name, Adresse",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"muss",vollst:92.3,befuell:88.4,erkennung:92.8,quelle:"av",n:71,off:56,qsl:{sicher:65,unsicher:20,nicht:6,korrigiert:8,bestaetigt:1,sonstige:0}},
-  {id:"3501-15",feld:"Pos_LNR`s Nachname, Vorname, Geburtsdatum",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"muss",vollst:94.5,befuell:90.2,erkennung:94.4,quelle:"av",n:71,off:38,qsl:{sicher:67,unsicher:14,nicht:1,korrigiert:15,bestaetigt:3,sonstige:0}},
-  {id:"3501-6",feld:"Rechnungsbetrag",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"muss",vollst:82.3,befuell:79.5,erkennung:81.3,quelle:"av",n:71,off:19,qsl:{sicher:73,unsicher:9,nicht:6,korrigiert:10,bestaetigt:2,sonstige:0}},
-  {id:"3501-1",feld:"Name, Adresse",dokArt:"HKP Zahn neu (3501)",zielstatus:"M",req:"muss",vollst:93.6,befuell:90.4,erkennung:93.5,quelle:"av",n:71,off:16,qsl:{sicher:80,unsicher:3,nicht:6,korrigiert:5,bestaetigt:0,sonstige:6}},
-  {id:"3501-67",feld:"Sonstiger Hinweis",dokArt:"HKP Zahn neu (3501)",zielstatus:"K",req:"kann",vollst:87.4,befuell:83.3,erkennung:87.9,quelle:"av",n:71,off:61,qsl:{sicher:78,unsicher:8,nicht:2,korrigiert:8,bestaetigt:4,sonstige:0}},
-  {id:"3501-17",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"HKP Zahn neu (3501)",zielstatus:"K",req:"bedingt",vollst:79.1,befuell:74.1,erkennung:80.4,quelle:"av",n:71,off:30,qsl:{sicher:64,unsicher:3,nicht:3,korrigiert:7,bestaetigt:3,sonstige:20}},
-  {id:"3501-16",feld:"Vorname, Name, LANR (Lebenslange Arztnummer)",dokArt:"HKP Zahn neu (3501)",zielstatus:"K",req:"muss",vollst:86.1,befuell:83.6,erkennung:85.0,quelle:"av",n:71,off:49,qsl:{sicher:67,unsicher:16,nicht:2,korrigiert:15,bestaetigt:0,sonstige:0}}
 ];
 
 /* Zeilentyp: Klassifikation einzelner Abrechnungszeilen/-positionen im Datenpool (nicht jedes
@@ -1103,11 +918,11 @@ const GO_ZIFFERN = [
 const DP_DOKARTEN = [
   { code:"3552", label:"RE ambulant neu (3552)", n:612 },
   { code:"3549", label:"RE stationär neu (3549)", n:158 },
-  { code:"3559", label:"RE Zahnarzt neu (3559)", n:86 },
-  { code:"3567", label:"RE Kieferorthopädie neu (3567)", n:54 },
-  { code:"3501", label:"HKP Zahn neu (3501)", n:71 },
-  { code:"3502", label:"HKP KFO neu (3502)", n:39 },
 ];
+/* Feste Soll-Feldanzahl je Dok.-Art für die Beleg-Qualität (MVP1) — bewusst fix statt
+   zufallsvariiert, damit "xx von 35" (ambulant) bzw. "xx von 37" (stationär) je Beleg
+   konsistent dieselbe Gesamtzahl zeigt. */
+const DP_DOKART_FELDANZAHL = { "3552":35, "3549":37 };
 function dpZifferHash(s){
   let h = 0;
   for(let i=0;i<s.length;i++){ h = (h*31+s.charCodeAt(i))%100000; }
@@ -1140,16 +955,13 @@ function dpGenerateMetrics(seed){
     qsl:{ sicher, unsicher, nicht, korrigiert, bestaetigt, sonstige },
   };
 }
-/* Je Dok.-Art plausible Zeilentyp-Kandidaten für GO-Ziffer-Treffer (RE-Dok.-Arten eher
-   GOÄ-lastig, HKP-Dok.-Arten eher GOZ/MLK-lastig als Kostenplan-Positionen). Deckt alle
+/* Je Dok.-Art plausible Zeilentyp-Kandidaten für GO-Ziffer-Treffer. Deckt alle
    "regulären" Zeilentypen ab (7 Wegegeld/8 Auslage/14 GEBÜH/22 Differenzbetrag inklusive) —
    die beiden Fehlerfall-Typen 20 (unbekannte Ziffer) und 21 (fehlende Ziffer) ergeben sich
    erst auf Belegebene (siehe BELEG_POOL weiter unten), da eine GO-Ziffer-Suche per Definition
    eine bekannte Ziffer trifft. */
 const DP_DOKART_ZEILENTYP_POOL = {
   "3552":["1","2","3","4","5","7","8","14"], "3549":["1","2","3","4","5","7","8","14","22"],
-  "3559":["1","6","9","22"], "3567":["1","6","9"],
-  "3501":["6","9","10","11"], "3502":["6","9","10","11","22"],
 };
 function buildGoZifferRows(matches){
   const rows = [];
@@ -1259,7 +1071,7 @@ const BELEG_POOL = (function(){
     const h = salt => dpZifferHash(seed+"|"+salt);
     const dok = DP_DOKARTEN[h("dok")%DP_DOKARTEN.length];
     const off = h("off")%120;
-    const feldAnzahl = 14 + (h("n")%22);
+    const feldAnzahl = DP_DOKART_FELDANZAHL[dok.code];
     const completeRoll = h("complete")%100;
     const vollstIncomplete = Math.round((60 + (h("v")%3500)/100)*10)/10;
     const anzahlFehlendIncomplete = Math.max(1, Math.round(feldAnzahl*(100-vollstIncomplete)/100));
@@ -1420,10 +1232,9 @@ const DP_COLUMNS = [
   { key:"zielstatus", label:"AV-Zielstatus" },
   { key:"zeilentyp", label:"Zeilentyp" },
   { key:"vollst", label:"Vollständigkeit" },
-  { key:"befuell", label:"Befüllungsqualität" },
-  { key:"erkennung", label:"Erkennungsquote" },
+  { key:"anzahl", label:"Anzahl" },
 ];
-const dpColumnState = { dokart:true, zielstatus:true, zeilentyp:true, vollst:true, befuell:true, erkennung:true };
+const dpColumnState = { dokart:true, zielstatus:true, zeilentyp:true, vollst:true, anzahl:true };
 
 const AUSWERTUNGEN = [
   { kat:"Erfassung", name:"Prüfung der Erfassung", beschreibung:"Klassifikation der Erfassungsart je Datensatz: Dok.-Art, VP, VNR oder AV (Datenextraktion).", status:"verfuegbar" },
@@ -1444,8 +1255,7 @@ const AUSWERTUNGEN = [
   { kat:"Anzeige", name:"Spalte: AV-Zielstatus", beschreibung:"Blendet die Spalte „AV-Zielstatus“ im Datenpool-Dashboard oben ein oder aus.", col:"zielstatus" },
   { kat:"Anzeige", name:"Spalte: Zeilentyp", beschreibung:"Blendet die Spalte „Zeilentyp“ im Datenpool-Dashboard oben ein oder aus.", col:"zeilentyp" },
   { kat:"Anzeige", name:"Spalte: Vollständigkeit", beschreibung:"Blendet die Spalte „Vollständigkeit“ im Datenpool-Dashboard oben ein oder aus.", col:"vollst" },
-  { kat:"Anzeige", name:"Spalte: Befüllungsqualität", beschreibung:"Blendet die Spalte „Befüllungsqualität“ im Datenpool-Dashboard oben ein oder aus.", col:"befuell" },
-  { kat:"Anzeige", name:"Spalte: Erkennungsquote", beschreibung:"Blendet die Spalte „Erkennungsquote“ im Datenpool-Dashboard oben ein oder aus.", col:"erkennung" },
+  { kat:"Anzeige", name:"Spalte: Anzahl", beschreibung:"Blendet die Spalte „Anzahl“ (Häufigkeit des Datenfelds im Datenpool) im Datenpool-Dashboard oben ein oder aus.", col:"anzahl" },
 ];
 const AV_STATUS_LABEL = { verfuegbar:"Verfügbar", "in-arbeit":"In Arbeit" };
 
@@ -1463,11 +1273,8 @@ const SMILE_DELTA = [
   { belegId:"BLG-20261006-0063", dokArt:"RE ambulant neu (3552)", feld:"GOÄ-Ziffer", qsl:"sicher", emReq:"bedingt", smileReq:"muss", pool:"1200", smile:"1200", delta:false, typ:"—", zeit:heute()+" 07:09" },
   { belegId:"BLG-20261006-0074", dokArt:"RE stationär neu (3549)", feld:"IBAN", qsl:"unsicher", emReq:"bedingt", smileReq:"bedingt", pool:"DE46660466…2398 61", smile:"DE46660466…2398 61", delta:false, typ:"—", zeit:heute()+" 07:15" },
   { belegId:"BLG-20261006-0081", dokArt:"RE ambulant neu (3552)", feld:"Faktor-Grund", qsl:"unsicher", emReq:"kann", smileReq:"muss", pool:"HV", smile:"—", delta:true, typ:"Löschung", zeit:heute()+" 07:22" },
-  { belegId:"BLG-20261006-0096", dokArt:"RE Kieferorthopädie neu (3567)", feld:"VNR", qsl:"sicher", emReq:"muss", smileReq:"muss", pool:"552310-9", smile:"552310-9", delta:false, typ:"—", zeit:heute()+" 07:28" },
   { belegId:"BLG-20261006-0103", dokArt:"RE stationär neu (3549)", feld:"Leistungserbringer (LE)", qsl:"korrigiert", emReq:"muss", smileReq:"muss", pool:"Dr. med. Sabine Koch", smile:"Praxis Koch, Dr. med. Sabine", delta:true, typ:"Korrektur", zeit:heute()+" 07:35" },
   { belegId:"BLG-20261006-0117", dokArt:"RE stationär neu (3549)", feld:"Honorarminderung §6a", qsl:"bestaetigt", emReq:"bedingt", smileReq:"bedingt", pool:"15 % Minderung", smile:"15 % Minderung", delta:false, typ:"—", zeit:heute()+" 07:44" },
-  { belegId:"BLG-20261006-0124", dokArt:"HKP Zahn neu (3501)", feld:"Arzt-ID / LANR", qsl:"sicher", emReq:"muss", smileReq:"muss", pool:"101814142", smile:"101814142", delta:false, typ:"—", zeit:heute()+" 07:50" },
-  { belegId:"BLG-20261006-0131", dokArt:"RE Zahnarzt neu (3559)", feld:"GOZ-Zuordnung", qsl:"nicht", emReq:"muss", smileReq:"muss", pool:"offen", smile:"GOZ-Katalogleistung", delta:true, typ:"Ergänzung", zeit:heute()+" 07:58" },
 ];
 const REQ_LABEL = { muss:"Mussfeld", bedingt:"Bedingtes Mussfeld", kann:"Kannfeld" };
 const REQ_LABEL_SHORT = { muss:"Muss", bedingt:"Bedingt", kann:"Kann" };
@@ -1486,14 +1293,10 @@ const SQ_MATRIX_ERL = [
   { lead:"Nächster Schritt", text:"Dok.-Arten mit hohem Delta-Anteil bei „Sicher“ bzw. „Bestätigt“ sind vorrangige Kandidaten für eine Ursachenanalyse der QSL-Vergabe." },
 ];
 const SQ_MATRIX = (function(){
-  const dokArten = ["RE ambulant neu (3552)","RE stationär neu (3549)","RE Zahnarzt neu (3559)","RE Kieferorthopädie neu (3567)","HKP Zahn neu (3501)","HKP KFO neu (3502)"];
+  const dokArten = ["RE ambulant neu (3552)","RE stationär neu (3549)"];
   const base = {
     "RE ambulant neu (3552)": { sicher:14, unsicher:22, nicht:6, korrigiert:18, bestaetigt:4, sonstige:1 },
     "RE stationär neu (3549)": { sicher:5, unsicher:9, nicht:3, korrigiert:11, bestaetigt:6, sonstige:0 },
-    "RE Zahnarzt neu (3559)": { sicher:3, unsicher:8, nicht:10, korrigiert:7, bestaetigt:1, sonstige:2 },
-    "RE Kieferorthopädie neu (3567)": { sicher:2, unsicher:3, nicht:1, korrigiert:2, bestaetigt:0, sonstige:0 },
-    "HKP Zahn neu (3501)": { sicher:1, unsicher:2, nicht:0, korrigiert:1, bestaetigt:0, sonstige:0 },
-    "HKP KFO neu (3502)": { sicher:1, unsicher:1, nicht:0, korrigiert:1, bestaetigt:0, sonstige:0 },
   };
   return dokArten.map(d=>Object.assign({ dokArt:d }, base[d]));
 })();
@@ -1559,15 +1362,12 @@ function renderDpTable(){
   const colCount = 1 + DP_COLUMNS.filter(c=>dpColumnState[c.key]).length;
   document.getElementById("dp-body").innerHTML = rows.length ? rows.map(r=>{
     const vollst = dpEffectiveValue(r, "vollst");
-    const befuell = dpEffectiveValue(r, "befuell");
-    const erkennung = dpEffectiveValue(r, "erkennung");
     const cells = ['<td class="k-name">'+esc(r.feld)+'</td>'];
     if(dpColumnState.dokart) cells.push('<td class="k-quelle">'+esc(r.dokArt)+'</td>');
     if(dpColumnState.zielstatus) cells.push('<td>'+(r.zielstatus?'<span class="badge info"><span class="dot"></span>'+esc(r.zielstatus)+'</span>':'<span class="k-quelle">—</span>')+'</td>');
     if(dpColumnState.zeilentyp) cells.push('<td>'+(r.zeilentyp?'<span class="badge info"><span class="dot"></span>'+esc(r.zeilentyp)+' · '+esc(ZEILENTYP_LABEL[r.zeilentyp])+'</span>':'<span class="k-quelle">—</span>')+'</td>');
     if(dpColumnState.vollst) cells.push('<td><button type="button" class="qsl-trigger" data-rowid="'+esc(r.id)+'" title="QSL-Verteilung anzeigen">'+bar(vollst)+icon("pie")+'</button></td>');
-    if(dpColumnState.befuell) cells.push('<td>'+bar(befuell)+'</td>');
-    if(dpColumnState.erkennung) cells.push('<td>'+bar(erkennung)+'</td>');
+    if(dpColumnState.anzahl) cells.push('<td class="mono">'+r.n.toLocaleString("de-DE")+'</td>');
     return '<tr>'+cells.join("")+'</tr>';
   }).join("") : '<tr><td colspan="'+colCount+'" class="cell-empty">'+emptyMsg+'</td></tr>';
   document.querySelectorAll("#dp-body .qsl-trigger").forEach(btn=>{
@@ -1870,7 +1670,6 @@ function renderSdTable(){
       '<td class="mono">'+esc(r.belegId)+'</td>'+
       '<td class="k-quelle">'+esc(r.dokArt)+'</td>'+
       '<td class="k-name">'+esc(r.feld)+'</td>'+
-      '<td>'+reqBadge(r.emReq)+'</td>'+
       '<td>'+reqBadge(r.smileReq)+'</td>'+
       '<td><span class="qsl-swatch" style="background:var(--qsl-'+qslSlot(r.qsl)+'); display:inline-block; vertical-align:-1px; margin-right:6px;"></span>'+esc(qslLabel(r.qsl))+'</td>'+
       '<td>'+esc(r.pool)+'</td>'+
@@ -1879,7 +1678,7 @@ function renderSdTable(){
       '<td class="k-quelle">'+esc(r.typ)+'</td>'+
       '<td class="mono">'+esc(r.zeit)+'</td>'+
     '</tr>'
-  ).join("") : '<tr><td colspan="11" class="cell-empty">Keine Datenfelder in dieser Auswahl.</td></tr>';
+  ).join("") : '<tr><td colspan="10" class="cell-empty">Keine Datenfelder in dieser Auswahl.</td></tr>';
 }
 function renderSmileDelta(){ renderSdKpi(); renderSqOverview(); renderSqMatrix(); renderSdTable(); }
 
