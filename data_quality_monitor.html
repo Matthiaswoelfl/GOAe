@@ -414,6 +414,61 @@
             <div class="dp-sidebar-head">Filter</div>
             <p class="dp-sidebar-intro">Diese Filter wirken auf MVP1 und MVP2. Ausnahme: Datenpool-Stand (Datum) nur bei MVP2 — MVP1 hat dafür die eigene Tagesscheiben-/Monatssicht.</p>
           </div>
+
+          <div class="dp-sidebar-section" id="mvp1-sidebar-extra">
+            <div class="filters">
+              <span class="filter-dim-label">Zeitraum</span>
+              <div class="filter-group" id="beleg-agg-zeitraum-modus">
+                <button class="filter-chip" type="button" data-modus="tag" data-active="true">Tagesscheibe</button>
+                <button class="filter-chip" type="button" data-modus="monat">Monat (Management)</button>
+              </div>
+              <input type="date" id="beleg-agg-tag-input" class="filter-date-input">
+              <select id="beleg-agg-monat-input" class="filter-date-input" hidden></select>
+              <button class="filter-chip" type="button" id="beleg-agg-tag-today">Heute</button>
+            </div>
+            <p class="subhead-sub dp-ziffer-hint" id="beleg-agg-zeitraum-hint"></p>
+          </div>
+
+          <div class="dp-sidebar-section" id="mvp2-sidebar-extra" hidden>
+            <div class="filters">
+              <span class="filter-dim-label">AV-Zielstatus</span>
+              <div class="filter-group" id="dp-zielstatus-filter">
+                <button class="filter-chip" type="button" data-ziel="alle" data-active="true">Alle</button>
+                <button class="filter-chip" type="button" data-ziel="M">M</button>
+                <button class="filter-chip" type="button" data-ziel="K">K</button>
+                <button class="filter-chip" type="button" data-ziel="K**">K**</button>
+                <button class="filter-chip" type="button" data-ziel="MbA">MbA</button>
+                <button class="filter-chip" type="button" data-ziel="SWH">SWH</button>
+                <button class="filter-chip" type="button" data-ziel="TM">TM</button>
+                <button class="filter-chip" type="button" data-ziel="P">P</button>
+              </div>
+            </div>
+            <p class="subhead-sub dp-ziffer-hint">AV-Zielstatus ist auf Belegebene (MVP1) nicht anwendbar (felderspezifisch) und wirkt daher nur hier auf MVP2.</p>
+            <div class="filters">
+              <span class="filter-dim-label">Datenpool-Stand</span>
+              <div class="filter-group filter-group--date">
+                <input type="date" id="dp-date-input" class="filter-date-input">
+                <button class="filter-chip" type="button" id="dp-date-today">Heute</button>
+              </div>
+              <span class="filter-count" id="dp-count"></span>
+            </div>
+            <p class="subhead-sub dp-ziffer-hint">Kumulativer Stichtag: zeigt alle Datenfelder, die bis zu diesem Datum im Datenpool verfügbar waren (wächst mit der Zeit) — anders als die Tagesscheibe/Monatssicht bei MVP1, die nicht-kumulativ genau den gewählten Zeitraum zeigt.</p>
+            <div class="filters">
+              <span class="filter-dim-label">GO-Ziffer-Suche</span>
+              <input class="filter-search" id="dp-ziffer-search" type="search" placeholder="z. B. 1200 (Sonographie)…">
+              <div class="filter-group" id="dp-ziffer-sicht-toggle">
+                <button class="filter-chip" type="button" data-sicht="zeile" data-active="true">Zeilen-Sicht</button>
+                <button class="filter-chip" type="button" data-sicht="beleg">Beleg-Sicht</button>
+              </div>
+            </div>
+            <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht unten aus. Zeilen-Sicht: je Dok.-Art eine Zeile mit den Auswertungen der GO-Zeile selbst. Beleg-Sicht: Beispiel-Belege, die diese Ziffer enthalten, mit der Vollständigkeit des jeweils gesamten Belegs. Wirkt nicht auf die Beleg-Qualität-Zwischenebene (MVP1).</p>
+            <div class="filters">
+              <span class="filter-dim-label">VNR-Suche</span>
+              <input class="filter-search" id="dp-vnr-search" type="search" placeholder="Versicherungsnummer eingeben, z. B. 552310-9…">
+            </div>
+            <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht unten aus und zeigt stattdessen alle im Datenpool vorliegenden eingereichten Belege dieser VNR mit ihren jeweiligen Datenfeld-Auswertungen (geht Dok.-Art- und GO-Ziffer-Suche vor). Wirkt nicht auf die Beleg-Qualität-Zwischenebene (MVP1).</p>
+          </div>
+
           <div class="dp-sidebar-section">
             <div class="filters">
               <span class="filter-dim-label">Dok.-Art</span>
@@ -468,60 +523,6 @@
               </div>
             </div>
             <p class="subhead-sub dp-ziffer-hint">ISH/Padline ist ein Verarbeitungsverfahren, kein Eingangskanal — kann in jedem Kanal auftreten.</p>
-          </div>
-
-          <div class="dp-sidebar-section" id="mvp1-sidebar-extra">
-            <div class="filters">
-              <span class="filter-dim-label">Zeitraum</span>
-              <div class="filter-group" id="beleg-agg-zeitraum-modus">
-                <button class="filter-chip" type="button" data-modus="tag" data-active="true">Tagesscheibe</button>
-                <button class="filter-chip" type="button" data-modus="monat">Monat (Management)</button>
-              </div>
-              <input type="date" id="beleg-agg-tag-input" class="filter-date-input">
-              <select id="beleg-agg-monat-input" class="filter-date-input" hidden></select>
-              <button class="filter-chip" type="button" id="beleg-agg-tag-today">Heute</button>
-            </div>
-            <p class="subhead-sub dp-ziffer-hint" id="beleg-agg-zeitraum-hint"></p>
-          </div>
-
-          <div class="dp-sidebar-section" id="mvp2-sidebar-extra" hidden>
-            <div class="filters">
-              <span class="filter-dim-label">AV-Zielstatus</span>
-              <div class="filter-group" id="dp-zielstatus-filter">
-                <button class="filter-chip" type="button" data-ziel="alle" data-active="true">Alle</button>
-                <button class="filter-chip" type="button" data-ziel="M">M</button>
-                <button class="filter-chip" type="button" data-ziel="K">K</button>
-                <button class="filter-chip" type="button" data-ziel="K**">K**</button>
-                <button class="filter-chip" type="button" data-ziel="MbA">MbA</button>
-                <button class="filter-chip" type="button" data-ziel="SWH">SWH</button>
-                <button class="filter-chip" type="button" data-ziel="TM">TM</button>
-                <button class="filter-chip" type="button" data-ziel="P">P</button>
-              </div>
-            </div>
-            <p class="subhead-sub dp-ziffer-hint">AV-Zielstatus ist auf Belegebene (MVP1) nicht anwendbar (felderspezifisch) und wirkt daher nur hier auf MVP2.</p>
-            <div class="filters">
-              <span class="filter-dim-label">Datenpool-Stand</span>
-              <div class="filter-group filter-group--date">
-                <input type="date" id="dp-date-input" class="filter-date-input">
-                <button class="filter-chip" type="button" id="dp-date-today">Heute</button>
-              </div>
-              <span class="filter-count" id="dp-count"></span>
-            </div>
-            <p class="subhead-sub dp-ziffer-hint">Kumulativer Stichtag: zeigt alle Datenfelder, die bis zu diesem Datum im Datenpool verfügbar waren (wächst mit der Zeit) — anders als die Tagesscheibe/Monatssicht bei MVP1, die nicht-kumulativ genau den gewählten Zeitraum zeigt.</p>
-            <div class="filters">
-              <span class="filter-dim-label">GO-Ziffer-Suche</span>
-              <input class="filter-search" id="dp-ziffer-search" type="search" placeholder="z. B. 1200 (Sonographie)…">
-              <div class="filter-group" id="dp-ziffer-sicht-toggle">
-                <button class="filter-chip" type="button" data-sicht="zeile" data-active="true">Zeilen-Sicht</button>
-                <button class="filter-chip" type="button" data-sicht="beleg">Beleg-Sicht</button>
-              </div>
-            </div>
-            <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht unten aus. Zeilen-Sicht: je Dok.-Art eine Zeile mit den Auswertungen der GO-Zeile selbst. Beleg-Sicht: Beispiel-Belege, die diese Ziffer enthalten, mit der Vollständigkeit des jeweils gesamten Belegs. Wirkt nicht auf die Beleg-Qualität-Zwischenebene (MVP1).</p>
-            <div class="filters">
-              <span class="filter-dim-label">VNR-Suche</span>
-              <input class="filter-search" id="dp-vnr-search" type="search" placeholder="Versicherungsnummer eingeben, z. B. 552310-9…">
-            </div>
-            <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht unten aus und zeigt stattdessen alle im Datenpool vorliegenden eingereichten Belege dieser VNR mit ihren jeweiligen Datenfeld-Auswertungen (geht Dok.-Art- und GO-Ziffer-Suche vor). Wirkt nicht auf die Beleg-Qualität-Zwischenebene (MVP1).</p>
           </div>
         </aside>
 
