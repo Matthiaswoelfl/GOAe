@@ -384,7 +384,7 @@
       <div class="subhead-row">
         <div class="subhead">Filter</div>
       </div>
-      <p class="subhead-sub">Diese Filter wirken sowohl auf die Beleg-Qualität (MVP1) als auch auf das Datenpool-Dashboard je Datenfeld (MVP2).</p>
+      <p class="subhead-sub">Diese Filter wirken sowohl auf die Beleg-Qualität (MVP1) als auch auf das Datenpool-Dashboard je Datenfeld (MVP2). Ausnahme: Datenpool-Stand (Datum) ist weiter unten bei MVP2 zu finden — MVP1 hat dafür eine eigene Tagesscheiben-/Monatssicht (siehe dort).</p>
       <div class="filters">
         <span class="filter-dim-label">Dok.-Art</span>
         <div class="filter-group" id="dp-dokart-filter">
@@ -415,14 +415,6 @@
         </div>
       </div>
       <div class="filters">
-        <span class="filter-dim-label">Datenpool-Stand</span>
-        <div class="filter-group filter-group--date">
-          <input type="date" id="dp-date-input" class="filter-date-input">
-          <button class="filter-chip" type="button" id="dp-date-today">Heute</button>
-        </div>
-        <span class="filter-count" id="dp-count"></span>
-      </div>
-      <div class="filters">
         <span class="filter-dim-label">Eingangskanal (Medium_Sub_Typ)</span>
         <div class="filter-group" id="dp-kanal-filter">
           <button class="filter-chip" type="button" data-kanal="alle" data-active="true">Alle Kanäle</button>
@@ -447,7 +439,18 @@
         <div class="subhead-row">
           <div class="subhead">Beleg-Qualität — aggregierte Zwischenebene</div>
         </div>
-        <p class="subhead-sub">Zwischenebene zwischen Einzelfeldern und den Filterattributen: macht eine <b>absolute</b> Aussage zur Datenqualität je Beleg (nicht nur Prozent-Durchschnitt über Felder) und ist der Einstieg in die Ursachenanalyse. Beispiel-Stichprobe von <span id="beleg-agg-size"></span> Belegen — reagiert auf die Filter oben: Dok.-Art, Zeilentyp und Datenpool-Stand grenzen die betrachteten Belege ein; Eingangskanal und Verarbeitungsverfahren (ISH/Padline) wirken zusätzlich auf die Vollständigkeit je Beleg und können dadurch auch die Vollständig-Quote verschieben. Klick auf die Vollständigkeit je Beleg öffnet die QSL-Verteilung inkl. Qualitätsschlüssel.</p>
+        <p class="subhead-sub">Zwischenebene zwischen Einzelfeldern und den Filterattributen: macht eine <b>absolute</b> Aussage zur Datenqualität je Beleg (nicht nur Prozent-Durchschnitt über Felder) und ist der Einstieg in die Ursachenanalyse. Kopfzahl und KPIs unten zeigen die Gesamtmenge für den gewählten Zeitraum (Tagesscheibe oder Monat) — unabhängig von Dok.-Art-/Kanal-Filtern, für eine stabile Management-Kennzahl. Die Beispiel-Stichprobe darunter (max. 50 von <span id="beleg-agg-size"></span> Belegen) reagiert zusätzlich auf Dok.-Art, Zeilentyp sowie Eingangskanal/Verarbeitungsverfahren (ISH/Padline). Klick auf die Vollständigkeit je Beleg öffnet die QSL-Verteilung inkl. Qualitätsschlüssel.</p>
+        <div class="filters">
+          <span class="filter-dim-label">Zeitraum</span>
+          <div class="filter-group" id="beleg-agg-zeitraum-modus">
+            <button class="filter-chip" type="button" data-modus="tag" data-active="true">Tagesscheibe</button>
+            <button class="filter-chip" type="button" data-modus="monat">Monat (Management)</button>
+          </div>
+          <input type="date" id="beleg-agg-tag-input" class="filter-date-input">
+          <input type="month" id="beleg-agg-monat-input" class="filter-date-input" hidden>
+          <button class="filter-chip" type="button" id="beleg-agg-tag-today">Heute</button>
+        </div>
+        <p class="subhead-sub dp-ziffer-hint" id="beleg-agg-zeitraum-hint"></p>
         <div class="beleg-agg-headline" id="beleg-agg-headline"></div>
         <div class="kpi-row" id="beleg-agg-kpi"></div>
         <div class="filters">
@@ -481,6 +484,15 @@
           </div>
         </div>
         <p class="subhead-sub dp-ziffer-hint">AV-Zielstatus ist auf Belegebene (MVP1) nicht anwendbar (felderspezifisch) und wirkt daher nur hier auf MVP2.</p>
+        <div class="filters">
+          <span class="filter-dim-label">Datenpool-Stand</span>
+          <div class="filter-group filter-group--date">
+            <input type="date" id="dp-date-input" class="filter-date-input">
+            <button class="filter-chip" type="button" id="dp-date-today">Heute</button>
+          </div>
+          <span class="filter-count" id="dp-count"></span>
+        </div>
+        <p class="subhead-sub dp-ziffer-hint">Kumulativer Stichtag: zeigt alle Datenfelder, die bis zu diesem Datum im Datenpool verfügbar waren (wächst mit der Zeit) — anders als die Tagesscheibe/Monatssicht bei MVP1, die nicht-kumulativ genau den gewählten Zeitraum zeigt.</p>
 
         <div class="subhead-row">
           <div class="subhead">Datenpool-Dashboard je Datenfeld</div>
@@ -1018,6 +1030,10 @@ function buildGoZifferBelegRows(matches){
    (Drilldown auf die unvollständigen Belege, inkl. vermutetem Grund) zur Ursachenanalyse.
    Deterministisch generierte Beispiel-Stichprobe, kein Live-Abgleich mit dem Datenpool. */
 const BELEG_POOL_SIZE = 1000;
+/* Zeitfenster, über das sich die Lieferdaten der 1.000 Beispiel-Belege verteilen — bewusst auf
+   knapp 2 Jahre verbreitert, damit die Tagesscheibe/Monatssicht (siehe weiter unten) für die
+   allermeisten wählbaren Zeiträume auch ein paar Beispiel-Belege zur Veranschaulichung findet. */
+const BELEG_POOL_OFF_MAX_DAYS = 729;
 const BELEG_AGG_GRUENDE = [
   "Pflichtfeld „Diagnosetext“ nicht befüllt",
   "GOÄ-Ziffer nicht eindeutig erkannt (ICR unsicher)",
@@ -1070,7 +1086,7 @@ const BELEG_POOL = (function(){
     const seed = "belegpool|"+i;
     const h = salt => dpZifferHash(seed+"|"+salt);
     const dok = DP_DOKARTEN[h("dok")%DP_DOKARTEN.length];
-    const off = h("off")%120;
+    const off = h("off")%(BELEG_POOL_OFF_MAX_DAYS+1);
     const feldAnzahl = DP_DOKART_FELDANZAHL[dok.code];
     const completeRoll = h("complete")%100;
     const vollstIncomplete = Math.round((60 + (h("v")%3500)/100)*10)/10;
@@ -1107,7 +1123,8 @@ function getFilteredBelegPool(){
   let rows = BELEG_POOL;
   if(activeDpDokArt!=="alle") rows = rows.filter(r=>r.dokArt===activeDpDokArt);
   if(activeDpZeilentyp!=="alle") rows = rows.filter(r=>r.zeilentypen.includes(activeDpZeilentyp));
-  rows = rows.filter(r=>dpRowLieferdatum(r)<=activeDpDate);
+  if(activeBelegZeitraumModus==="monat") rows = rows.filter(r=>dpRowLieferdatum(r).slice(0,7)===activeBelegMonat);
+  else rows = rows.filter(r=>dpRowLieferdatum(r)===activeBelegTag);
   return rows;
 }
 /* Kanal-/ISH-Modifikatoren (vollst-Komponente) verschieben die Vollständigkeits-Basisquote von
@@ -1177,6 +1194,45 @@ function fmtDateDe(iso){
   return parts.length===3 ? parts[2]+"."+parts[1]+"."+parts[0] : iso;
 }
 let activeDpDate = dpIsoToday();
+
+/* ---------- Tagesscheibe / Monatssicht (MVP1, Management-Kennzahl) ----------
+   Nicht-kumulativ: zeigt je Kalendertag, wie viele Belege an GENAU DIESEM Tag in den
+   Datenpool geschrieben wurden (nicht: wie viele insgesamt bis zu diesem Tag vorlagen).
+   Rein hash-basiert auf dem Datum selbst — kein Trend über die Zeit —, damit ein Tag in der
+   Vergangenheit durchaus mehr Belege zeigen kann als ein jüngerer Tag (reales Tagesgeschäft
+   schwankt, u. a. Wochenende vs. Werktag, Monatsanfang/-ende o. Ä., nicht streng monoton). */
+let activeBelegZeitraumModus = "tag";
+let activeBelegTag = dpIsoToday();
+let activeBelegMonat = dpIsoToday().slice(0,7);
+const DP_AVG_FELDANZAHL = DP_DOKARTEN.reduce((s,d)=>s+d.n*DP_DOKART_FELDANZAHL[d.code],0) / DP_DOKARTEN.reduce((s,d)=>s+d.n,0);
+const BELEG_AGG_FEHLEND_RATIO_INCOMPLETE = 0.225; // Mittelwert der 60–95%-Befüllungsspanne unvollständiger Belege
+function dpDailyStats(dateIso){
+  const h = salt => dpZifferHash("tagesscheibe|"+dateIso+"|"+salt);
+  const dow = new Date(dateIso+"T00:00:00").getDay();
+  const isWeekend = dow===0 || dow===6;
+  const total = isWeekend ? 250 + (h("vol")%900) : 1200 + (h("vol")%3300);
+  const quote = Math.max(72, Math.min(97, 84 + (h("q")%1300)/100 - 6.5));
+  const vollstaendig = Math.round(total*quote/100);
+  return { total, vollstaendig, quote: Math.round(quote*10)/10 };
+}
+function dpMonthlyStats(yearMonth){
+  const [y,m] = yearMonth.split("-").map(Number);
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const today = dpIsoToday();
+  let total=0, vollstaendig=0;
+  for(let d=1; d<=daysInMonth; d++){
+    const iso = yearMonth+"-"+String(d).padStart(2,"0");
+    if(iso>today) continue;
+    const s = dpDailyStats(iso);
+    total += s.total; vollstaendig += s.vollstaendig;
+  }
+  return { total, vollstaendig, quote: total ? Math.round(vollstaendig/total*1000)/10 : 0 };
+}
+function fmtMonatDe(yearMonth){
+  const MONATE = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+  const [y,m] = yearMonth.split("-").map(Number);
+  return MONATE[m-1]+" "+y;
+}
 
 const AV_ZIELSTATUS_ORDER = ["M","K","K**","MbA","SWH","TM","P"];
 
@@ -1523,31 +1579,30 @@ document.addEventListener("keydown", e=>{
 
 function renderBelegAgg(){
   document.getElementById("beleg-agg-size").textContent = BELEG_POOL_SIZE.toLocaleString("de-DE");
-  const rows = getFilteredBelegPool();
-  const vollstaendig = rows.filter(r=>belegAggIstVollstaendig(r));
-  const quote = rows.length ? (vollstaendig.length/rows.length*100) : 0;
-  const dokNote = activeDpDokArt==="alle" ? "" : " · "+activeDpDokArt;
-  const zeilentypNote = activeDpZeilentyp==="alle" ? "" : " · Zeilentyp: "+activeDpZeilentyp+" · "+ZEILENTYP_LABEL[activeDpZeilentyp];
-  const kanalNote = activeDpKanal==="alle" ? "" : " · "+DP_KANAL_LABEL[activeDpKanal];
-  const ishNote = activeDpIsh==="alle" ? "" : " · "+DP_ISH_LABEL[activeDpIsh];
+  const isMonat = activeBelegZeitraumModus==="monat";
+  const stats = isMonat ? dpMonthlyStats(activeBelegMonat) : dpDailyStats(activeBelegTag);
+  const periodLabel = isMonat ? "im "+fmtMonatDe(activeBelegMonat) : "am "+fmtDateDe(activeBelegTag);
+  document.getElementById("beleg-agg-zeitraum-hint").textContent = isMonat
+    ? "Monatssicht (kumuliert über den Monat): zeigt alle Belege, die im gewählten Monat in den Datenpool geschrieben wurden — für die Management-Übersicht."
+    : "Tagesscheibe (nicht kumulativ): zeigt ausschließlich die Belege, die genau an diesem Tag in den Datenpool geschrieben wurden — nicht die kumulierte Gesamtmenge bis zu diesem Tag. Ein zurückliegender Tag kann daher einen höheren Wert zeigen als ein jüngerer.";
 
-  document.getElementById("beleg-agg-headline").innerHTML = rows.length
-    ? '<span class="num">'+quote.toFixed(1).replace(".",",")+' %</span>'+
-      '<span class="sub">vollständig — '+vollstaendig.length.toLocaleString("de-DE")+' von '+rows.length.toLocaleString("de-DE")+' betrachteten Belegen'+dokNote+zeilentypNote+kanalNote+ishNote+'</span>'
-    : '<span class="sub">Keine Belege in dieser Auswahl.</span>';
+  document.getElementById("beleg-agg-headline").innerHTML = stats.total
+    ? '<span class="num">'+stats.quote.toFixed(1).replace(".",",")+' %</span>'+
+      '<span class="sub">vollständig — '+stats.vollstaendig.toLocaleString("de-DE")+' von '+stats.total.toLocaleString("de-DE")+' Belegen '+periodLabel+'</span>'
+    : '<span class="sub">Keine Belege '+periodLabel+'.</span>';
 
-  const avgBefuellt = rows.length ? rows.reduce((s,r)=>s+(r.feldAnzahl-belegAggEffectiveFehlend(r)),0)/rows.length : 0;
-  const avgFehlend = rows.length ? rows.reduce((s,r)=>s+belegAggEffectiveFehlend(r),0)/rows.length : 0;
-  const unvollstCount = rows.length-vollstaendig.length;
+  const unvollstCount = stats.total - stats.vollstaendig;
+  const avgFehlend = DP_AVG_FELDANZAHL * BELEG_AGG_FEHLEND_RATIO_INCOMPLETE * (stats.total ? unvollstCount/stats.total : 0);
+  const avgBefuellt = DP_AVG_FELDANZAHL - avgFehlend;
   document.getElementById("beleg-agg-kpi").innerHTML = [
-    ['Belege betrachtet', rows.length.toLocaleString("de-DE"), "info", false],
-    ['Davon vollständig', vollstaendig.length.toLocaleString("de-DE"), "ok", false],
+    ['Belege gesamt '+(isMonat?'(Monat)':'(Tag)'), stats.total.toLocaleString("de-DE"), "info", false],
+    ['Davon vollständig', stats.vollstaendig.toLocaleString("de-DE"), "ok", false],
     ['Belege mit fehlendem Pflichtfeld', unvollstCount.toLocaleString("de-DE"), unvollstCount?"crit":"ok", true],
     ['Ø befüllte Felder je Beleg', avgBefuellt.toFixed(1).replace(".",","), "ok", false],
     ['Ø fehlende Felder je Beleg', avgFehlend.toFixed(1).replace(".",","), avgFehlend>0?"warn":"ok", false],
   ].map(([l,v,c,clickable])=>
     clickable
-      ? '<button type="button" class="kpi-tile kpi-tile--click" id="beleg-agg-drill-btn" title="Klicken für Sicht 2: nur unvollständige Belege"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></button>'
+      ? '<button type="button" class="kpi-tile kpi-tile--click" id="beleg-agg-drill-btn" title="Klicken für Sicht 2: Beispiel-Belege mit fehlendem Pflichtfeld"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></button>'
       : '<div class="kpi-tile"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></div>'
   ).join("");
   const drillBtn = document.getElementById("beleg-agg-drill-btn");
@@ -1557,9 +1612,10 @@ function renderBelegAgg(){
     renderBelegAgg();
   });
 
+  const rows = getFilteredBelegPool();
   const sichtRows = activeBelegAggSicht==="unvollstaendig" ? rows.filter(r=>!belegAggIstVollstaendig(r)) : rows;
   const shown = sichtRows.slice(0, 50);
-  document.getElementById("beleg-agg-count").textContent = sichtRows.length.toLocaleString("de-DE")+" Beleg(e)"+(sichtRows.length>50 ? " · Anzeige auf 50 begrenzt (Beispiel-Ausschnitt)" : "");
+  document.getElementById("beleg-agg-count").textContent = sichtRows.length.toLocaleString("de-DE")+" Beispiel-Beleg(e) "+periodLabel+" in der Stichprobe"+(sichtRows.length>50 ? " · Anzeige auf 50 begrenzt" : "");
   document.getElementById("beleg-agg-body").innerHTML = shown.length ? shown.map(r=>{
     const vollst = belegAggEffectiveVollst(r);
     const anzahlFehlend = belegAggEffectiveFehlend(r);
@@ -1572,7 +1628,7 @@ function renderBelegAgg(){
       '<td><div class="beleg-agg-zt">'+r.zeilentypen.map(zt=>'<span class="badge info badge--sm">'+esc(zt)+'</span>').join("")+'</div></td>'+
       '<td class="beleg-agg-reason">'+(grundText ? esc(grundText) : '—')+'</td>'+
     '</tr>';
-  }).join("") : '<tr><td colspan="6" class="cell-empty">Keine Belege in dieser Auswahl.</td></tr>';
+  }).join("") : '<tr><td colspan="6" class="cell-empty">Keine Beispiel-Belege '+periodLabel+' in der 1.000er-Stichprobe — die Kennzahlen oben basieren auf einer separaten Tagesscheiben-/Monatsschätzung, unabhängig von der Stichprobengröße. Anderen Tag/Monat oder die Monatssicht wählen, um Beispiel-Belege zu sehen.</td></tr>';
   document.querySelectorAll("#beleg-agg-body .qsl-trigger").forEach(btn=>{
     btn.addEventListener("click", ()=>openQslModalBeleg(btn.dataset.rowid));
   });
@@ -1721,12 +1777,43 @@ dpDateInput.value = activeDpDate;
 dpDateInput.max = dpIsoToday();
 dpDateInput.addEventListener("change", ()=>{
   activeDpDate = dpDateInput.value || dpIsoToday();
-  renderBelegAgg(); renderDpTable();
+  renderDpTable();
 });
 document.getElementById("dp-date-today").addEventListener("click", ()=>{
   activeDpDate = dpIsoToday();
   dpDateInput.value = activeDpDate;
-  renderBelegAgg(); renderDpTable();
+  renderDpTable();
+});
+document.querySelectorAll("#beleg-agg-zeitraum-modus .filter-chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    activeBelegZeitraumModus = chip.dataset.modus;
+    document.querySelectorAll("#beleg-agg-zeitraum-modus .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
+    document.getElementById("beleg-agg-tag-input").hidden = (activeBelegZeitraumModus!=="tag");
+    document.getElementById("beleg-agg-tag-today").hidden = (activeBelegZeitraumModus!=="tag");
+    document.getElementById("beleg-agg-monat-input").hidden = (activeBelegZeitraumModus!=="monat");
+    renderBelegAgg();
+  });
+});
+const belegAggTagInput = document.getElementById("beleg-agg-tag-input");
+belegAggTagInput.value = activeBelegTag;
+belegAggTagInput.max = dpIsoToday();
+belegAggTagInput.min = dpIsoMinusDays(BELEG_POOL_OFF_MAX_DAYS);
+belegAggTagInput.addEventListener("change", ()=>{
+  activeBelegTag = belegAggTagInput.value || dpIsoToday();
+  renderBelegAgg();
+});
+document.getElementById("beleg-agg-tag-today").addEventListener("click", ()=>{
+  activeBelegTag = dpIsoToday();
+  belegAggTagInput.value = activeBelegTag;
+  renderBelegAgg();
+});
+const belegAggMonatInput = document.getElementById("beleg-agg-monat-input");
+belegAggMonatInput.value = activeBelegMonat;
+belegAggMonatInput.max = dpIsoToday().slice(0,7);
+belegAggMonatInput.min = dpIsoMinusDays(BELEG_POOL_OFF_MAX_DAYS).slice(0,7);
+belegAggMonatInput.addEventListener("change", ()=>{
+  activeBelegMonat = belegAggMonatInput.value || dpIsoToday().slice(0,7);
+  renderBelegAgg();
 });
 document.getElementById("dp-kanal-filter").querySelectorAll(".filter-chip").forEach(chip=>{
   chip.addEventListener("click", ()=>{
