@@ -439,7 +439,7 @@
         <div class="subhead-row">
           <div class="subhead">Beleg-Qualität — aggregierte Zwischenebene</div>
         </div>
-        <p class="subhead-sub">Zwischenebene zwischen Einzelfeldern und den Filterattributen: macht eine <b>absolute</b> Aussage zur Datenqualität je Beleg (nicht nur Prozent-Durchschnitt über Felder) und ist der Einstieg in die Ursachenanalyse. Kopfzahl und KPIs unten zeigen die Gesamtmenge für den gewählten Zeitraum (Tagesscheibe oder Monat) — unabhängig von Dok.-Art-/Kanal-Filtern, für eine stabile Management-Kennzahl. Die Beispiel-Stichprobe darunter (max. 50 von <span id="beleg-agg-size"></span> Belegen) reagiert zusätzlich auf Dok.-Art, Zeilentyp sowie Eingangskanal/Verarbeitungsverfahren (ISH/Padline). Klick auf die Vollständigkeit je Beleg öffnet die QSL-Verteilung inkl. Qualitätsschlüssel.</p>
+        <p class="subhead-sub">Zwischenebene zwischen Einzelfeldern und den Filterattributen: macht eine <b>absolute</b> Aussage zur Datenqualität je Beleg (nicht nur Prozent-Durchschnitt über Felder) und ist der Einstieg in die Ursachenanalyse. Kopfzahl und KPIs unten zeigen die Gesamtmenge für den gewählten Zeitraum (Tagesscheibe oder Monat) — unabhängig von Dok.-Art-/Kanal-Filtern, für eine stabile Management-Kennzahl. Die Beispiel-Belege darunter zeigen für jeden Tag mindestens 40 Belege (je 20 vollständig/unvollständig je Dok.-Art, Anzeige auf 50 begrenzt) und reagieren zusätzlich auf Dok.-Art, Zeilentyp sowie Eingangskanal/Verarbeitungsverfahren (ISH/Padline). Klick auf die Vollständigkeit je Beleg öffnet die QSL-Verteilung inkl. Qualitätsschlüssel.</p>
         <div class="filters">
           <span class="filter-dim-label">Zeitraum</span>
           <div class="filter-group" id="beleg-agg-zeitraum-modus">
@@ -447,7 +447,7 @@
             <button class="filter-chip" type="button" data-modus="monat">Monat (Management)</button>
           </div>
           <input type="date" id="beleg-agg-tag-input" class="filter-date-input">
-          <input type="month" id="beleg-agg-monat-input" class="filter-date-input" hidden>
+          <select id="beleg-agg-monat-input" class="filter-date-input" hidden></select>
           <button class="filter-chip" type="button" id="beleg-agg-tag-today">Heute</button>
         </div>
         <p class="subhead-sub dp-ziffer-hint" id="beleg-agg-zeitraum-hint"></p>
@@ -970,7 +970,7 @@ function dpGenerateMetrics(seed){
 /* Je Dok.-Art plausible Zeilentyp-Kandidaten für GO-Ziffer-Treffer. Deckt alle
    "regulären" Zeilentypen ab (7 Wegegeld/8 Auslage/14 GEBÜH/22 Differenzbetrag inklusive) —
    die beiden Fehlerfall-Typen 20 (unbekannte Ziffer) und 21 (fehlende Ziffer) ergeben sich
-   erst auf Belegebene (siehe BELEG_POOL weiter unten), da eine GO-Ziffer-Suche per Definition
+   erst auf Belegebene (siehe buildBelegAggDayRows weiter unten), da eine GO-Ziffer-Suche per Definition
    eine bekannte Ziffer trifft. */
 const DP_DOKART_ZEILENTYP_POOL = {
   "3552":["1","2","3","4","5","7","8","14"], "3549":["1","2","3","4","5","7","8","14","22"],
@@ -1028,12 +1028,17 @@ function buildGoZifferBelegRows(matches){
    (Workshop-Feedback). Liefert eine ABSOLUTE Aussage zur Datenqualität je Beleg statt nur
    Prozent-Durchschnitte über Felder — Grundlage für Sicht 1 (Gesamtquote) und Sicht 2
    (Drilldown auf die unvollständigen Belege, inkl. vermutetem Grund) zur Ursachenanalyse.
-   Deterministisch generierte Beispiel-Stichprobe, kein Live-Abgleich mit dem Datenpool. */
-const BELEG_POOL_SIZE = 1000;
-/* Zeitfenster, über das sich die Lieferdaten der 1.000 Beispiel-Belege verteilen — bewusst auf
-   knapp 2 Jahre verbreitert, damit die Tagesscheibe/Monatssicht (siehe weiter unten) für die
-   allermeisten wählbaren Zeiträume auch ein paar Beispiel-Belege zur Veranschaulichung findet. */
-const BELEG_POOL_OFF_MAX_DAYS = 729;
+   Die Beispiel-Belege werden deterministisch je Kalendertag erzeugt (nicht aus einem fixen
+   Gesamt-Pool herausgefiltert, der an den meisten Tagen leer gewesen wäre) — so liefert JEDER
+   wählbare Tag dieselbe garantierte Mindestmenge an Beispiel-Belegen. Kein Live-Abgleich mit
+   dem Datenpool. */
+/* Zeitfenster für Tag-/Monatsauswahl — bewusst auf knapp 2 Jahre verbreitert. */
+const BELEG_AGG_LOOKBACK_DAYS = 729;
+/* Je Dok.-Art UND Vollständigkeits-Status (vollständig/unvollständig) werden pro Tag mindestens
+   so viele Beispiel-Belege erzeugt — macht insgesamt 4 × diesen Wert Belege je Tag (Standard: 80),
+   garantiert aber auch bei Filterung auf eine einzelne Dok.-Art mindestens 2 × diesen Wert
+   (Standard: 40) Beispiel-Belege, wie gewünscht. */
+const BELEG_AGG_SAMPLE_PER_BUCKET = 20;
 const BELEG_AGG_GRUENDE = [
   "Pflichtfeld „Diagnosetext“ nicht befüllt",
   "GOÄ-Ziffer nicht eindeutig erkannt (ICR unsicher)",
@@ -1080,51 +1085,73 @@ function belegQslDistribution(h, baseVollst){
   });
   return pct;
 }
-const BELEG_POOL = (function(){
-  const pool = [];
-  for(let i=0;i<BELEG_POOL_SIZE;i++){
-    const seed = "belegpool|"+i;
-    const h = salt => dpZifferHash(seed+"|"+salt);
-    const dok = DP_DOKARTEN[h("dok")%DP_DOKARTEN.length];
-    const off = h("off")%(BELEG_POOL_OFF_MAX_DAYS+1);
+/* Erzeugt für einen Kalendertag deterministisch 2 Dok.-Arten × 2 Vollständigkeits-Buckets ×
+   BELEG_AGG_SAMPLE_PER_BUCKET Beispiel-Belege (Standard: 80/Tag, davon garantiert 40 je
+   Dok.-Art bzw. 40 „vollständig“/40 „unvollständig“ bei Basisquote). Die Vollständigkeits-
+   Zuordnung bleibt wie bei allen Kanal-/ISH-sensitiven Kennzahlen über completeRoll +
+   belegAggEffectiveQuote() steuerbar: Bucket 0 erhält einen completeRoll sicher unterhalb,
+   Bucket 1 sicher oberhalb der 80%-Basisquote, sodass Kanal-/ISH-Modifikatoren (wenige
+   Prozentpunkte) die Zuordnung nicht umkippen. */
+function buildBelegAggDayRows(dateIso){
+  const rows = [];
+  DP_DOKARTEN.forEach(dok=>{
     const feldAnzahl = DP_DOKART_FELDANZAHL[dok.code];
-    const completeRoll = h("complete")%100;
-    const vollstIncomplete = Math.round((60 + (h("v")%3500)/100)*10)/10;
-    const anzahlFehlendIncomplete = Math.max(1, Math.round(feldAnzahl*(100-vollstIncomplete)/100));
-    const grundIncomplete = BELEG_AGG_GRUENDE[h("grund")%BELEG_AGG_GRUENDE.length];
-    const istVollstaendig = completeRoll < BELEG_POOL_BASIS_QUOTE;
-    const befuell = Math.max(50, Math.min(100, (istVollstaendig?100:vollstIncomplete) - (h("b")%300)/100));
-    const erkennung = Math.max(55, Math.min(100, (istVollstaendig?100:vollstIncomplete) + 1 - (h("e")%250)/100));
     const ztPool = DP_DOKART_ZEILENTYP_POOL[dok.code];
-    const ztCount = 1 + (h("ztc")%2);
-    const zeilentypen = [];
-    for(let k=0;k<ztCount;k++){
-      const zt = ztPool[h("zt"+k)%ztPool.length];
-      if(!zeilentypen.includes(zt)) zeilentypen.push(zt);
-    }
-    if(!istVollstaendig && h("fehlertyp")%3===0){
-      const fehlerZt = (h("fehlertyp2")%2===0) ? "20" : "21";
-      if(!zeilentypen.includes(fehlerZt)) zeilentypen.push(fehlerZt);
-    }
-    const qsl = belegQslDistribution(h, istVollstaendig?100:vollstIncomplete);
-    pool.push({
-      id:"belegpool-"+i,
-      belegId:"BLG-"+dpVnrPseudoDatum(off)+"-"+String(1000+(h("seq")%9000)),
-      dokArt:dok.label, off, feldAnzahl, completeRoll, istVollstaendig,
-      vollstIncomplete, anzahlFehlendIncomplete, grundIncomplete,
-      befuell:Math.round(befuell*10)/10, erkennung:Math.round(erkennung*10)/10,
-      zeilentypen, qsl,
+    [0,1].forEach(bucket=>{ // 0 = Basisquote "vollständig", 1 = Basisquote "unvollständig"
+      for(let i=0;i<BELEG_AGG_SAMPLE_PER_BUCKET;i++){
+        const seed = "belegagg|"+dateIso+"|"+dok.code+"|"+bucket+"|"+i;
+        const h = salt => dpZifferHash(seed+"|"+salt);
+        const completeRoll = bucket===0 ? (h("roll")%BELEG_POOL_BASIS_QUOTE) : (BELEG_POOL_BASIS_QUOTE + h("roll")%(100-BELEG_POOL_BASIS_QUOTE));
+        const vollstIncomplete = Math.round((60 + (h("v")%3500)/100)*10)/10;
+        const anzahlFehlendIncomplete = Math.max(1, Math.round(feldAnzahl*(100-vollstIncomplete)/100));
+        const grundIncomplete = BELEG_AGG_GRUENDE[h("grund")%BELEG_AGG_GRUENDE.length];
+        const baseVollstaendig = bucket===0;
+        const befuell = Math.max(50, Math.min(100, (baseVollstaendig?100:vollstIncomplete) - (h("b")%300)/100));
+        const erkennung = Math.max(55, Math.min(100, (baseVollstaendig?100:vollstIncomplete) + 1 - (h("e")%250)/100));
+        const ztCount = 1 + (h("ztc")%2);
+        const zeilentypen = [];
+        for(let k=0;k<ztCount;k++){
+          const zt = ztPool[h("zt"+k)%ztPool.length];
+          if(!zeilentypen.includes(zt)) zeilentypen.push(zt);
+        }
+        if(!baseVollstaendig && h("fehlertyp")%3===0){
+          const fehlerZt = (h("fehlertyp2")%2===0) ? "20" : "21";
+          if(!zeilentypen.includes(fehlerZt)) zeilentypen.push(fehlerZt);
+        }
+        const qsl = belegQslDistribution(h, baseVollstaendig?100:vollstIncomplete);
+        rows.push({
+          id:"belegagg-"+dateIso+"-"+dok.code+"-"+bucket+"-"+i,
+          belegId:"BLG-"+dateIso.split("-").join("")+"-"+String(1000+(h("seq")%9000)),
+          dokArt:dok.label, feldAnzahl, completeRoll,
+          vollstIncomplete, anzahlFehlendIncomplete, grundIncomplete,
+          befuell:Math.round(befuell*10)/10, erkennung:Math.round(erkennung*10)/10,
+          zeilentypen, qsl,
+        });
+      }
     });
-  }
-  return pool;
-})();
+  });
+  return rows;
+}
 let activeBelegAggSicht = "alle";
+function getBelegAggBaseRows(){
+  if(activeBelegZeitraumModus==="monat"){
+    const [y,m] = activeBelegMonat.split("-").map(Number);
+    const daysInMonth = new Date(y, m, 0).getDate();
+    const today = dpIsoToday();
+    let rows = [];
+    for(let d=1; d<=daysInMonth; d++){
+      const iso = activeBelegMonat+"-"+String(d).padStart(2,"0");
+      if(iso>today) continue;
+      rows = rows.concat(buildBelegAggDayRows(iso));
+    }
+    return rows;
+  }
+  return buildBelegAggDayRows(activeBelegTag);
+}
 function getFilteredBelegPool(){
-  let rows = BELEG_POOL;
+  let rows = getBelegAggBaseRows();
   if(activeDpDokArt!=="alle") rows = rows.filter(r=>r.dokArt===activeDpDokArt);
   if(activeDpZeilentyp!=="alle") rows = rows.filter(r=>r.zeilentypen.includes(activeDpZeilentyp));
-  if(activeBelegZeitraumModus==="monat") rows = rows.filter(r=>dpRowLieferdatum(r).slice(0,7)===activeBelegMonat);
-  else rows = rows.filter(r=>dpRowLieferdatum(r)===activeBelegTag);
   return rows;
 }
 /* Kanal-/ISH-Modifikatoren (vollst-Komponente) verschieben die Vollständigkeits-Basisquote von
@@ -1578,7 +1605,6 @@ document.addEventListener("keydown", e=>{
 });
 
 function renderBelegAgg(){
-  document.getElementById("beleg-agg-size").textContent = BELEG_POOL_SIZE.toLocaleString("de-DE");
   const isMonat = activeBelegZeitraumModus==="monat";
   const stats = isMonat ? dpMonthlyStats(activeBelegMonat) : dpDailyStats(activeBelegTag);
   const periodLabel = isMonat ? "im "+fmtMonatDe(activeBelegMonat) : "am "+fmtDateDe(activeBelegTag);
@@ -1628,7 +1654,7 @@ function renderBelegAgg(){
       '<td><div class="beleg-agg-zt">'+r.zeilentypen.map(zt=>'<span class="badge info badge--sm">'+esc(zt)+'</span>').join("")+'</div></td>'+
       '<td class="beleg-agg-reason">'+(grundText ? esc(grundText) : '—')+'</td>'+
     '</tr>';
-  }).join("") : '<tr><td colspan="6" class="cell-empty">Keine Beispiel-Belege '+periodLabel+' in der 1.000er-Stichprobe — die Kennzahlen oben basieren auf einer separaten Tagesscheiben-/Monatsschätzung, unabhängig von der Stichprobengröße. Anderen Tag/Monat oder die Monatssicht wählen, um Beispiel-Belege zu sehen.</td></tr>';
+  }).join("") : '<tr><td colspan="6" class="cell-empty">Keine Beispiel-Belege '+periodLabel+' für die aktuelle Dok.-Art-/Zeilentyp-Kombination — Dok.-Art- oder Zeilentyp-Filter lockern, um Beispiel-Belege zu sehen. Die Kennzahlen oben bleiben davon unberührt.</td></tr>';
   document.querySelectorAll("#beleg-agg-body .qsl-trigger").forEach(btn=>{
     btn.addEventListener("click", ()=>openQslModalBeleg(btn.dataset.rowid));
   });
@@ -1797,7 +1823,7 @@ document.querySelectorAll("#beleg-agg-zeitraum-modus .filter-chip").forEach(chip
 const belegAggTagInput = document.getElementById("beleg-agg-tag-input");
 belegAggTagInput.value = activeBelegTag;
 belegAggTagInput.max = dpIsoToday();
-belegAggTagInput.min = dpIsoMinusDays(BELEG_POOL_OFF_MAX_DAYS);
+belegAggTagInput.min = dpIsoMinusDays(BELEG_AGG_LOOKBACK_DAYS);
 belegAggTagInput.addEventListener("change", ()=>{
   activeBelegTag = belegAggTagInput.value || dpIsoToday();
   renderBelegAgg();
@@ -1807,10 +1833,25 @@ document.getElementById("beleg-agg-tag-today").addEventListener("click", ()=>{
   belegAggTagInput.value = activeBelegTag;
   renderBelegAgg();
 });
+/* Monatsauswahl als Dropdown (statt natives <input type="month">, dessen Darstellung je nach
+   Browser uneinheitlich/unlokalisiert ist) — Optionen deckt genau das erlaubte Zeitfenster ab,
+   neuester Monat zuerst. */
 const belegAggMonatInput = document.getElementById("beleg-agg-monat-input");
+(function(){
+  const maxMonat = dpIsoToday().slice(0,7);
+  const minMonat = dpIsoMinusDays(BELEG_AGG_LOOKBACK_DAYS).slice(0,7);
+  const [maxY,maxM] = maxMonat.split("-").map(Number);
+  const [minY,minM] = minMonat.split("-").map(Number);
+  const opts = [];
+  let y = maxY, m = maxM;
+  while(y>minY || (y===minY && m>=minM)){
+    const ym = y+"-"+String(m).padStart(2,"0");
+    opts.push('<option value="'+ym+'">'+esc(fmtMonatDe(ym))+'</option>');
+    m--; if(m<1){ m=12; y--; }
+  }
+  belegAggMonatInput.innerHTML = opts.join("");
+})();
 belegAggMonatInput.value = activeBelegMonat;
-belegAggMonatInput.max = dpIsoToday().slice(0,7);
-belegAggMonatInput.min = dpIsoMinusDays(BELEG_POOL_OFF_MAX_DAYS).slice(0,7);
 belegAggMonatInput.addEventListener("change", ()=>{
   activeBelegMonat = belegAggMonatInput.value || dpIsoToday().slice(0,7);
   renderBelegAgg();
