@@ -1164,8 +1164,8 @@ function getFilteredBelegPool(){
    80 % statt den Vollständigkeitswert jedes einzelnen Belegs separat zu kappen — so bleibt die
    Verschiebung der Quote in der gleichen Größenordnung wie die Modifikatoren selbst (wenige
    Prozentpunkte) statt bei einer harten 100%-Schwelle auf einen Schlag umzukippen. Bestimmt je
-   Beispiel-Beleg, ob er als vollständig zählt — und darüber (s. renderBelegAgg) auch den Anteil
-   "vollständig" an der auf die Kopfzahl/KPIs hochskalierten Management-Kennzahl. */
+   Beispiel-Beleg, ob er als vollständig zählt; dieselbe Delta-Logik verschiebt in renderBelegAgg
+   auch die Vollständigkeits-Quote der hochskalierten Kopfzahl/KPIs. */
 function belegAggKanalIshDelta(){
   let delta = 0;
   if(activeDpKanal!=="alle") delta += DP_KANAL_MODIFIER[activeDpKanal].vollst;
@@ -1174,6 +1174,33 @@ function belegAggKanalIshDelta(){
 }
 function belegAggEffectiveQuote(){
   return Math.max(0, Math.min(100, BELEG_POOL_BASIS_QUOTE + belegAggKanalIshDelta()));
+}
+/* Analytische Anteile je Filterwert für die Kopfzahl/KPIs der Beleg-Qualität (statt einer
+   empirischen Quote aus der kleinen 80er-Tagesstichprobe, die bei mehreren kombinierten Filtern
+   zu stark verrauscht/klein wäre und z. B. immer exakt 50/50 zeigte). Jeder aktive Filter
+   multipliziert die Gesamtmenge mit seinem Anteil — so ergibt sich bei mehreren gleichzeitig
+   gesetzten Filtern immer die rechnerisch korrekte Summe statt eines Stichproben-Zufallswerts.
+   Dok.-Art-Anteile kommen aus der echten Verteilung in DP_DOKARTEN (612/158 → kein 50/50-Split);
+   Zeilentyp/Kanal/ISH sind illustrativ, aber bewusst uneinheitlich statt gleichverteilt. */
+const DP_DOKARTEN_TOTAL_N = DP_DOKARTEN.reduce((s,d)=>s+d.n,0);
+function belegAggDokArtShare(label){
+  const d = DP_DOKARTEN.find(x=>x.label===label);
+  return d ? d.n/DP_DOKARTEN_TOTAL_N : 1;
+}
+const BELEG_AGG_ZEILENTYP_SHARE = {
+  "1":0.62, "2":0.18, "3":0.04, "4":0.07, "5":0.03,
+  "7":0.22, "8":0.09, "10":0.05, "11":0.03, "14":0.08,
+  "20":0.025, "21":0.015, "22":0.02,
+};
+const BELEG_AGG_KANAL_SHARE = { papier:0.38, mail:0.29, kupo:0.21, app:0.12 };
+const BELEG_AGG_ISH_SHARE = { ish:0.24, nichtish:0.76 };
+function belegAggHeadlineRatio(){
+  let ratio = 1;
+  if(activeDpDokArt!=="alle") ratio *= belegAggDokArtShare(activeDpDokArt);
+  if(activeDpZeilentyp!=="alle") ratio *= (BELEG_AGG_ZEILENTYP_SHARE[activeDpZeilentyp] ?? 0.1);
+  if(activeDpKanal!=="alle") ratio *= (BELEG_AGG_KANAL_SHARE[activeDpKanal] ?? 0.25);
+  if(activeDpIsh!=="alle") ratio *= (BELEG_AGG_ISH_SHARE[activeDpIsh] ?? 0.5);
+  return ratio;
 }
 function belegAggIstVollstaendig(r){
   return r.completeRoll < belegAggEffectiveQuote();
@@ -1619,17 +1646,16 @@ function renderBelegAgg(){
   const isMonat = activeBelegZeitraumModus==="monat";
   const stats = isMonat ? dpMonthlyStats(activeBelegMonat) : dpDailyStats(activeBelegTag);
   /* ALLE Filter (Dok.-Art, Zeilentyp, Eingangskanal, Verarbeitungsverfahren) skalieren jetzt auch
-     die Kopfzahl/KPIs, nicht nur die Beispiel-Belege-Tabelle: die Trefferquote der generierten
-     Tages-/Monats-Stichprobe (gefilterte Belege / alle Belege dieses Zeitraums) wird auf die
-     große, realistische Management-Kennzahl angewandt — inkl. Vollständigkeits-Quote, die
-     zusätzlich den Kanal-/ISH-Qualitätsmodifikator aus belegAggEffectiveQuote berücksichtigt. */
-  const belegAggBaseRows = getBelegAggBaseRows();
+     die Kopfzahl/KPIs, nicht nur die Beispiel-Belege-Tabelle — analytisch über
+     belegAggHeadlineRatio()/belegAggKanalIshDelta() statt empirisch aus der kleinen 80er-
+     Tagesstichprobe: bei mehreren gleichzeitig gesetzten Filtern multiplizieren/addieren sich
+     deren Anteile/Deltas exakt, statt bei einer verrauschten Stichprobenquote zu landen. Die
+     Vollständigkeits-Quote bleibt dabei die tagesindividuelle Basisquote aus dpDailyStats (72–97 %,
+     nicht künstlich 50/50) plus Kanal-/ISH-Delta. */
+  stats.total = Math.round(stats.total*belegAggHeadlineRatio());
+  stats.quote = stats.total ? Math.max(0, Math.min(100, Math.round((stats.quote+belegAggKanalIshDelta())*10)/10)) : 0;
+  stats.vollstaendig = Math.round(stats.total*stats.quote/100);
   const belegAggFilteredRows = getFilteredBelegPool();
-  const totalRatio = belegAggBaseRows.length ? belegAggFilteredRows.length/belegAggBaseRows.length : 0;
-  stats.total = Math.round(stats.total*totalRatio);
-  const vollstRatio = belegAggFilteredRows.length ? belegAggFilteredRows.filter(r=>belegAggIstVollstaendig(r)).length/belegAggFilteredRows.length : 0;
-  stats.vollstaendig = Math.round(stats.total*vollstRatio);
-  stats.quote = stats.total ? Math.round(stats.vollstaendig/stats.total*1000)/10 : 0;
   const periodLabel = isMonat ? "im "+fmtMonatDe(activeBelegMonat) : "am "+fmtDateDe(activeBelegTag);
   document.getElementById("beleg-agg-zeitraum-hint").textContent = isMonat
     ? "Monatssicht (kumuliert über den Monat): zeigt alle Belege, die im gewählten Monat in den Datenpool geschrieben wurden — für die Management-Übersicht."
@@ -1676,7 +1702,7 @@ function renderBelegAgg(){
       '<td><div class="beleg-agg-zt">'+r.zeilentypen.map(zt=>'<span class="badge info badge--sm">'+esc(zt)+'</span>').join("")+'</div></td>'+
       '<td class="beleg-agg-reason">'+(grundText ? esc(grundText) : '—')+'</td>'+
     '</tr>';
-  }).join("") : '<tr><td colspan="6" class="cell-empty">Keine Beispiel-Belege '+periodLabel+' für die aktuelle Filterkombination — Filter lockern, um Beispiel-Belege zu sehen. Die Kennzahlen oben zeigen dann 0 Belege für diese Kombination.</td></tr>';
+  }).join("") : '<tr><td colspan="6" class="cell-empty">Keine Beispiel-Belege '+periodLabel+' für die aktuelle Filterkombination in der 80er-Tagesstichprobe — Filter lockern, um Beispiel-Belege zu sehen. Die Kennzahlen oben basieren auf einer eigenen, analytischen Hochrechnung und können unabhängig davon Werte &gt; 0 zeigen.</td></tr>';
   document.querySelectorAll("#beleg-agg-body .qsl-trigger").forEach(btn=>{
     btn.addEventListener("click", ()=>openQslModalBeleg(btn.dataset.rowid));
   });
