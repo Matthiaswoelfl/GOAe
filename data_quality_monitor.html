@@ -437,7 +437,7 @@
         <div class="subhead-row">
           <div class="subhead">Beleg-Qualität — aggregierte Zwischenebene</div>
         </div>
-        <p class="subhead-sub">Zwischenebene zwischen Einzelfeldern und Filterattributen: absolute Datenqualität je Beleg statt nur Prozent-Durchschnitt über Felder — Einstieg in die Ursachenanalyse. Kopfzahl/KPIs zeigen die Gesamtmenge für Tag oder Monat unabhängig von Dok.-Art/Zeilentyp; die Vollständigkeits-Quote reagiert zusätzlich auf Eingangskanal und Verarbeitungsverfahren (ISH/Padline). Die Beispiel-Belege darunter (mind. 40/Tag, Anzeige auf 50 begrenzt) reagieren auf Dok.-Art, Zeilentyp, Eingangskanal und Verarbeitungsverfahren. Klick auf die Vollständigkeit öffnet die QSL-Verteilung.</p>
+        <p class="subhead-sub">Zwischenebene zwischen Einzelfeldern und Filterattributen: absolute Datenqualität je Beleg statt nur Prozent-Durchschnitt über Felder — Einstieg in die Ursachenanalyse. Kopfzahl/KPIs und die Beispiel-Belege darunter (mind. 40/Tag ungefiltert, Anzeige auf 50 begrenzt) reagieren beide auf Dok.-Art, Zeilentyp, Eingangskanal und Verarbeitungsverfahren (ISH/Padline). Klick auf die Vollständigkeit öffnet die QSL-Verteilung.</p>
         <div class="filters">
           <span class="filter-dim-label">Zeitraum</span>
           <div class="filter-group" id="beleg-agg-zeitraum-modus">
@@ -1090,8 +1090,9 @@ function belegQslDistribution(h, baseVollst){
    Bucket 1 sicher oberhalb der 80%-Basisquote, sodass Kanal-/ISH-Modifikatoren (wenige
    Prozentpunkte) die Zuordnung nicht umkippen. Jeder Beleg erhält zusätzlich — wie beim
    Zeilentyp — einen deterministisch zugeordneten Eingangskanal und ein Verarbeitungsverfahren
-   (ISH/Padline), damit auch diese Filter die angezeigten Beispiel-Belege sichtbar variieren
-   statt nur die Kopfzahl/KPIs zu verschieben. */
+   (ISH/Padline), sodass Dok.-Art, Zeilentyp, Eingangskanal und Verarbeitungsverfahren sowohl die
+   angezeigten Beispiel-Belege als auch (über die Trefferquote dieser Stichprobe, s. renderBelegAgg)
+   die hochskalierte Kopfzahl/KPIs gleichermaßen beeinflussen. */
 const BELEG_AGG_KANAL_POOL = ["papier","mail","kupo","app"];
 function buildBelegAggDayRows(dateIso){
   const rows = [];
@@ -1162,11 +1163,9 @@ function getFilteredBelegPool(){
 /* Kanal-/ISH-Modifikatoren (vollst-Komponente) verschieben die Vollständigkeits-Basisquote von
    80 % statt den Vollständigkeitswert jedes einzelnen Belegs separat zu kappen — so bleibt die
    Verschiebung der Quote in der gleichen Größenordnung wie die Modifikatoren selbst (wenige
-   Prozentpunkte) statt bei einer harten 100%-Schwelle auf einen Schlag umzukippen. Dieselbe
-   Delta-Logik wird auch auf die Kopfzahl/KPIs der Beleg-Qualität angewandt (s. renderBelegAgg),
-   damit Eingangskanal-/ISH-Filter dort ebenfalls sichtbar wirken — nur die Gesamtmenge (Belege
-   gesamt) bleibt als Mengenangabe unverändert, konsistent mit MVP2 (dpEffectiveValue), wo die
-   Kanal-/ISH-Modifikatoren ebenfalls nur Qualitätswerte verschieben, nie die Anzahl. */
+   Prozentpunkte) statt bei einer harten 100%-Schwelle auf einen Schlag umzukippen. Bestimmt je
+   Beispiel-Beleg, ob er als vollständig zählt — und darüber (s. renderBelegAgg) auch den Anteil
+   "vollständig" an der auf die Kopfzahl/KPIs hochskalierten Management-Kennzahl. */
 function belegAggKanalIshDelta(){
   let delta = 0;
   if(activeDpKanal!=="alle") delta += DP_KANAL_MODIFIER[activeDpKanal].vollst;
@@ -1619,15 +1618,18 @@ document.addEventListener("keydown", e=>{
 function renderBelegAgg(){
   const isMonat = activeBelegZeitraumModus==="monat";
   const stats = isMonat ? dpMonthlyStats(activeBelegMonat) : dpDailyStats(activeBelegTag);
-  /* Eingangskanal-/ISH-Filter verschieben hier dieselbe Vollständigkeits-Quote (Delta aus
-     belegAggKanalIshDelta) wie bei den einzelnen Beispiel-Belegen — nur die Gesamtmenge bleibt
-     als reine Mengenangabe unverändert (konsistent mit MVP2, wo diese Modifikatoren ebenfalls
-     nie die Anzahl, nur Qualitätswerte verschieben). */
-  const kanalIshDelta = belegAggKanalIshDelta();
-  if(kanalIshDelta!==0 && stats.total){
-    stats.quote = Math.max(0, Math.min(100, Math.round((stats.quote+kanalIshDelta)*10)/10));
-    stats.vollstaendig = Math.round(stats.total*stats.quote/100);
-  }
+  /* ALLE Filter (Dok.-Art, Zeilentyp, Eingangskanal, Verarbeitungsverfahren) skalieren jetzt auch
+     die Kopfzahl/KPIs, nicht nur die Beispiel-Belege-Tabelle: die Trefferquote der generierten
+     Tages-/Monats-Stichprobe (gefilterte Belege / alle Belege dieses Zeitraums) wird auf die
+     große, realistische Management-Kennzahl angewandt — inkl. Vollständigkeits-Quote, die
+     zusätzlich den Kanal-/ISH-Qualitätsmodifikator aus belegAggEffectiveQuote berücksichtigt. */
+  const belegAggBaseRows = getBelegAggBaseRows();
+  const belegAggFilteredRows = getFilteredBelegPool();
+  const totalRatio = belegAggBaseRows.length ? belegAggFilteredRows.length/belegAggBaseRows.length : 0;
+  stats.total = Math.round(stats.total*totalRatio);
+  const vollstRatio = belegAggFilteredRows.length ? belegAggFilteredRows.filter(r=>belegAggIstVollstaendig(r)).length/belegAggFilteredRows.length : 0;
+  stats.vollstaendig = Math.round(stats.total*vollstRatio);
+  stats.quote = stats.total ? Math.round(stats.vollstaendig/stats.total*1000)/10 : 0;
   const periodLabel = isMonat ? "im "+fmtMonatDe(activeBelegMonat) : "am "+fmtDateDe(activeBelegTag);
   document.getElementById("beleg-agg-zeitraum-hint").textContent = isMonat
     ? "Monatssicht (kumuliert über den Monat): zeigt alle Belege, die im gewählten Monat in den Datenpool geschrieben wurden — für die Management-Übersicht."
@@ -1659,8 +1661,7 @@ function renderBelegAgg(){
     renderBelegAgg();
   });
 
-  const rows = getFilteredBelegPool();
-  const sichtRows = activeBelegAggSicht==="unvollstaendig" ? rows.filter(r=>!belegAggIstVollstaendig(r)) : rows;
+  const sichtRows = activeBelegAggSicht==="unvollstaendig" ? belegAggFilteredRows.filter(r=>!belegAggIstVollstaendig(r)) : belegAggFilteredRows;
   const shown = sichtRows.slice(0, 50);
   document.getElementById("beleg-agg-count").textContent = sichtRows.length.toLocaleString("de-DE")+" Beispiel-Beleg(e) "+periodLabel+" in der Stichprobe"+(sichtRows.length>50 ? " · Anzeige auf 50 begrenzt" : "");
   document.getElementById("beleg-agg-body").innerHTML = shown.length ? shown.map(r=>{
@@ -1675,7 +1676,7 @@ function renderBelegAgg(){
       '<td><div class="beleg-agg-zt">'+r.zeilentypen.map(zt=>'<span class="badge info badge--sm">'+esc(zt)+'</span>').join("")+'</div></td>'+
       '<td class="beleg-agg-reason">'+(grundText ? esc(grundText) : '—')+'</td>'+
     '</tr>';
-  }).join("") : '<tr><td colspan="6" class="cell-empty">Keine Beispiel-Belege '+periodLabel+' für die aktuelle Dok.-Art-/Zeilentyp-Kombination — Dok.-Art- oder Zeilentyp-Filter lockern, um Beispiel-Belege zu sehen. Die Kennzahlen oben bleiben davon unberührt.</td></tr>';
+  }).join("") : '<tr><td colspan="6" class="cell-empty">Keine Beispiel-Belege '+periodLabel+' für die aktuelle Filterkombination — Filter lockern, um Beispiel-Belege zu sehen. Die Kennzahlen oben zeigen dann 0 Belege für diese Kombination.</td></tr>';
   document.querySelectorAll("#beleg-agg-body .qsl-trigger").forEach(btn=>{
     btn.addEventListener("click", ()=>openQslModalBeleg(btn.dataset.rowid));
   });
