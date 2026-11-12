@@ -220,6 +220,34 @@
   .subhead-sub{font-size:.82rem; color:var(--ink-soft); margin:0 0 14px; max-width:80ch; line-height:1.6;}
   .dp-ziffer-hint{font-size:.74rem; font-style:italic; margin:-10px 0 14px;}
 
+  /* ---------- Datenpool: Filter-Sidebar links statt Filterzeilen oben ---------- */
+  #view-datenpool .view-wrap{max-width:1480px;}
+  .dp-layout{display:grid; grid-template-columns:272px 1fr; gap:28px; align-items:start;}
+  .dp-sidebar{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    box-shadow:var(--shadow-sm); padding:18px 18px 22px; display:flex; flex-direction:column;
+    position:sticky; top:16px; max-height:calc(100vh - 32px); overflow-y:auto;
+  }
+  .dp-sidebar-section{padding:16px 0; border-bottom:1px solid var(--border);}
+  .dp-sidebar-section:first-child{padding-top:0;}
+  .dp-sidebar-section:last-child{border-bottom:none; padding-bottom:0;}
+  .dp-sidebar-head{font-size:.95rem; font-weight:800; margin:0 0 6px;}
+  .dp-sidebar-intro{font-size:.78rem; color:var(--ink-soft); line-height:1.55; margin:0;}
+  .dp-sidebar .filters{flex-direction:column; align-items:stretch; gap:7px; margin-bottom:0;}
+  .dp-sidebar .filters + .dp-ziffer-hint{margin-top:8px;}
+  .dp-sidebar .filter-group{flex-direction:column; align-items:stretch; background:none; border:none; padding:0; gap:3px;}
+  .dp-sidebar .filter-group--date{flex-direction:row; flex-wrap:wrap; gap:8px;}
+  .dp-sidebar .filter-chip{text-align:left; border-radius:8px; padding:8px 11px;}
+  .dp-sidebar .filter-date-input{flex:1 1 auto; width:100%; box-sizing:border-box; text-align:left;}
+  .dp-sidebar .filter-search{width:100%; box-sizing:border-box;}
+  .dp-sidebar .dp-ziffer-hint{margin:6px 0 0;}
+  .dp-sidebar .filter-count{margin-left:0; display:block; margin-top:4px;}
+  .dp-main{min-width:0;}
+  @media (max-width:980px){
+    .dp-layout{grid-template-columns:1fr;}
+    .dp-sidebar{position:static; max-height:none;}
+  }
+
   /* ---------- Gesamtübersicht (Kategorie-Tabelle + Erläuterung) ---------- */
   .ov-grid{display:grid; grid-template-columns:1.6fr 1fr; gap:20px; align-items:start; margin-bottom:8px;}
   .ov-grid--wide{grid-template-columns:2.4fr 1fr;}
@@ -380,164 +408,183 @@
         <h1>Prüfung Datenpool und Auswertbarkeit der Datenqualität</h1>
       </div>
 
-      <div class="subhead-row">
-        <div class="subhead">Filter</div>
-      </div>
-      <p class="subhead-sub">Diese Filter wirken auf MVP1 und MVP2. Ausnahme: Datenpool-Stand (Datum) nur bei MVP2 — MVP1 hat dafür die eigene Tagesscheiben-/Monatssicht.</p>
-      <div class="filters">
-        <span class="filter-dim-label">Dok.-Art</span>
-        <div class="filter-group" id="dp-dokart-filter">
-          <button class="filter-chip" type="button" data-dokart="alle" data-active="true">Alle Dok.-Arten</button>
-          <button class="filter-chip" type="button" data-dokart="RE ambulant neu (3552)">RE ambulant neu (3552)</button>
-          <button class="filter-chip" type="button" data-dokart="RE stationär neu (3549)">RE stationär neu (3549)</button>
-        </div>
-      </div>
-      <div class="filters">
-        <span class="filter-dim-label">Zeilentyp</span>
-        <div class="filter-group" id="dp-zeilentyp-filter">
-          <button class="filter-chip" type="button" data-zeilentyp="alle" data-active="true">Alle</button>
-          <button class="filter-chip" type="button" data-zeilentyp="1">1 · GOÄ</button>
-          <button class="filter-chip" type="button" data-zeilentyp="2">2 · GOÄ Analog</button>
-          <button class="filter-chip" type="button" data-zeilentyp="3">3 · GOÄ Anästhesie unabhängig</button>
-          <button class="filter-chip" type="button" data-zeilentyp="4">4 · GOÄ Gemindert</button>
-          <button class="filter-chip" type="button" data-zeilentyp="5">5 · GOÄ Minus</button>
-          <button class="filter-chip" type="button" data-zeilentyp="7">7 · Wegegeld</button>
-          <button class="filter-chip" type="button" data-zeilentyp="8">8 · Auslage</button>
-          <button class="filter-chip" type="button" data-zeilentyp="10">10 · MLK Eigenlabor</button>
-          <button class="filter-chip" type="button" data-zeilentyp="11">11 · MLK Fremdlabor</button>
-          <button class="filter-chip" type="button" data-zeilentyp="14">14 · GEBÜH (inkl. Wegegeld)</button>
-          <button class="filter-chip" type="button" data-zeilentyp="20">20 · unbekannte Ziffer</button>
-          <button class="filter-chip" type="button" data-zeilentyp="21">21 · fehlende Ziffer</button>
-          <button class="filter-chip" type="button" data-zeilentyp="22">22 · Differenzbetrag</button>
-        </div>
-      </div>
-      <div class="filters">
-        <span class="filter-dim-label">Eingangskanal (Medium_Sub_Typ)</span>
-        <div class="filter-group" id="dp-kanal-filter">
-          <button class="filter-chip" type="button" data-kanal="alle" data-active="true">Alle Kanäle</button>
-          <button class="filter-chip" type="button" data-kanal="papier">Papier</button>
-          <button class="filter-chip" type="button" data-kanal="mail">Mail</button>
-          <button class="filter-chip" type="button" data-kanal="kupo">KuPo</button>
-          <button class="filter-chip" type="button" data-kanal="app">App</button>
-        </div>
-      </div>
-      <p class="subhead-sub dp-ziffer-hint">Vereinfachte Clusterung aus über 100 realen Sub-Kanälen (z. B. Fax, Brief, Scan-Dienstleister).</p>
-      <div class="filters">
-        <span class="filter-dim-label">Verarbeitungsverfahren</span>
-        <div class="filter-group" id="dp-ish-filter">
-          <button class="filter-chip" type="button" data-ish="alle" data-active="true">Alle</button>
-          <button class="filter-chip" type="button" data-ish="ish">ISH/Padline</button>
-          <button class="filter-chip" type="button" data-ish="nichtish">Nicht ISH</button>
-        </div>
-      </div>
-      <p class="subhead-sub dp-ziffer-hint">ISH/Padline ist ein Verarbeitungsverfahren, kein Eingangskanal — kann in jedem Kanal auftreten.</p>
+      <div class="dp-layout">
+        <aside class="dp-sidebar">
+          <div class="dp-sidebar-section">
+            <div class="dp-sidebar-head">Filter</div>
+            <p class="dp-sidebar-intro">Diese Filter wirken auf MVP1 und MVP2. Ausnahme: Datenpool-Stand (Datum) nur bei MVP2 — MVP1 hat dafür die eigene Tagesscheiben-/Monatssicht.</p>
+          </div>
+          <div class="dp-sidebar-section">
+            <div class="filters">
+              <span class="filter-dim-label">Dok.-Art</span>
+              <div class="filter-group" id="dp-dokart-filter">
+                <button class="filter-chip" type="button" data-dokart="alle" data-active="true">Alle Dok.-Arten</button>
+                <button class="filter-chip" type="button" data-dokart="RE ambulant neu (3552)">RE ambulant neu (3552)</button>
+                <button class="filter-chip" type="button" data-dokart="RE stationär neu (3549)">RE stationär neu (3549)</button>
+              </div>
+            </div>
+          </div>
+          <div class="dp-sidebar-section">
+            <div class="filters">
+              <span class="filter-dim-label">Zeilentyp</span>
+              <div class="filter-group" id="dp-zeilentyp-filter">
+                <button class="filter-chip" type="button" data-zeilentyp="alle" data-active="true">Alle</button>
+                <button class="filter-chip" type="button" data-zeilentyp="1">1 · GOÄ</button>
+                <button class="filter-chip" type="button" data-zeilentyp="2">2 · GOÄ Analog</button>
+                <button class="filter-chip" type="button" data-zeilentyp="3">3 · GOÄ Anästhesie unabhängig</button>
+                <button class="filter-chip" type="button" data-zeilentyp="4">4 · GOÄ Gemindert</button>
+                <button class="filter-chip" type="button" data-zeilentyp="5">5 · GOÄ Minus</button>
+                <button class="filter-chip" type="button" data-zeilentyp="7">7 · Wegegeld</button>
+                <button class="filter-chip" type="button" data-zeilentyp="8">8 · Auslage</button>
+                <button class="filter-chip" type="button" data-zeilentyp="10">10 · MLK Eigenlabor</button>
+                <button class="filter-chip" type="button" data-zeilentyp="11">11 · MLK Fremdlabor</button>
+                <button class="filter-chip" type="button" data-zeilentyp="14">14 · GEBÜH (inkl. Wegegeld)</button>
+                <button class="filter-chip" type="button" data-zeilentyp="20">20 · unbekannte Ziffer</button>
+                <button class="filter-chip" type="button" data-zeilentyp="21">21 · fehlende Ziffer</button>
+                <button class="filter-chip" type="button" data-zeilentyp="22">22 · Differenzbetrag</button>
+              </div>
+            </div>
+          </div>
+          <div class="dp-sidebar-section">
+            <div class="filters">
+              <span class="filter-dim-label">Eingangskanal (Medium_Sub_Typ)</span>
+              <div class="filter-group" id="dp-kanal-filter">
+                <button class="filter-chip" type="button" data-kanal="alle" data-active="true">Alle Kanäle</button>
+                <button class="filter-chip" type="button" data-kanal="papier">Papier</button>
+                <button class="filter-chip" type="button" data-kanal="mail">Mail</button>
+                <button class="filter-chip" type="button" data-kanal="kupo">KuPo</button>
+                <button class="filter-chip" type="button" data-kanal="app">App</button>
+              </div>
+            </div>
+            <p class="subhead-sub dp-ziffer-hint">Vereinfachte Clusterung aus über 100 realen Sub-Kanälen (z. B. Fax, Brief, Scan-Dienstleister).</p>
+          </div>
+          <div class="dp-sidebar-section">
+            <div class="filters">
+              <span class="filter-dim-label">Verarbeitungsverfahren</span>
+              <div class="filter-group" id="dp-ish-filter">
+                <button class="filter-chip" type="button" data-ish="alle" data-active="true">Alle</button>
+                <button class="filter-chip" type="button" data-ish="ish">ISH/Padline</button>
+                <button class="filter-chip" type="button" data-ish="nichtish">Nicht ISH</button>
+              </div>
+            </div>
+            <p class="subhead-sub dp-ziffer-hint">ISH/Padline ist ein Verarbeitungsverfahren, kein Eingangskanal — kann in jedem Kanal auftreten.</p>
+          </div>
 
-      <div id="mvp1-panel">
-        <div class="subhead-row">
-          <div class="subhead">Beleg-Qualität — aggregierte Zwischenebene</div>
-        </div>
-        <div class="filters">
-          <span class="filter-dim-label">Zeitraum</span>
-          <div class="filter-group" id="beleg-agg-zeitraum-modus">
-            <button class="filter-chip" type="button" data-modus="tag" data-active="true">Tagesscheibe</button>
-            <button class="filter-chip" type="button" data-modus="monat">Monat (Management)</button>
+          <div class="dp-sidebar-section" id="mvp1-sidebar-extra">
+            <div class="filters">
+              <span class="filter-dim-label">Zeitraum</span>
+              <div class="filter-group" id="beleg-agg-zeitraum-modus">
+                <button class="filter-chip" type="button" data-modus="tag" data-active="true">Tagesscheibe</button>
+                <button class="filter-chip" type="button" data-modus="monat">Monat (Management)</button>
+              </div>
+              <input type="date" id="beleg-agg-tag-input" class="filter-date-input">
+              <select id="beleg-agg-monat-input" class="filter-date-input" hidden></select>
+              <button class="filter-chip" type="button" id="beleg-agg-tag-today">Heute</button>
+            </div>
+            <p class="subhead-sub dp-ziffer-hint" id="beleg-agg-zeitraum-hint"></p>
           </div>
-          <input type="date" id="beleg-agg-tag-input" class="filter-date-input">
-          <select id="beleg-agg-monat-input" class="filter-date-input" hidden></select>
-          <button class="filter-chip" type="button" id="beleg-agg-tag-today">Heute</button>
-        </div>
-        <p class="subhead-sub dp-ziffer-hint" id="beleg-agg-zeitraum-hint"></p>
-        <div class="beleg-agg-headline" id="beleg-agg-headline"></div>
-        <div class="kpi-row" id="beleg-agg-kpi"></div>
-        <div class="filters">
-          <div class="filter-group" id="beleg-agg-sicht-toggle">
-            <button class="filter-chip" type="button" data-sicht="alle" data-active="true">Sicht 1 · Alle Belege</button>
-            <button class="filter-chip" type="button" data-sicht="unvollstaendig">Sicht 2 · Nur unvollständige Belege</button>
-          </div>
-          <span class="filter-count" id="beleg-agg-count"></span>
-        </div>
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead><tr><th>Beleg-ID</th><th>Dok.-Art</th><th>Vollständigkeit</th><th>Fehlende Felder</th><th>Enthaltene Zeilentypen</th><th>Vermuteter Grund</th></tr></thead>
-            <tbody id="beleg-agg-body"></tbody>
-          </table>
-        </div>
-        <p class="subhead-sub dp-ziffer-hint">Hinweis zur technischen Komplexität (Workshop-Feedback): Ein echter Abgleich auf jeder tieferen Zeilenebene mit dem Datenpool ist deutlich aufwendiger als hier dargestellt. Diese Ansicht simuliert plausible Ergebnisse zur Veranschaulichung, kein Live-Abgleich. Ob die benötigten Attribute vom EM geliefert werden können, ist mit dem EM-Team zu klären (MVP-Annahme).</p>
-      </div>
 
-      <div id="mvp2-panel" hidden>
-        <div class="filters">
-          <span class="filter-dim-label">AV-Zielstatus</span>
-          <div class="filter-group" id="dp-zielstatus-filter">
-            <button class="filter-chip" type="button" data-ziel="alle" data-active="true">Alle</button>
-            <button class="filter-chip" type="button" data-ziel="M">M</button>
-            <button class="filter-chip" type="button" data-ziel="K">K</button>
-            <button class="filter-chip" type="button" data-ziel="K**">K**</button>
-            <button class="filter-chip" type="button" data-ziel="MbA">MbA</button>
-            <button class="filter-chip" type="button" data-ziel="SWH">SWH</button>
-            <button class="filter-chip" type="button" data-ziel="TM">TM</button>
-            <button class="filter-chip" type="button" data-ziel="P">P</button>
+          <div class="dp-sidebar-section" id="mvp2-sidebar-extra" hidden>
+            <div class="filters">
+              <span class="filter-dim-label">AV-Zielstatus</span>
+              <div class="filter-group" id="dp-zielstatus-filter">
+                <button class="filter-chip" type="button" data-ziel="alle" data-active="true">Alle</button>
+                <button class="filter-chip" type="button" data-ziel="M">M</button>
+                <button class="filter-chip" type="button" data-ziel="K">K</button>
+                <button class="filter-chip" type="button" data-ziel="K**">K**</button>
+                <button class="filter-chip" type="button" data-ziel="MbA">MbA</button>
+                <button class="filter-chip" type="button" data-ziel="SWH">SWH</button>
+                <button class="filter-chip" type="button" data-ziel="TM">TM</button>
+                <button class="filter-chip" type="button" data-ziel="P">P</button>
+              </div>
+            </div>
+            <p class="subhead-sub dp-ziffer-hint">AV-Zielstatus ist auf Belegebene (MVP1) nicht anwendbar (felderspezifisch) und wirkt daher nur hier auf MVP2.</p>
+            <div class="filters">
+              <span class="filter-dim-label">Datenpool-Stand</span>
+              <div class="filter-group filter-group--date">
+                <input type="date" id="dp-date-input" class="filter-date-input">
+                <button class="filter-chip" type="button" id="dp-date-today">Heute</button>
+              </div>
+              <span class="filter-count" id="dp-count"></span>
+            </div>
+            <p class="subhead-sub dp-ziffer-hint">Kumulativer Stichtag: zeigt alle Datenfelder, die bis zu diesem Datum im Datenpool verfügbar waren (wächst mit der Zeit) — anders als die Tagesscheibe/Monatssicht bei MVP1, die nicht-kumulativ genau den gewählten Zeitraum zeigt.</p>
+            <div class="filters">
+              <span class="filter-dim-label">GO-Ziffer-Suche</span>
+              <input class="filter-search" id="dp-ziffer-search" type="search" placeholder="z. B. 1200 (Sonographie)…">
+              <div class="filter-group" id="dp-ziffer-sicht-toggle">
+                <button class="filter-chip" type="button" data-sicht="zeile" data-active="true">Zeilen-Sicht</button>
+                <button class="filter-chip" type="button" data-sicht="beleg">Beleg-Sicht</button>
+              </div>
+            </div>
+            <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht unten aus. Zeilen-Sicht: je Dok.-Art eine Zeile mit den Auswertungen der GO-Zeile selbst. Beleg-Sicht: Beispiel-Belege, die diese Ziffer enthalten, mit der Vollständigkeit des jeweils gesamten Belegs. Wirkt nicht auf die Beleg-Qualität-Zwischenebene (MVP1).</p>
+            <div class="filters">
+              <span class="filter-dim-label">VNR-Suche</span>
+              <input class="filter-search" id="dp-vnr-search" type="search" placeholder="Versicherungsnummer eingeben, z. B. 552310-9…">
+            </div>
+            <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht unten aus und zeigt stattdessen alle im Datenpool vorliegenden eingereichten Belege dieser VNR mit ihren jeweiligen Datenfeld-Auswertungen (geht Dok.-Art- und GO-Ziffer-Suche vor). Wirkt nicht auf die Beleg-Qualität-Zwischenebene (MVP1).</p>
           </div>
-        </div>
-        <p class="subhead-sub dp-ziffer-hint">AV-Zielstatus ist auf Belegebene (MVP1) nicht anwendbar (felderspezifisch) und wirkt daher nur hier auf MVP2.</p>
-        <div class="filters">
-          <span class="filter-dim-label">Datenpool-Stand</span>
-          <div class="filter-group filter-group--date">
-            <input type="date" id="dp-date-input" class="filter-date-input">
-            <button class="filter-chip" type="button" id="dp-date-today">Heute</button>
-          </div>
-          <span class="filter-count" id="dp-count"></span>
-        </div>
-        <p class="subhead-sub dp-ziffer-hint">Kumulativer Stichtag: zeigt alle Datenfelder, die bis zu diesem Datum im Datenpool verfügbar waren (wächst mit der Zeit) — anders als die Tagesscheibe/Monatssicht bei MVP1, die nicht-kumulativ genau den gewählten Zeitraum zeigt.</p>
+        </aside>
 
-        <div class="subhead-row">
-          <div class="subhead">Datenpool-Dashboard je Datenfeld</div>
-          <div class="subhead-row-actions">
-            <button type="button" class="subhead-btn qsl-glossar-trigger">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 16.5h.01"/><circle cx="12" cy="12" r="9"/></svg>
-              QSL-Verzeichnis
-            </button>
-            <button type="button" class="subhead-btn" id="dp-table-toggle">
-              <svg class="icon" id="dp-table-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15 12 9l-6 6"/></svg>
-              <span id="dp-table-toggle-label">Tabelle einklappen</span>
-            </button>
+        <div class="dp-main">
+          <div id="mvp1-panel">
+            <div class="subhead-row">
+              <div class="subhead">Beleg-Qualität — aggregierte Zwischenebene</div>
+            </div>
+            <div class="beleg-agg-headline" id="beleg-agg-headline"></div>
+            <div class="kpi-row" id="beleg-agg-kpi"></div>
+            <div class="filters">
+              <div class="filter-group" id="beleg-agg-sicht-toggle">
+                <button class="filter-chip" type="button" data-sicht="alle" data-active="true">Sicht 1 · Alle Belege</button>
+                <button class="filter-chip" type="button" data-sicht="unvollstaendig">Sicht 2 · Nur unvollständige Belege</button>
+              </div>
+              <span class="filter-count" id="beleg-agg-count"></span>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr><th>Beleg-ID</th><th>Dok.-Art</th><th>Vollständigkeit</th><th>Fehlende Felder</th><th>Enthaltene Zeilentypen</th><th>Vermuteter Grund</th></tr></thead>
+                <tbody id="beleg-agg-body"></tbody>
+              </table>
+            </div>
+            <p class="subhead-sub dp-ziffer-hint">Hinweis zur technischen Komplexität (Workshop-Feedback): Ein echter Abgleich auf jeder tieferen Zeilenebene mit dem Datenpool ist deutlich aufwendiger als hier dargestellt. Diese Ansicht simuliert plausible Ergebnisse zur Veranschaulichung, kein Live-Abgleich. Ob die benötigten Attribute vom EM geliefert werden können, ist mit dem EM-Team zu klären (MVP-Annahme).</p>
           </div>
-        </div>
-        <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit und Anzahl (Häufigkeit im Datenpool) je angefordertem Datenfeld (inkl. AV-Zielstatus aus dem Extraktionskatalog und, bei Abrechnungspositionen, Zeilentyp). Reagiert auf die Filter oben (Dok.-Art, AV-Zielstatus, Zeilentyp, Datenpool-Stand, Eingangskanal) sowie auf die GO-Ziffer- und VNR-Suche direkt unterhalb. Klick auf die Vollständigkeit öffnet die QSL-Verteilung inkl. Qualitätsschlüssel je Feld.</p>
-        <div class="filters">
-          <span class="filter-dim-label">GO-Ziffer-Suche</span>
-          <input class="filter-search" id="dp-ziffer-search" type="search" placeholder="z. B. 1200 (Sonographie)…">
-          <div class="filter-group" id="dp-ziffer-sicht-toggle">
-            <button class="filter-chip" type="button" data-sicht="zeile" data-active="true">Zeilen-Sicht</button>
-            <button class="filter-chip" type="button" data-sicht="beleg">Beleg-Sicht</button>
-          </div>
-        </div>
-        <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht unten aus. Zeilen-Sicht: je Dok.-Art eine Zeile mit den Auswertungen der GO-Zeile selbst. Beleg-Sicht: Beispiel-Belege, die diese Ziffer enthalten, mit der Vollständigkeit des jeweils gesamten Belegs. Wirkt nicht auf die Beleg-Qualität-Zwischenebene (MVP1).</p>
-        <div class="filters">
-          <span class="filter-dim-label">VNR-Suche</span>
-          <input class="filter-search" id="dp-vnr-search" type="search" placeholder="Versicherungsnummer eingeben, z. B. 552310-9…">
-        </div>
-        <p class="subhead-sub dp-ziffer-hint">Standardmäßig ohne Wirkung. Eine Suche hier blendet die Datenfeld-Ansicht unten aus und zeigt stattdessen alle im Datenpool vorliegenden eingereichten Belege dieser VNR mit ihren jeweiligen Datenfeld-Auswertungen (geht Dok.-Art- und GO-Ziffer-Suche vor). Wirkt nicht auf die Beleg-Qualität-Zwischenebene (MVP1).</p>
-        <div class="table-wrap" id="dp-table-wrap">
-          <table class="data-table">
-            <thead id="dp-thead"></thead>
-            <tbody id="dp-body"></tbody>
-          </table>
-        </div>
-        <button type="button" class="dp-table-collapsed-hint" id="dp-table-collapsed-hint" hidden></button>
 
-        <div class="subhead">Auswertungskatalog</div>
-        <p class="subhead-sub">Beispielhafte Auswertungsmöglichkeiten des DQM auf dem Datenpool. Die Einträge der Kategorie „Anzeige" sind klickbar (Aktiv/Inaktiv) und blenden die jeweilige Spalte im Datenpool-Dashboard oben ein oder aus.</p>
-        <div class="av-visible-cols" id="av-visible-cols"></div>
-        <div class="filters">
-          <input class="filter-search" id="av-search" type="search" placeholder="Auswertungskatalog durchsuchen…">
-          <span class="filter-count" id="av-count"></span>
-        </div>
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead><tr><th>Kategorie</th><th>Auswertung</th><th>Beschreibung</th><th>Status</th></tr></thead>
-            <tbody id="av-body"></tbody>
-          </table>
+          <div id="mvp2-panel" hidden>
+            <div class="subhead-row">
+              <div class="subhead">Datenpool-Dashboard je Datenfeld</div>
+              <div class="subhead-row-actions">
+                <button type="button" class="subhead-btn qsl-glossar-trigger">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 16.5h.01"/><circle cx="12" cy="12" r="9"/></svg>
+                  QSL-Verzeichnis
+                </button>
+                <button type="button" class="subhead-btn" id="dp-table-toggle">
+                  <svg class="icon" id="dp-table-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15 12 9l-6 6"/></svg>
+                  <span id="dp-table-toggle-label">Tabelle einklappen</span>
+                </button>
+              </div>
+            </div>
+            <p class="subhead-sub">Tagesaktueller Stand des Datenpools — Vollständigkeit und Anzahl (Häufigkeit im Datenpool) je angefordertem Datenfeld (inkl. AV-Zielstatus aus dem Extraktionskatalog und, bei Abrechnungspositionen, Zeilentyp). Reagiert auf die Filter links (Dok.-Art, AV-Zielstatus, Zeilentyp, Datenpool-Stand, Eingangskanal) sowie auf die GO-Ziffer- und VNR-Suche dort. Klick auf die Vollständigkeit öffnet die QSL-Verteilung inkl. Qualitätsschlüssel je Feld.</p>
+            <div class="table-wrap" id="dp-table-wrap">
+              <table class="data-table">
+                <thead id="dp-thead"></thead>
+                <tbody id="dp-body"></tbody>
+              </table>
+            </div>
+            <button type="button" class="dp-table-collapsed-hint" id="dp-table-collapsed-hint" hidden></button>
+
+            <div class="subhead">Auswertungskatalog</div>
+            <p class="subhead-sub">Beispielhafte Auswertungsmöglichkeiten des DQM auf dem Datenpool. Die Einträge der Kategorie „Anzeige" sind klickbar (Aktiv/Inaktiv) und blenden die jeweilige Spalte im Datenpool-Dashboard oben ein oder aus.</p>
+            <div class="av-visible-cols" id="av-visible-cols"></div>
+            <div class="filters">
+              <input class="filter-search" id="av-search" type="search" placeholder="Auswertungskatalog durchsuchen…">
+              <span class="filter-count" id="av-count"></span>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr><th>Kategorie</th><th>Auswertung</th><th>Beschreibung</th><th>Status</th></tr></thead>
+                <tbody id="av-body"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1961,6 +2008,8 @@ function switchDpMvp(mvp){
   document.querySelectorAll("#dp-mvp-tabs .mvp-tab-btn").forEach(b=>b.dataset.active = (b.dataset.mvp===mvp) ? "true":"false");
   document.getElementById("mvp1-panel").hidden = (mvp!=="mvp1");
   document.getElementById("mvp2-panel").hidden = (mvp!=="mvp2");
+  document.getElementById("mvp1-sidebar-extra").hidden = (mvp!=="mvp1");
+  document.getElementById("mvp2-sidebar-extra").hidden = (mvp!=="mvp2");
 }
 document.querySelectorAll("#dp-mvp-tabs .mvp-tab-btn").forEach(btn=>{
   btn.addEventListener("click", ()=>switchDpMvp(btn.dataset.mvp));
