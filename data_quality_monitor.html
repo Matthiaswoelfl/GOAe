@@ -133,7 +133,6 @@
   }
   .beleg-agg-headline .num{font-size:2.1rem; font-weight:800; font-variant-numeric:tabular-nums; line-height:1;}
   .beleg-agg-headline .sub{font-size:.86rem; opacity:.88;}
-  .beleg-agg-reason{font-size:.78rem; color:var(--ink-soft);}
   .beleg-agg-zt{display:flex; flex-wrap:wrap; gap:4px;}
 
   /* ---------- Given/When/Then scenario box ---------- */
@@ -311,6 +310,25 @@
   .qsl-trigger:hover{background:var(--surface-2);}
   .qsl-trigger .icon{width:14px; height:14px; color:var(--ink-soft); flex:none;}
   .qsl-trigger:hover .icon{color:var(--navy);}
+
+  /* ---------- Fehlende-Felder trigger (clickable Detailsicht) ---------- */
+  .fehlend-trigger{
+    appearance:none; border:0; background:none; padding:4px 6px; margin:-4px -6px; border-radius:8px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px; font:700 inherit; color:var(--c-crit);
+  }
+  .fehlend-trigger:hover{background:var(--c-crit-bg);}
+  .fehlend-trigger .icon{width:13px; height:13px; flex:none;}
+  .fehlend-list{list-style:none; margin:16px 0 0; padding:0; display:flex; flex-direction:column; gap:2px;}
+  .fehlend-list li{display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:.84rem; padding:9px 0; border-bottom:1px solid var(--border);}
+  .fehlend-list li:last-child{border-bottom:none;}
+  .fehlend-feld-name{font-weight:700; color:var(--ink);}
+
+  /* ---------- Excel-artige Spalten-Sortierung (Beleg-Qualität-Tabelle) ---------- */
+  .data-table th.sortable{cursor:pointer; user-select:none;}
+  .data-table th.sortable:hover{color:var(--ink);}
+  .data-table th.sortable::after{content:"⇅"; margin-left:6px; font-size:.85em; opacity:.35; font-weight:400;}
+  .data-table th.sortable[data-active="asc"]::after{content:"▲"; opacity:1; color:var(--navy);}
+  .data-table th.sortable[data-active="desc"]::after{content:"▼"; opacity:1; color:var(--navy);}
 
   /* ---------- QSL modal ---------- */
   .modal-backdrop{position:fixed; inset:0; background:rgba(10,14,26,.5); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50;}
@@ -542,7 +560,13 @@
             </div>
             <div class="table-wrap">
               <table class="data-table">
-                <thead><tr><th>Beleg-ID</th><th>Dok.-Art</th><th>Vollständigkeit</th><th>Fehlende Felder</th><th>Enthaltene Zeilentypen</th><th>Vermuteter Grund</th></tr></thead>
+                <thead id="beleg-agg-thead"><tr>
+                  <th class="sortable" data-sort="belegid">Beleg-ID</th>
+                  <th class="sortable" data-sort="dokart">Dok.-Art</th>
+                  <th class="sortable" data-sort="vollst">Vollständigkeit</th>
+                  <th class="sortable" data-sort="fehlend">Fehlende Felder</th>
+                  <th>Enthaltene Zeilentypen</th>
+                </tr></thead>
                 <tbody id="beleg-agg-body"></tbody>
               </table>
             </div>
@@ -674,6 +698,20 @@
   </div>
 </div>
 
+<div class="modal-backdrop" id="fehlend-modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="fehlend-modal-title">
+    <div class="modal-head">
+      <div>
+        <h2 class="modal-title" id="fehlend-modal-title">Fehlende Datenfelder</h2>
+        <p class="modal-sub" id="fehlend-modal-sub"></p>
+      </div>
+      <button type="button" class="modal-close" id="fehlend-modal-close" aria-label="Schließen"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <ul class="fehlend-list" id="fehlend-list"></ul>
+    <p class="subhead-sub dp-ziffer-hint" id="fehlend-modal-grund"></p>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="qsl-glossar-modal" hidden>
   <div class="modal-card modal-card--wide" role="dialog" aria-modal="true" aria-labelledby="qsl-glossar-title">
     <div class="modal-head">
@@ -705,6 +743,7 @@ const ICONS = {
   close:'<path d="M6 6l12 12M18 6 6 18"/>',
   eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
   'eye-off':'<path d="M3 3l18 18"/><path d="M10.6 5.2A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a16.6 16.6 0 0 1-3.2 4.1M6.5 6.6C3.7 8.4 2 12 2 12s3.5 7 10 7a9.9 9.9 0 0 0 3.4-.6"/><path d="M14.1 14.1a3 3 0 1 1-4.2-4.2"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
 };
 function icon(name, cls){ return '<svg class="'+(cls||"icon")+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICONS[name]+'</svg>'; }
 function heute(){
@@ -1183,6 +1222,26 @@ function buildBelegAggDayRows(dateIso){
   return rows;
 }
 let activeBelegAggSicht = "alle";
+/* Excel-artige Spaltensortierung der Beispiel-Belege-Tabelle: Klick auf eine sortierbare
+   Spaltenüberschrift sortiert aufsteigend, erneuter Klick auf dieselbe Spalte dreht auf
+   absteigend um (dritter Klick wieder aufsteigend usw.) — kein dritter "unsortiert"-Zustand,
+   analog zum gewohnten Excel-Verhalten nach dem ersten Klick. */
+let belegAggSortCol = null;
+let belegAggSortDir = "asc";
+function belegAggSortRows(rows){
+  if(!belegAggSortCol) return rows;
+  const dir = belegAggSortDir==="asc" ? 1 : -1;
+  return rows.slice().sort((a,b)=>{
+    let av, bv;
+    if(belegAggSortCol==="belegid"){ av=a.belegId; bv=b.belegId; }
+    else if(belegAggSortCol==="dokart"){ av=a.dokArt; bv=b.dokArt; }
+    else if(belegAggSortCol==="vollst"){ av=belegAggEffectiveVollst(a); bv=belegAggEffectiveVollst(b); }
+    else if(belegAggSortCol==="fehlend"){ av=belegAggEffectiveFehlend(a); bv=belegAggEffectiveFehlend(b); }
+    else return 0;
+    if(typeof av==="string") return av.localeCompare(bv, "de")*dir;
+    return (av-bv)*dir;
+  });
+}
 function getBelegAggBaseRows(){
   if(activeBelegZeitraumModus==="monat"){
     const [y,m] = activeBelegMonat.split("-").map(Number);
@@ -1658,6 +1717,38 @@ function openQslModalBeleg(rowId){
   }).join("");
   document.getElementById("qsl-modal").hidden = false;
 }
+/* Detailsicht "Fehlende Datenfelder": welche konkreten Datenfelder fehlen bei einem
+   unvollständigen Beispiel-Beleg. Deterministisch aus dem echten Feldkatalog (DATENPOOL_FELDER,
+   gefiltert auf die Dok.-Art des Belegs bzw. "Alle Dok.-Arten") ausgewählt — je Beleg (per Hash
+   auf r.id) eine stabile, aber unterschiedliche Teilmenge in Höhe der fehlenden Feldanzahl. */
+function buildBelegMissingFelder(row){
+  const anzahl = belegAggEffectiveFehlend(row);
+  if(!anzahl) return [];
+  const pool = DATENPOOL_FELDER.filter(f=>f.dokArt===row.dokArt || f.dokArt==="Alle Dok.-Arten");
+  const shuffled = pool.map(f=>({ f, k:dpZifferHash(row.id+"|missingfeld|"+f.id) })).sort((a,b)=>a.k-b.k);
+  return shuffled.slice(0, Math.min(anzahl, pool.length)).map(x=>x.f);
+}
+function openFehlendModal(rowId){
+  const row = getFilteredBelegPool().find(r=>r.id===rowId);
+  if(!row) return;
+  const anzahl = belegAggEffectiveFehlend(row);
+  const felder = buildBelegMissingFelder(row);
+  document.getElementById("fehlend-modal-title").textContent = "Fehlende Datenfelder — "+row.belegId;
+  document.getElementById("fehlend-modal-sub").textContent = row.dokArt+" · "+anzahl+" von "+row.feldAnzahl+" Pflichtfeldern fehlend";
+  document.getElementById("fehlend-list").innerHTML = felder.map(f=>
+    '<li><span class="fehlend-feld-name">'+esc(f.feld)+'</span>'+
+    (f.zielstatus ? '<span class="badge info"><span class="dot"></span>'+esc(f.zielstatus)+'</span>' : '<span class="k-quelle">—</span>')+
+    '</li>'
+  ).join("");
+  const grund = belegAggEffectiveGrund(row);
+  document.getElementById("fehlend-modal-grund").textContent = grund ? "Vermuteter Grund: "+grund : "";
+  document.getElementById("fehlend-modal").hidden = false;
+}
+function closeFehlendModal(){ document.getElementById("fehlend-modal").hidden = true; }
+document.getElementById("fehlend-modal-close").addEventListener("click", closeFehlendModal);
+document.getElementById("fehlend-modal").addEventListener("click", e=>{
+  if(e.target.id==="fehlend-modal") closeFehlendModal();
+});
 function openQslGlossar(){
   document.getElementById("qsl-glossar-body").innerHTML = QSL_GLOSSAR.map(g=>
     '<tr class="ov-section"><td colspan="3">'+esc(g.gruppe)+'</td></tr>'+
@@ -1693,6 +1784,7 @@ document.getElementById("qsl-glossar-search").addEventListener("input", e=>{
 document.addEventListener("keydown", e=>{
   if(e.key==="Escape" && !document.getElementById("qsl-modal").hidden) closeQslModal();
   if(e.key==="Escape" && !document.getElementById("qsl-glossar-modal").hidden) closeQslGlossar();
+  if(e.key==="Escape" && !document.getElementById("fehlend-modal").hidden) closeFehlendModal();
 });
 
 function renderBelegAgg(){
@@ -1740,24 +1832,28 @@ function renderBelegAgg(){
     renderBelegAgg();
   });
 
+  document.querySelectorAll("#beleg-agg-thead th.sortable").forEach(th=>{
+    th.dataset.active = (th.dataset.sort===belegAggSortCol) ? belegAggSortDir : "";
+  });
   const sichtRows = activeBelegAggSicht==="unvollstaendig" ? belegAggFilteredRows.filter(r=>!belegAggIstVollstaendig(r)) : belegAggFilteredRows;
-  const shown = sichtRows.slice(0, 50);
+  const shown = belegAggSortRows(sichtRows).slice(0, 50);
   document.getElementById("beleg-agg-count").textContent = sichtRows.length.toLocaleString("de-DE")+" Beispiel-Beleg(e) "+periodLabel+" in der Stichprobe"+(sichtRows.length>50 ? " · Anzeige auf 50 begrenzt" : "");
   document.getElementById("beleg-agg-body").innerHTML = shown.length ? shown.map(r=>{
     const vollst = belegAggEffectiveVollst(r);
     const anzahlFehlend = belegAggEffectiveFehlend(r);
-    const grundText = belegAggEffectiveGrund(r);
     return '<tr>'+
       '<td class="mono">'+esc(r.belegId)+'</td>'+
       '<td class="k-quelle">'+esc(r.dokArt)+'</td>'+
       '<td><button type="button" class="qsl-trigger" data-rowid="'+esc(r.id)+'" title="QSL-Verteilung anzeigen">'+bar(vollst)+icon("pie")+'</button></td>'+
-      '<td>'+(anzahlFehlend ? anzahlFehlend+' von '+r.feldAnzahl : '<span class="badge ok"><span class="dot"></span>Keine</span>')+'</td>'+
+      '<td>'+(anzahlFehlend ? '<button type="button" class="fehlend-trigger" data-rowid="'+esc(r.id)+'" title="Fehlende Datenfelder anzeigen">'+anzahlFehlend+' von '+r.feldAnzahl+icon("list")+'</button>' : '<span class="badge ok"><span class="dot"></span>Keine</span>')+'</td>'+
       '<td><div class="beleg-agg-zt">'+r.zeilentypen.map(zt=>'<span class="badge info badge--sm">'+esc(zt)+'</span>').join("")+'</div></td>'+
-      '<td class="beleg-agg-reason">'+(grundText ? esc(grundText) : '—')+'</td>'+
     '</tr>';
-  }).join("") : '<tr><td colspan="6" class="cell-empty">Keine Beispiel-Belege '+periodLabel+' für die aktuelle Filterkombination in der 80er-Tagesstichprobe — Filter lockern, um Beispiel-Belege zu sehen. Die Kennzahlen oben basieren auf einer eigenen, analytischen Hochrechnung und können unabhängig davon Werte &gt; 0 zeigen.</td></tr>';
+  }).join("") : '<tr><td colspan="5" class="cell-empty">Keine Beispiel-Belege '+periodLabel+' für die aktuelle Filterkombination in der 80er-Tagesstichprobe — Filter lockern, um Beispiel-Belege zu sehen. Die Kennzahlen oben basieren auf einer eigenen, analytischen Hochrechnung und können unabhängig davon Werte &gt; 0 zeigen.</td></tr>';
   document.querySelectorAll("#beleg-agg-body .qsl-trigger").forEach(btn=>{
     btn.addEventListener("click", ()=>openQslModalBeleg(btn.dataset.rowid));
+  });
+  document.querySelectorAll("#beleg-agg-body .fehlend-trigger").forEach(btn=>{
+    btn.addEventListener("click", ()=>openFehlendModal(btn.dataset.rowid));
   });
 }
 function renderDatenpool(){ renderBelegAgg(); renderDpTable(); renderAvTable(); }
@@ -1975,6 +2071,13 @@ document.getElementById("beleg-agg-sicht-toggle").querySelectorAll(".filter-chip
   chip.addEventListener("click", ()=>{
     activeBelegAggSicht = chip.dataset.sicht;
     document.querySelectorAll("#beleg-agg-sicht-toggle .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
+    renderBelegAgg();
+  });
+});
+document.querySelectorAll("#beleg-agg-thead th.sortable").forEach(th=>{
+  th.addEventListener("click", ()=>{
+    if(belegAggSortCol===th.dataset.sort){ belegAggSortDir = belegAggSortDir==="asc" ? "desc" : "asc"; }
+    else { belegAggSortCol = th.dataset.sort; belegAggSortDir = "asc"; }
     renderBelegAgg();
   });
 });
