@@ -1674,14 +1674,14 @@ function renderBelegAgg(){
     : '<span class="sub">Keine Belege '+periodLabel+'.</span>';
 
   const unvollstCount = stats.total - stats.vollstaendig;
-  const avgFehlend = DP_AVG_FELDANZAHL * BELEG_AGG_FEHLEND_RATIO_INCOMPLETE * (stats.total ? unvollstCount/stats.total : 0);
-  const avgBefuellt = DP_AVG_FELDANZAHL - avgFehlend;
+  /* Nur über die unvollständigen Belege gemittelt (nicht über alle Belege) — sonst verwässern die
+     vollständigen Belege (0 fehlende Felder) den Durchschnitt und der Wert wirkt künstlich niedrig. */
+  const avgFehlendProUnvollstaendig = DP_AVG_FELDANZAHL * BELEG_AGG_FEHLEND_RATIO_INCOMPLETE;
   document.getElementById("beleg-agg-kpi").innerHTML = [
     ['Belege gesamt '+(isMonat?'(Monat)':'(Tag)'), stats.total.toLocaleString("de-DE"), "info", false],
     ['Davon vollständig', stats.vollstaendig.toLocaleString("de-DE"), "ok", false],
     ['Belege mit fehlendem Pflichtfeld', unvollstCount.toLocaleString("de-DE"), unvollstCount?"crit":"ok", true],
-    ['Ø befüllte Felder je Beleg', avgBefuellt.toFixed(1).replace(".",","), "ok", false],
-    ['Ø fehlende Felder je Beleg', avgFehlend.toFixed(1).replace(".",","), avgFehlend>0?"warn":"ok", false],
+    ['Ø fehlende Felder je unvollständigem Beleg', unvollstCount ? avgFehlendProUnvollstaendig.toFixed(1).replace(".",",") : "—", unvollstCount?"warn":"ok", false],
   ].map(([l,v,c,clickable])=>
     clickable
       ? '<button type="button" class="kpi-tile kpi-tile--click" id="beleg-agg-drill-btn" title="Klicken für Sicht 2: Beispiel-Belege mit fehlendem Pflichtfeld"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></button>'
