@@ -437,7 +437,7 @@
         <div class="subhead-row">
           <div class="subhead">Beleg-Qualität — aggregierte Zwischenebene</div>
         </div>
-        <p class="subhead-sub">Zwischenebene zwischen Einzelfeldern und Filterattributen: absolute Datenqualität je Beleg statt nur Prozent-Durchschnitt über Felder — Einstieg in die Ursachenanalyse. Kopfzahl/KPIs zeigen die Gesamtmenge für Tag oder Monat, unabhängig von allen Filtern (stabile Management-Kennzahl). Die Beispiel-Belege darunter (mind. 40/Tag, Anzeige auf 50 begrenzt) reagieren auf Dok.-Art, Zeilentyp, Eingangskanal und Verarbeitungsverfahren (ISH/Padline). Klick auf die Vollständigkeit öffnet die QSL-Verteilung.</p>
+        <p class="subhead-sub">Zwischenebene zwischen Einzelfeldern und Filterattributen: absolute Datenqualität je Beleg statt nur Prozent-Durchschnitt über Felder — Einstieg in die Ursachenanalyse. Kopfzahl/KPIs zeigen die Gesamtmenge für Tag oder Monat unabhängig von Dok.-Art/Zeilentyp; die Vollständigkeits-Quote reagiert zusätzlich auf Eingangskanal und Verarbeitungsverfahren (ISH/Padline). Die Beispiel-Belege darunter (mind. 40/Tag, Anzeige auf 50 begrenzt) reagieren auf Dok.-Art, Zeilentyp, Eingangskanal und Verarbeitungsverfahren. Klick auf die Vollständigkeit öffnet die QSL-Verteilung.</p>
         <div class="filters">
           <span class="filter-dim-label">Zeitraum</span>
           <div class="filter-group" id="beleg-agg-zeitraum-modus">
@@ -1162,12 +1162,19 @@ function getFilteredBelegPool(){
 /* Kanal-/ISH-Modifikatoren (vollst-Komponente) verschieben die Vollständigkeits-Basisquote von
    80 % statt den Vollständigkeitswert jedes einzelnen Belegs separat zu kappen — so bleibt die
    Verschiebung der Quote in der gleichen Größenordnung wie die Modifikatoren selbst (wenige
-   Prozentpunkte) statt bei einer harten 100%-Schwelle auf einen Schlag umzukippen. */
-function belegAggEffectiveQuote(){
+   Prozentpunkte) statt bei einer harten 100%-Schwelle auf einen Schlag umzukippen. Dieselbe
+   Delta-Logik wird auch auf die Kopfzahl/KPIs der Beleg-Qualität angewandt (s. renderBelegAgg),
+   damit Eingangskanal-/ISH-Filter dort ebenfalls sichtbar wirken — nur die Gesamtmenge (Belege
+   gesamt) bleibt als Mengenangabe unverändert, konsistent mit MVP2 (dpEffectiveValue), wo die
+   Kanal-/ISH-Modifikatoren ebenfalls nur Qualitätswerte verschieben, nie die Anzahl. */
+function belegAggKanalIshDelta(){
   let delta = 0;
   if(activeDpKanal!=="alle") delta += DP_KANAL_MODIFIER[activeDpKanal].vollst;
   if(activeDpIsh!=="alle") delta += DP_ISH_MODIFIER[activeDpIsh].vollst;
-  return Math.max(0, Math.min(100, BELEG_POOL_BASIS_QUOTE + delta));
+  return delta;
+}
+function belegAggEffectiveQuote(){
+  return Math.max(0, Math.min(100, BELEG_POOL_BASIS_QUOTE + belegAggKanalIshDelta()));
 }
 function belegAggIstVollstaendig(r){
   return r.completeRoll < belegAggEffectiveQuote();
@@ -1612,6 +1619,15 @@ document.addEventListener("keydown", e=>{
 function renderBelegAgg(){
   const isMonat = activeBelegZeitraumModus==="monat";
   const stats = isMonat ? dpMonthlyStats(activeBelegMonat) : dpDailyStats(activeBelegTag);
+  /* Eingangskanal-/ISH-Filter verschieben hier dieselbe Vollständigkeits-Quote (Delta aus
+     belegAggKanalIshDelta) wie bei den einzelnen Beispiel-Belegen — nur die Gesamtmenge bleibt
+     als reine Mengenangabe unverändert (konsistent mit MVP2, wo diese Modifikatoren ebenfalls
+     nie die Anzahl, nur Qualitätswerte verschieben). */
+  const kanalIshDelta = belegAggKanalIshDelta();
+  if(kanalIshDelta!==0 && stats.total){
+    stats.quote = Math.max(0, Math.min(100, Math.round((stats.quote+kanalIshDelta)*10)/10));
+    stats.vollstaendig = Math.round(stats.total*stats.quote/100);
+  }
   const periodLabel = isMonat ? "im "+fmtMonatDe(activeBelegMonat) : "am "+fmtDateDe(activeBelegTag);
   document.getElementById("beleg-agg-zeitraum-hint").textContent = isMonat
     ? "Monatssicht (kumuliert über den Monat): zeigt alle Belege, die im gewählten Monat in den Datenpool geschrieben wurden — für die Management-Übersicht."
