@@ -1276,7 +1276,14 @@ function dpDailyStats(dateIso){
   const dow = new Date(dateIso+"T00:00:00").getDay();
   const isWeekend = dow===0 || dow===6;
   const total = isWeekend ? 250 + (h("vol")%900) : 1200 + (h("vol")%3300);
-  const quote = Math.max(72, Math.min(97, 84 + (h("q")%1300)/100 - 6.5));
+  /* Deutlich mehr Streuung als eine enge "immer hohe 80er/90er"-Spanne: an den meisten Tagen
+     liegt die Quote in einem breiten Normalbereich (66–98 %), an rund 1 von 7 Tagen („Problemtag“
+     — z. B. EM-Batch-Störung, Massenanlieferung minderer Qualität) fällt sie deutlich ab auf
+     22–58 %, sodass auch Werte wie 30 % oder 40 % realistisch vorkommen. */
+  const isBadDay = (h("badday")%100) < 14;
+  const quote = isBadDay
+    ? Math.max(22, Math.min(58, 30 + (h("q")%2800)/100 - 14))
+    : Math.max(60, Math.min(99, 82 + (h("q")%3200)/100 - 16));
   const vollstaendig = Math.round(total*quote/100);
   return { total, vollstaendig, quote: Math.round(quote*10)/10 };
 }
