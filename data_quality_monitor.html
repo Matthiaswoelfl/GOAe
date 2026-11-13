@@ -218,6 +218,8 @@
   .subhead{font-size:1.02rem; font-weight:800; margin:26px 0 4px;}
   .subhead-sub{font-size:.82rem; color:var(--ink-soft); margin:0 0 14px; max-width:80ch; line-height:1.6;}
   .dp-ziffer-hint{font-size:.74rem; font-style:italic; margin:-10px 0 14px;}
+  button.dp-ziffer-hint{display:block; width:100%; text-align:left; background:none; border:none; padding:0; font-family:inherit; cursor:pointer; color:var(--navy); text-decoration:underline; text-decoration-color:var(--border);}
+  button.dp-ziffer-hint:hover{text-decoration-color:var(--navy);}
 
   /* ---------- Datenpool: Filter-Sidebar links statt Filterzeilen oben ---------- */
   #view-datenpool .view-wrap{max-width:1480px;}
@@ -559,24 +561,25 @@
             </div>
             <div class="beleg-agg-headline" id="beleg-agg-headline"></div>
             <div class="kpi-row" id="beleg-agg-kpi"></div>
-            <div class="subhead-row">
-              <div class="subhead">Top fehlende Datenfelder</div>
-            </div>
-            <p class="subhead-sub">Aggregiert über alle unvollständigen Beispiel-Belege im gewählten Zeitraum und Filter (Stichprobe) — zeigt, <b>welche</b> Datenfelder am häufigsten fehlen, statt nur wie viele. Klick auf ein Datenfeld filtert die Beleg-Liste unten auf genau diese Fälle.</p>
-            <div class="table-wrap">
-              <table class="data-table" id="beleg-top-felder-table">
-                <thead><tr><th>Datenfeld</th><th>AV-Zielstatus</th><th>Anzahl</th><th>Anteil an unvollständigen Belegen</th></tr></thead>
-                <tbody id="beleg-top-felder-body"></tbody>
-              </table>
-            </div>
-            <p class="subhead-sub dp-ziffer-hint" id="beleg-top-felder-hint" hidden></p>
             <div class="filters">
               <div class="filter-group" id="beleg-agg-sicht-toggle">
                 <button class="filter-chip" type="button" data-sicht="alle" data-active="true">Sicht 1 · Alle Belege</button>
                 <button class="filter-chip" type="button" data-sicht="unvollstaendig">Sicht 2 · Nur unvollständige Belege</button>
+                <button class="filter-chip" type="button" data-sicht="topfelder">Sicht 3 · Top fehlende Datenfelder</button>
               </div>
               <span class="filter-count" id="beleg-agg-count"></span>
             </div>
+            <div id="beleg-top-felder-wrap" hidden>
+              <p class="subhead-sub">Aggregiert über alle unvollständigen Beispiel-Belege im gewählten Zeitraum und Filter (Stichprobe) — zeigt, <b>welche</b> Datenfelder am häufigsten fehlen, statt nur wie viele. Klick auf ein Datenfeld wechselt zu Sicht 2 und filtert die Beleg-Liste dort auf genau diese Fälle.</p>
+              <div class="table-wrap">
+                <table class="data-table" id="beleg-top-felder-table">
+                  <thead><tr><th>Datenfeld</th><th>AV-Zielstatus</th><th>Anzahl</th><th>Anteil an unvollständigen Belegen</th></tr></thead>
+                  <tbody id="beleg-top-felder-body"></tbody>
+                </table>
+              </div>
+              <p class="subhead-sub dp-ziffer-hint" id="beleg-top-felder-hint" hidden></p>
+            </div>
+            <button type="button" class="subhead-sub dp-ziffer-hint" id="beleg-agg-feld-filter-hint" hidden></button>
             <div id="beleg-agg-cluster-wrap"></div>
           </div>
 
@@ -1891,38 +1894,61 @@ function renderBelegAgg(){
     renderBelegAgg();
   });
 
+  const isTopFelderSicht = activeBelegAggSicht==="topfelder";
+  document.getElementById("beleg-top-felder-wrap").hidden = !isTopFelderSicht;
+  document.getElementById("beleg-agg-cluster-wrap").hidden = isTopFelderSicht;
+
   const unvollstForRanking = belegAggFilteredRows.filter(r=>!belegAggIstVollstaendig(r));
-  const topFelder = computeTopFehlendeFelder(unvollstForRanking).slice(0, 12);
-  document.getElementById("beleg-top-felder-body").innerHTML = topFelder.length
-    ? topFelder.map(f=>{
-        const anteil = unvollstForRanking.length ? (f.count/unvollstForRanking.length*100) : 0;
-        const selected = f.feld===activeBelegFeldFilter;
-        return '<tr class="row-clickable'+(selected?" row-selected":"")+'" data-feld="'+esc(f.feld)+'">'+
-          '<td class="k-name">'+esc(f.feld)+'</td>'+
-          '<td>'+(f.zielstatus ? '<span class="badge info"><span class="dot"></span>'+esc(f.zielstatus)+'</span>' : '<span class="k-quelle">—</span>')+'</td>'+
-          '<td class="ov-num">'+f.count.toLocaleString("de-DE")+'</td>'+
-          '<td class="ov-num">'+anteil.toFixed(0)+' %</td>'+
-        '</tr>';
-      }).join("")
-    : '<tr><td colspan="4" class="cell-empty">Keine unvollständigen Beispiel-Belege '+periodLabel+' für die aktuelle Filterkombination.</td></tr>';
-  document.querySelectorAll("#beleg-top-felder-body tr.row-clickable").forEach(tr=>{
-    tr.addEventListener("click", ()=>{
-      const feld = tr.dataset.feld;
-      activeBelegFeldFilter = (activeBelegFeldFilter===feld) ? null : feld;
-      activeBelegAggSicht = "unvollstaendig";
-      document.querySelectorAll("#beleg-agg-sicht-toggle .filter-chip").forEach(c=>c.dataset.active = (c.dataset.sicht==="unvollstaendig") ? "true":"false");
-      renderBelegAgg();
+  if(isTopFelderSicht){
+    const topFelder = computeTopFehlendeFelder(unvollstForRanking).slice(0, 12);
+    document.getElementById("beleg-top-felder-body").innerHTML = topFelder.length
+      ? topFelder.map(f=>{
+          const anteil = unvollstForRanking.length ? (f.count/unvollstForRanking.length*100) : 0;
+          const selected = f.feld===activeBelegFeldFilter;
+          return '<tr class="row-clickable'+(selected?" row-selected":"")+'" data-feld="'+esc(f.feld)+'">'+
+            '<td class="k-name">'+esc(f.feld)+'</td>'+
+            '<td>'+(f.zielstatus ? '<span class="badge info"><span class="dot"></span>'+esc(f.zielstatus)+'</span>' : '<span class="k-quelle">—</span>')+'</td>'+
+            '<td class="ov-num">'+f.count.toLocaleString("de-DE")+'</td>'+
+            '<td class="ov-num">'+anteil.toFixed(0)+' %</td>'+
+          '</tr>';
+        }).join("")
+      : '<tr><td colspan="4" class="cell-empty">Keine unvollständigen Beispiel-Belege '+periodLabel+' für die aktuelle Filterkombination.</td></tr>';
+    document.querySelectorAll("#beleg-top-felder-body tr.row-clickable").forEach(tr=>{
+      tr.addEventListener("click", ()=>{
+        const feld = tr.dataset.feld;
+        const turnsOn = activeBelegFeldFilter!==feld;
+        activeBelegFeldFilter = turnsOn ? feld : null;
+        /* Nur beim Auswählen eines Felds in Sicht 2 springen (direkt zur gefilterten Liste);
+           beim Abwählen in Sicht 3 (Ranking) bleiben, statt ungefragt wegzuspringen. */
+        if(turnsOn){
+          activeBelegAggSicht = "unvollstaendig";
+          document.querySelectorAll("#beleg-agg-sicht-toggle .filter-chip").forEach(c=>c.dataset.active = (c.dataset.sicht==="unvollstaendig") ? "true":"false");
+        }
+        renderBelegAgg();
+      });
     });
-  });
-  const feldHint = document.getElementById("beleg-top-felder-hint");
-  if(activeBelegFeldFilter){
-    feldHint.hidden = false;
-    feldHint.textContent = "Gefiltert auf Datenfeld „"+activeBelegFeldFilter+"“ — Klick auf das Datenfeld oben erneut, um den Filter aufzuheben.";
-  } else {
-    feldHint.hidden = true;
+    const feldHint = document.getElementById("beleg-top-felder-hint");
+    if(activeBelegFeldFilter){
+      feldHint.hidden = false;
+      feldHint.textContent = "Aktiver Filter aus Sicht 2: Datenfeld „"+activeBelegFeldFilter+"“ — in Sicht 2 erneut auf das Datenfeld klicken, um ihn aufzuheben.";
+    } else {
+      feldHint.hidden = true;
+    }
+    document.getElementById("beleg-agg-count").textContent = unvollstForRanking.length.toLocaleString("de-DE")+" unvollständige Beispiel-Beleg(e) "+periodLabel+" in der Stichprobe — Basis für das Ranking";
+    return;
   }
 
-  const sichtRows = belegFeldFilterRows(activeBelegAggSicht==="unvollstaendig" ? belegAggFilteredRows.filter(r=>!belegAggIstVollstaendig(r)) : belegAggFilteredRows);
+  const feldFilterHint = document.getElementById("beleg-agg-feld-filter-hint");
+  if(activeBelegFeldFilter){
+    feldFilterHint.hidden = false;
+    feldFilterHint.textContent = "Gefiltert auf Datenfeld „"+activeBelegFeldFilter+"“ (aus Sicht 3) — klicken, um den Filter aufzuheben.";
+    feldFilterHint.onclick = ()=>{ activeBelegFeldFilter = null; renderBelegAgg(); };
+  } else {
+    feldFilterHint.hidden = true;
+    feldFilterHint.onclick = null;
+  }
+
+  const sichtRows = belegFeldFilterRows(activeBelegAggSicht==="unvollstaendig" ? unvollstForRanking : belegAggFilteredRows);
   document.getElementById("beleg-agg-count").textContent = sichtRows.length.toLocaleString("de-DE")+" Beispiel-Beleg(e) "+periodLabel+" in der Stichprobe"+(sichtRows.length>50 ? " · Anzeige auf 50 begrenzt" : "");
 
   document.getElementById("beleg-agg-cluster-wrap").innerHTML = activeBelegAggSicht==="unvollstaendig"
