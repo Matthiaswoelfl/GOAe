@@ -345,6 +345,7 @@
   .beleg-cluster-count{font-size:.78rem; color:var(--ink-soft); font-weight:600; white-space:nowrap;}
   .beleg-cluster-body{border-top:1px solid var(--border);}
   .beleg-cluster-body table.data-table{min-width:0;}
+  .beleg-cluster-body--nested{padding:12px; background:var(--surface-2);}
   .beleg-cluster-trunc-note{font-size:.74rem; color:var(--ink-soft); font-style:italic; padding:10px 18px;}
 
   /* ---------- QSL modal ---------- */
@@ -565,20 +566,7 @@
               </div>
               <span class="filter-count" id="beleg-agg-count"></span>
             </div>
-            <div class="table-wrap" id="beleg-agg-table-wrap">
-              <table class="data-table">
-                <thead id="beleg-agg-thead"><tr>
-                  <th class="sortable" data-sort="belegid">Beleg-ID</th>
-                  <th class="sortable" data-sort="dokart">Dok.-Art</th>
-                  <th class="sortable" data-sort="vollst">Vollständigkeit</th>
-                  <th class="sortable" data-sort="fehlend">Fehlende Felder</th>
-                  <th>Enthaltene Zeilentypen</th>
-                </tr></thead>
-                <tbody id="beleg-agg-body"></tbody>
-              </table>
-            </div>
-            <div id="beleg-agg-cluster-wrap" hidden></div>
-            <p class="subhead-sub dp-ziffer-hint">Hinweis zur technischen Komplexität (Workshop-Feedback): Ein echter Abgleich auf jeder tieferen Zeilenebene mit dem Datenpool ist deutlich aufwendiger als hier dargestellt. Diese Ansicht simuliert plausible Ergebnisse zur Veranschaulichung, kein Live-Abgleich. Ob die benötigten Attribute vom EM geliefert werden können, ist mit dem EM-Team zu klären (MVP-Annahme).</p>
+            <div id="beleg-agg-cluster-wrap"></div>
           </div>
 
           <div id="mvp2-panel" hidden>
@@ -1851,28 +1839,16 @@ function renderBelegAgg(){
     renderBelegAgg();
   });
 
-  document.querySelectorAll("#beleg-agg-thead th.sortable").forEach(th=>{
-    th.dataset.active = (th.dataset.sort===belegAggSortCol) ? belegAggSortDir : "";
-  });
   const sichtRows = activeBelegAggSicht==="unvollstaendig" ? belegAggFilteredRows.filter(r=>!belegAggIstVollstaendig(r)) : belegAggFilteredRows;
   document.getElementById("beleg-agg-count").textContent = sichtRows.length.toLocaleString("de-DE")+" Beispiel-Beleg(e) "+periodLabel+" in der Stichprobe"+(sichtRows.length>50 ? " · Anzeige auf 50 begrenzt" : "");
 
-  const isUnvollstaendig = activeBelegAggSicht==="unvollstaendig";
-  document.getElementById("beleg-agg-table-wrap").hidden = isUnvollstaendig;
-  document.getElementById("beleg-agg-cluster-wrap").hidden = !isUnvollstaendig;
-
-  if(isUnvollstaendig){
-    document.getElementById("beleg-agg-cluster-wrap").innerHTML = renderBelegClusterView(sichtRows, periodLabel);
-    wireBelegRowTriggers("#beleg-agg-cluster-wrap");
-  } else {
-    const shown = belegAggSortRows(sichtRows).slice(0, 50);
-    document.getElementById("beleg-agg-body").innerHTML = shown.length ? shown.map(belegAggRowHtml).join("")
-      : '<tr><td colspan="5" class="cell-empty">Keine Beispiel-Belege '+periodLabel+' für die aktuelle Filterkombination in der 80er-Tagesstichprobe — Filter lockern, um Beispiel-Belege zu sehen. Die Kennzahlen oben basieren auf einer eigenen, analytischen Hochrechnung und können unabhängig davon Werte &gt; 0 zeigen.</td></tr>';
-    wireBelegRowTriggers("#beleg-agg-body");
-  }
+  document.getElementById("beleg-agg-cluster-wrap").innerHTML = activeBelegAggSicht==="unvollstaendig"
+    ? renderBelegClusterView(sichtRows, periodLabel)
+    : renderBelegTopClusterView(sichtRows, periodLabel);
+  wireBelegRowTriggers("#beleg-agg-cluster-wrap");
+  wireBelegAggSortHeaders("#beleg-agg-cluster-wrap");
 }
-/* Einzelne Beleg-Zeile — gemeinsam genutzt von der flachen Sicht-1-Tabelle und den
-   aufklappbaren Clustern der Sicht 2 (s. renderBelegClusterView). */
+/* Einzelne Beleg-Zeile — gemeinsam genutzt von allen Cluster-Tabellen (Sicht 1 und Sicht 2). */
 function belegAggRowHtml(r){
   const vollst = belegAggEffectiveVollst(r);
   const anzahlFehlend = belegAggEffectiveFehlend(r);
@@ -1892,15 +1868,36 @@ function wireBelegRowTriggers(containerSel){
     btn.addEventListener("click", ()=>openFehlendModal(btn.dataset.rowid));
   });
 }
-/* Sicht 2 (Workshop-Wunsch): Zwischenebene zwischen "alle unvollständigen Belege als flache
-   Liste" und der Belegebene selbst — gruppiert nach Anzahl fehlender Pflichtfelder (2, 3, 4, ...),
-   je Gruppe auf-/zuklappbar (natives <details>/<summary>). Erst beim Aufklappen einer Gruppe
-   erscheinen die zugehörigen Beispiel-Belege, wie bei den übrigen unvollständigen Belegen mit
-   Klick auf "Fehlende Felder" für die Datenfeld-Detailsicht. */
-function renderBelegClusterView(rows, periodLabel){
-  if(!rows.length){
-    return '<div class="cell-empty" style="padding:18px;">Keine unvollständigen Beispiel-Belege '+periodLabel+' für die aktuelle Filterkombination.</div>';
-  }
+/* Die Cluster-Tabellen werden bei jedem renderBelegAgg() komplett neu aufgebaut (statt eines
+   statischen <thead>) — jede Kopfzeile bekommt daher hier frisch ihre Sortier-Handler samt
+   aktuellem data-active-Status. Ein Klick sortiert global (gilt für alle sichtbaren
+   Cluster-Tabellen gleichermaßen) und rendert neu; aufgeklappte <details> klappen dabei wieder
+   zu — ein akzeptabler Nebeneffekt, wie bei jeder anderen Filteränderung auch. */
+function belegAggTheadHtml(){
+  const col = c => belegAggSortCol===c ? belegAggSortDir : "";
+  return '<tr>'+
+    '<th class="sortable" data-sort="belegid" data-active="'+col("belegid")+'">Beleg-ID</th>'+
+    '<th class="sortable" data-sort="dokart" data-active="'+col("dokart")+'">Dok.-Art</th>'+
+    '<th class="sortable" data-sort="vollst" data-active="'+col("vollst")+'">Vollständigkeit</th>'+
+    '<th class="sortable" data-sort="fehlend" data-active="'+col("fehlend")+'">Fehlende Felder</th>'+
+    '<th>Enthaltene Zeilentypen</th>'+
+  '</tr>';
+}
+function wireBelegAggSortHeaders(containerSel){
+  document.querySelectorAll(containerSel+" th.sortable").forEach(th=>{
+    th.addEventListener("click", ()=>{
+      if(belegAggSortCol===th.dataset.sort){ belegAggSortDir = belegAggSortDir==="asc" ? "desc" : "asc"; }
+      else { belegAggSortCol = th.dataset.sort; belegAggSortDir = "asc"; }
+      renderBelegAgg();
+    });
+  });
+}
+function fmtBelegCount(n){ return n===1 ? "1 Beleg" : n.toLocaleString("de-DE")+" Belege"; }
+/* Gruppiert eine Beleg-Menge nach Anzahl fehlender Pflichtfelder (2, 3, 4, ...), je Gruppe
+   auf-/zuklappbar (natives <details>/<summary>). Erst beim Aufklappen einer Gruppe erscheinen die
+   zugehörigen Beispiel-Belege. Wird sowohl direkt für Sicht 2 verwendet als auch verschachtelt
+   innerhalb von "Nicht vollständig" in Sicht 1 (s. renderBelegTopClusterView). */
+function renderMissingCountClusterList(rows){
   const buckets = new Map();
   rows.forEach(r=>{
     const n = belegAggEffectiveFehlend(r);
@@ -1912,21 +1909,60 @@ function renderBelegClusterView(rows, periodLabel){
     const bucketRows = belegAggSortRows(buckets.get(n));
     const shown = bucketRows.slice(0, 50);
     const label = n===1 ? "1 fehlendes Datenfeld" : n+" fehlende Datenfelder";
-    const countLabel = bucketRows.length===1 ? "1 Beleg" : bucketRows.length.toLocaleString("de-DE")+" Belege";
     return '<details class="beleg-cluster">'+
       '<summary class="beleg-cluster-summary">'+
         '<span class="beleg-cluster-summary-main"><span class="beleg-cluster-label">'+esc(label)+'</span></span>'+
-        '<span class="beleg-cluster-count">'+countLabel+'</span>'+
+        '<span class="beleg-cluster-count">'+fmtBelegCount(bucketRows.length)+'</span>'+
       '</summary>'+
       '<div class="beleg-cluster-body">'+
         '<table class="data-table">'+
-          '<thead><tr><th>Beleg-ID</th><th>Dok.-Art</th><th>Vollständigkeit</th><th>Fehlende Felder</th><th>Enthaltene Zeilentypen</th></tr></thead>'+
+          '<thead>'+belegAggTheadHtml()+'</thead>'+
           '<tbody>'+shown.map(belegAggRowHtml).join("")+'</tbody>'+
         '</table>'+
         (bucketRows.length>50 ? '<p class="beleg-cluster-trunc-note">Anzeige auf 50 begrenzt.</p>' : '')+
       '</div>'+
     '</details>';
   }).join("")+'</div>';
+}
+/* Sicht 2 (nur unvollständige Belege): direkt die Zwischenebene nach Anzahl fehlender Felder. */
+function renderBelegClusterView(rows, periodLabel){
+  if(!rows.length){
+    return '<div class="cell-empty" style="padding:18px;">Keine unvollständigen Beispiel-Belege '+periodLabel+' für die aktuelle Filterkombination.</div>';
+  }
+  return renderMissingCountClusterList(rows);
+}
+/* Sicht 1 (alle Belege): zwei Cluster "Vollständig"/"Nicht vollständig"; "Nicht vollständig"
+   enthält beim Aufklappen dieselbe nach Fehlend-Anzahl gruppierte Zwischenebene wie Sicht 2. */
+function renderBelegTopClusterView(rows, periodLabel){
+  if(!rows.length){
+    return '<div class="cell-empty" style="padding:18px;">Keine Beispiel-Belege '+periodLabel+' für die aktuelle Filterkombination.</div>';
+  }
+  const vollstRows = rows.filter(r=>belegAggIstVollstaendig(r));
+  const unvollstRows = rows.filter(r=>!belegAggIstVollstaendig(r));
+  const vollstShown = belegAggSortRows(vollstRows).slice(0, 50);
+  const vollstBody = vollstShown.length
+    ? '<table class="data-table"><thead>'+belegAggTheadHtml()+'</thead><tbody>'+vollstShown.map(belegAggRowHtml).join("")+'</tbody></table>'+
+      (vollstRows.length>50 ? '<p class="beleg-cluster-trunc-note">Anzeige auf 50 begrenzt.</p>' : '')
+    : '<p class="beleg-cluster-trunc-note">Keine vollständigen Beispiel-Belege.</p>';
+  const unvollstBody = unvollstRows.length
+    ? renderMissingCountClusterList(unvollstRows)
+    : '<p class="beleg-cluster-trunc-note">Keine unvollständigen Beispiel-Belege.</p>';
+  return '<div class="beleg-cluster-list">'+
+    '<details class="beleg-cluster">'+
+      '<summary class="beleg-cluster-summary">'+
+        '<span class="beleg-cluster-summary-main"><span class="beleg-cluster-label">Vollständig</span></span>'+
+        '<span class="beleg-cluster-count">'+fmtBelegCount(vollstRows.length)+'</span>'+
+      '</summary>'+
+      '<div class="beleg-cluster-body">'+vollstBody+'</div>'+
+    '</details>'+
+    '<details class="beleg-cluster">'+
+      '<summary class="beleg-cluster-summary">'+
+        '<span class="beleg-cluster-summary-main"><span class="beleg-cluster-label">Nicht vollständig</span></span>'+
+        '<span class="beleg-cluster-count">'+fmtBelegCount(unvollstRows.length)+'</span>'+
+      '</summary>'+
+      '<div class="beleg-cluster-body beleg-cluster-body--nested">'+unvollstBody+'</div>'+
+    '</details>'+
+  '</div>';
 }
 function renderDatenpool(){ renderBelegAgg(); renderDpTable(); renderAvTable(); }
 
@@ -2143,13 +2179,6 @@ document.getElementById("beleg-agg-sicht-toggle").querySelectorAll(".filter-chip
   chip.addEventListener("click", ()=>{
     activeBelegAggSicht = chip.dataset.sicht;
     document.querySelectorAll("#beleg-agg-sicht-toggle .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
-    renderBelegAgg();
-  });
-});
-document.querySelectorAll("#beleg-agg-thead th.sortable").forEach(th=>{
-  th.addEventListener("click", ()=>{
-    if(belegAggSortCol===th.dataset.sort){ belegAggSortDir = belegAggSortDir==="asc" ? "desc" : "asc"; }
-    else { belegAggSortCol = th.dataset.sort; belegAggSortDir = "asc"; }
     renderBelegAgg();
   });
 });
