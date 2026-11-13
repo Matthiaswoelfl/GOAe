@@ -1508,8 +1508,10 @@ const AV_STATUS_LABEL = { verfuegbar:"Verfügbar", "in-arbeit":"In Arbeit" };
    entnommen — dort als "rel": "relevant" -> muss, "relevant bei Angabe" -> bedingt,
    "optional" -> kann, je Feld/Entität klassifiziert. */
 /* Beispiel-Deltas: typische Fehlerkategorien aus der GOÄ-Rechnungsprüfung (Workshop-Vorgabe),
-   je Kategorie ein Beispiel-Datenfeld mit Pool- vs. SMILE/Ablage-Wert. Alle als erkanntes Delta
-   (delta:true), da jede Kategorie per Definition einen gefundenen Prüf-Treffer darstellt. */
+   je Kategorie ein Beispiel-Datenfeld mit Pool- vs. SMILE/Ablage-Wert (alle delta:true, da jede
+   Kategorie per Definition einen gefundenen Prüf-Treffer darstellt) — ergänzt um eine Reihe
+   synchroner Gegenbeispiele (delta:false), damit "Ohne Delta" in der Tabelle unten nicht leer
+   bleibt und eine realistische Mischung aus Treffern und unauffälligen Feldern zeigt. */
 const SMILE_DELTA = [
   { belegId:"BLG-20261112-0021", dokArt:"RE ambulant neu (3552)", feld:"Faktor", qsl:"unsicher", emReq:"bedingt", smileReq:"muss", pool:"3,5", smile:"2,3 (plausibilisiert)", delta:true, typ:"Falscher oder hoher Faktor", zeit:heute()+" 06:58" },
   { belegId:"BLG-20261112-0034", dokArt:"RE ambulant neu (3552)", feld:"GOÄ-Ziffer 200", qsl:"korrigiert", emReq:"muss", smileReq:"muss", pool:"2× berechnet", smile:"1× berechnet (storniert)", delta:true, typ:"Doppelte Abrechnung (Berechnung von Ziffern)", zeit:heute()+" 07:04" },
@@ -1521,6 +1523,11 @@ const SMILE_DELTA = [
   { belegId:"BLG-20261112-0093", dokArt:"RE stationär neu (3549)", feld:"GOÄ-Ziffer", qsl:"bestaetigt", emReq:"kann", smileReq:"kann", pool:"1", smile:"— (gestrichen)", delta:true, typ:"Abrechnung sonstiger Leistungen (z. B. Reiseimpfberatung)", zeit:heute()+" 07:48" },
   { belegId:"BLG-20261112-0107", dokArt:"RE ambulant neu (3552)", feld:"Materialkosten", qsl:"korrigiert", emReq:"kann", smileReq:"bedingt", pool:"12,40 €", smile:"— (gestrichen)", delta:true, typ:"Verbrauchsmaterial zusätzlich berechnet (bereits mit Ziffer abgegolten)", zeit:heute()+" 07:55" },
   { belegId:"BLG-20261112-0118", dokArt:"RE stationär neu (3549)", feld:"Materialkosten", qsl:"unsicher", emReq:"bedingt", smileReq:"bedingt", pool:"12,40 €", smile:"4,80 € (anteilig korrigiert)", delta:true, typ:"Überhöhte Verbrauchsmaterialien (z. B. nicht anteilig bei Spritzen)", zeit:heute()+" 08:02" },
+  { belegId:"BLG-20261112-0126", dokArt:"RE ambulant neu (3552)", feld:"Rechnungsbetrag", qsl:"sicher", emReq:"bedingt", smileReq:"muss", pool:"842,50 €", smile:"842,50 €", delta:false, typ:"—", zeit:heute()+" 08:09" },
+  { belegId:"BLG-20261112-0131", dokArt:"RE ambulant neu (3552)", feld:"GOÄ-Ziffer", qsl:"sicher", emReq:"muss", smileReq:"muss", pool:"1", smile:"1", delta:false, typ:"—", zeit:heute()+" 08:14" },
+  { belegId:"BLG-20261112-0142", dokArt:"RE stationär neu (3549)", feld:"IBAN", qsl:"bestaetigt", emReq:"bedingt", smileReq:"bedingt", pool:"DE12500105…4832 00", smile:"DE12500105…4832 00", delta:false, typ:"—", zeit:heute()+" 08:21" },
+  { belegId:"BLG-20261112-0149", dokArt:"RE stationär neu (3549)", feld:"Faktor", qsl:"sicher", emReq:"bedingt", smileReq:"muss", pool:"2,3", smile:"2,3", delta:false, typ:"—", zeit:heute()+" 08:27" },
+  { belegId:"BLG-20261112-0158", dokArt:"RE ambulant neu (3552)", feld:"Leistungserbringer (LE)", qsl:"korrigiert", emReq:"muss", smileReq:"muss", pool:"Dr. med. Anna Berger", smile:"Dr. med. Anna Berger", delta:false, typ:"—", zeit:heute()+" 08:33" },
 ];
 const REQ_LABEL = { muss:"Mussfeld", bedingt:"Bedingtes Mussfeld", kann:"Kannfeld" };
 const REQ_LABEL_SHORT = { muss:"Muss", bedingt:"Bedingt", kann:"Kann" };
