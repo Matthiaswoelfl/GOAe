@@ -1507,14 +1507,20 @@ const AV_STATUS_LABEL = { verfuegbar:"Verfügbar", "in-arbeit":"In Arbeit" };
    Modul "Feldkatalog GOÄ & KI" (Extraktionskatalog GOÄ, 378 Feldanforderungen)
    entnommen — dort als "rel": "relevant" -> muss, "relevant bei Angabe" -> bedingt,
    "optional" -> kann, je Feld/Entität klassifiziert. */
+/* Beispiel-Deltas: typische Fehlerkategorien aus der GOÄ-Rechnungsprüfung (Workshop-Vorgabe),
+   je Kategorie ein Beispiel-Datenfeld mit Pool- vs. SMILE/Ablage-Wert. Alle als erkanntes Delta
+   (delta:true), da jede Kategorie per Definition einen gefundenen Prüf-Treffer darstellt. */
 const SMILE_DELTA = [
-  { belegId:"BLG-20261006-0041", dokArt:"RE ambulant neu (3552)", feld:"Rechnungsbetrag", qsl:"sicher", emReq:"bedingt", smileReq:"muss", pool:"1.248,00 €", smile:"1.248,00 €", delta:false, typ:"—", zeit:heute()+" 06:58" },
-  { belegId:"BLG-20261006-0057", dokArt:"RE ambulant neu (3552)", feld:"Diagnosetext", qsl:"sicher", emReq:"muss", smileReq:"muss", pool:"Schulterarthrose", smile:"Schulterarthrose, rechts", delta:true, typ:"Ergänzung", zeit:heute()+" 07:03" },
-  { belegId:"BLG-20261006-0063", dokArt:"RE ambulant neu (3552)", feld:"GOÄ-Ziffer", qsl:"sicher", emReq:"bedingt", smileReq:"muss", pool:"1200", smile:"1200", delta:false, typ:"—", zeit:heute()+" 07:09" },
-  { belegId:"BLG-20261006-0074", dokArt:"RE stationär neu (3549)", feld:"IBAN", qsl:"unsicher", emReq:"bedingt", smileReq:"bedingt", pool:"DE46660466…2398 61", smile:"DE46660466…2398 61", delta:false, typ:"—", zeit:heute()+" 07:15" },
-  { belegId:"BLG-20261006-0081", dokArt:"RE ambulant neu (3552)", feld:"Faktor-Grund", qsl:"unsicher", emReq:"kann", smileReq:"muss", pool:"HV", smile:"—", delta:true, typ:"Löschung", zeit:heute()+" 07:22" },
-  { belegId:"BLG-20261006-0103", dokArt:"RE stationär neu (3549)", feld:"Leistungserbringer (LE)", qsl:"korrigiert", emReq:"muss", smileReq:"muss", pool:"Dr. med. Sabine Koch", smile:"Praxis Koch, Dr. med. Sabine", delta:true, typ:"Korrektur", zeit:heute()+" 07:35" },
-  { belegId:"BLG-20261006-0117", dokArt:"RE stationär neu (3549)", feld:"Honorarminderung §6a", qsl:"bestaetigt", emReq:"bedingt", smileReq:"bedingt", pool:"15 % Minderung", smile:"15 % Minderung", delta:false, typ:"—", zeit:heute()+" 07:44" },
+  { belegId:"BLG-20261112-0021", dokArt:"RE ambulant neu (3552)", feld:"Faktor", qsl:"unsicher", emReq:"bedingt", smileReq:"muss", pool:"3,5", smile:"2,3 (plausibilisiert)", delta:true, typ:"Falscher oder hoher Faktor", zeit:heute()+" 06:58" },
+  { belegId:"BLG-20261112-0034", dokArt:"RE ambulant neu (3552)", feld:"GOÄ-Ziffer 200", qsl:"korrigiert", emReq:"muss", smileReq:"muss", pool:"2× berechnet", smile:"1× berechnet (storniert)", delta:true, typ:"Doppelte Abrechnung (Berechnung von Ziffern)", zeit:heute()+" 07:04" },
+  { belegId:"BLG-20261112-0049", dokArt:"RE stationär neu (3549)", feld:"GOÄ-Ziffer-Kombination", qsl:"nicht", emReq:"bedingt", smileReq:"muss", pool:"1 + 200 (U)", smile:"1 + 200 (U entfernt)", delta:true, typ:"Unzulässige Leistungskombination (z. B. U-Präfix)", zeit:heute()+" 07:11" },
+  { belegId:"BLG-20261112-0052", dokArt:"RE ambulant neu (3552)", feld:"GOÄ-Ziffer", qsl:"korrigiert", emReq:"muss", smileReq:"muss", pool:"9999", smile:"1200 (korrigiert)", delta:true, typ:"Falsche oder ungültige GO-Nummer", zeit:heute()+" 07:19" },
+  { belegId:"BLG-20261112-0066", dokArt:"RE stationär neu (3549)", feld:"GOÄ-Ziffer", qsl:"nicht", emReq:"kann", smileReq:"muss", pool:"—", smile:"1200 (ergänzt)", delta:true, typ:"Fehlende GO-Nummer (Zeilen-/Endbetrag unstimmig)", zeit:heute()+" 07:27" },
+  { belegId:"BLG-20261112-0078", dokArt:"RE ambulant neu (3552)", feld:"GOÄ-Ziffer-Präfix", qsl:"unsicher", emReq:"bedingt", smileReq:"bedingt", pool:"1200", smile:"A-1200", delta:true, typ:"Analogie berechnet, ohne Kennzeichnung im Präfix", zeit:heute()+" 07:33" },
+  { belegId:"BLG-20261112-0085", dokArt:"RE ambulant neu (3552)", feld:"Diagnosetext", qsl:"unsicher", emReq:"muss", smileReq:"muss", pool:"Gebärmutterentzündung", smile:"Nebenhodenentzündung (korrigiert)", delta:true, typ:"Formaler Rechnungsfehler (unplausible Diagnose)", zeit:heute()+" 07:41" },
+  { belegId:"BLG-20261112-0093", dokArt:"RE stationär neu (3549)", feld:"GOÄ-Ziffer", qsl:"bestaetigt", emReq:"kann", smileReq:"kann", pool:"1", smile:"— (gestrichen)", delta:true, typ:"Abrechnung sonstiger Leistungen (z. B. Reiseimpfberatung)", zeit:heute()+" 07:48" },
+  { belegId:"BLG-20261112-0107", dokArt:"RE ambulant neu (3552)", feld:"Materialkosten", qsl:"korrigiert", emReq:"kann", smileReq:"bedingt", pool:"12,40 €", smile:"— (gestrichen)", delta:true, typ:"Verbrauchsmaterial zusätzlich berechnet (bereits mit Ziffer abgegolten)", zeit:heute()+" 07:55" },
+  { belegId:"BLG-20261112-0118", dokArt:"RE stationär neu (3549)", feld:"Materialkosten", qsl:"unsicher", emReq:"bedingt", smileReq:"bedingt", pool:"12,40 €", smile:"4,80 € (anteilig korrigiert)", delta:true, typ:"Überhöhte Verbrauchsmaterialien (z. B. nicht anteilig bei Spritzen)", zeit:heute()+" 08:02" },
 ];
 const REQ_LABEL = { muss:"Mussfeld", bedingt:"Bedingtes Mussfeld", kann:"Kannfeld" };
 const REQ_LABEL_SHORT = { muss:"Muss", bedingt:"Bedingt", kann:"Kann" };
@@ -1973,24 +1979,34 @@ function renderDatenpool(){ renderBelegAgg(); renderDpTable(); renderAvTable(); 
 function qslLabel(key){ const k = QSL_KATEGORIEN.find(x=>x.key===key); return k ? k.label : key; }
 function qslSlot(key){ const k = QSL_KATEGORIEN.find(x=>x.key===key); return k ? k.slot : 1; }
 
+/* Gemeinsame Grundlage für die KPI-Kacheln und die Gesamtübersicht darunter — beide beschreiben
+   denselben Vergleich (Datenpool vs. SMILE/Ablage, Stichprobe von heute) und müssen deshalb exakt
+   dieselben Zahlen zeigen statt zweier unabhängig gepflegter Beispieldatensätze (Workshop-
+   Feedback: "das sollte schon alles deckungsgleich sein"). Quelle ist SQ_MATRIX/QSL_DELTA_OHNE;
+   SMILE_DELTA bleibt bewusst die viel kleinere, eigenständige Beispiel-Stichprobe für die
+   Datenfeld-Vergleichstabelle weiter unten (gleiches Prinzip wie Kopfzahl vs. Beispiel-Belege
+   bei MVP1), auf die sich aber auch keine der beiden Übersichten hier bezieht. */
+function smileDeltaOverviewTotals(){
+  const col = k => SQ_MATRIX.reduce((s,r)=>s+r[k],0);
+  const perKat = QSL_KATEGORIEN.map(k=>({ key:k.key, label:k.label, count: col(k.key) }));
+  const gesamtDelta = perKat.reduce((s,k)=>s+k.count,0);
+  const geprueft = gesamtDelta + QSL_DELTA_OHNE;
+  const sicherDelta = col("sicher");
+  return { perKat, gesamtDelta, geprueft, sicherDelta };
+}
 function renderSdKpi(){
-  const total = SMILE_DELTA.length;
-  const delta = SMILE_DELTA.filter(r=>r.delta).length;
-  const sicherDelta = SMILE_DELTA.filter(r=>r.delta && r.qsl==="sicher").length;
+  const { gesamtDelta, geprueft, sicherDelta } = smileDeltaOverviewTotals();
   document.getElementById("sd-kpi").innerHTML = [
-    ['Felder geprüft (heute)', total.toLocaleString("de-DE"), "info"],
-    ['Felder mit Delta', delta.toLocaleString("de-DE"), "crit"],
-    ['Felder synchron', (total-delta).toLocaleString("de-DE"), "ok"],
-    ['Delta-Quote', ((delta/total)*100).toFixed(1).replace(".",",")+" %", delta?"warn":"ok"],
+    ['Felder geprüft (heute)', geprueft.toLocaleString("de-DE"), "info"],
+    ['Felder mit Delta', gesamtDelta.toLocaleString("de-DE"), "crit"],
+    ['Felder synchron', (geprueft-gesamtDelta).toLocaleString("de-DE"), "ok"],
+    ['Delta-Quote', ((gesamtDelta/geprueft)*100).toFixed(1).replace(".",",")+" %", gesamtDelta?"warn":"ok"],
     ['Delta trotz „Sicher gefunden“', sicherDelta.toLocaleString("de-DE"), sicherDelta?"crit":"ok"],
   ].map(([l,v,c])=>'<div class="kpi-tile"><div class="kpi-num '+c+'">'+v+'</div><div class="kpi-label">'+esc(l)+'</div></div>').join("");
 }
 
 function renderSqOverview(){
-  const col = k => SQ_MATRIX.reduce((s,r)=>s+r[k],0);
-  const perKat = QSL_KATEGORIEN.map(k=>({ label:k.label, count: col(k.key) }));
-  const gesamtDelta = perKat.reduce((s,k)=>s+k.count,0);
-  const geprueft = gesamtDelta + QSL_DELTA_OHNE;
+  const { perKat, gesamtDelta, geprueft } = smileDeltaOverviewTotals();
 
   const rows = [
     { section:"1. Was haben wir betrachtet?" },
