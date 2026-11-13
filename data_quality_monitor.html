@@ -559,6 +559,17 @@
             </div>
             <div class="beleg-agg-headline" id="beleg-agg-headline"></div>
             <div class="kpi-row" id="beleg-agg-kpi"></div>
+            <div class="subhead-row">
+              <div class="subhead">Top fehlende Datenfelder</div>
+            </div>
+            <p class="subhead-sub">Aggregiert über alle unvollständigen Beispiel-Belege im gewählten Zeitraum und Filter (Stichprobe) — zeigt, <b>welche</b> Datenfelder am häufigsten fehlen, statt nur wie viele. Klick auf ein Datenfeld filtert die Beleg-Liste unten auf genau diese Fälle.</p>
+            <div class="table-wrap">
+              <table class="data-table" id="beleg-top-felder-table">
+                <thead><tr><th>Datenfeld</th><th>AV-Zielstatus</th><th>Anzahl</th><th>Anteil an unvollständigen Belegen</th></tr></thead>
+                <tbody id="beleg-top-felder-body"></tbody>
+              </table>
+            </div>
+            <p class="subhead-sub dp-ziffer-hint" id="beleg-top-felder-hint" hidden></p>
             <div class="filters">
               <div class="filter-group" id="beleg-agg-sicht-toggle">
                 <button class="filter-chip" type="button" data-sicht="alle" data-active="true">Sicht 1 · Alle Belege</button>
@@ -1229,6 +1240,7 @@ function buildBelegAggDayRows(dateIso){
   return rows;
 }
 let activeBelegAggSicht = "alle";
+let activeBelegFeldFilter = null;
 /* Excel-artige Spaltensortierung der Beispiel-Belege-Tabelle: Klick auf eine sortierbare
    Spaltenüberschrift sortiert aufsteigend, erneuter Klick auf dieselbe Spalte dreht auf
    absteigend um (dritter Klick wieder aufsteigend usw.) — kein dritter "unsortiert"-Zustand,
@@ -1749,6 +1761,32 @@ function buildBelegMissingFelder(row){
   const shuffled = pool.map(f=>({ f, k:dpZifferHash(row.id+"|missingfeld|"+f.id) })).sort((a,b)=>a.k-b.k);
   return shuffled.slice(0, Math.min(anzahl, pool.length)).map(x=>x.f);
 }
+/* Zählt über eine Beleg-Menge, welches Datenfeld wie oft als fehlend auftaucht — die Grundlage
+   für das "Top fehlende Datenfelder"-Ranking (statt nur zu wissen, wie viele Felder fehlten,
+   sieht man hier, welche es konkret sind). */
+function computeTopFehlendeFelder(rows){
+  const tally = new Map();
+  rows.forEach(r=>{
+    const seenInRow = new Set();
+    buildBelegMissingFelder(r).forEach(f=>{
+      /* Derselbe Feldname (z. B. "Name, Adresse") kann im Datenpool-Katalog mehrfach mit
+         unterschiedlichem AV-Zielstatus auftreten — pro Beleg trotzdem nur einmal zählen,
+         sonst würde ein einzelner Beleg einen Feldnamen künstlich mehrfach beitragen. */
+      if(seenInRow.has(f.feld)) return;
+      seenInRow.add(f.feld);
+      const entry = tally.get(f.feld) || { feld:f.feld, zielstatus:f.zielstatus, count:0 };
+      entry.count++;
+      tally.set(f.feld, entry);
+    });
+  });
+  return Array.from(tally.values()).sort((a,b)=>b.count-a.count || a.feld.localeCompare(b.feld));
+}
+/* Filtert eine Beleg-Menge auf das im Ranking ausgewählte Datenfeld (falls gesetzt) — greift bei
+   vollständigen Belegen automatisch leer, da buildBelegMissingFelder() für diese [] liefert. */
+function belegFeldFilterRows(rows){
+  if(!activeBelegFeldFilter) return rows;
+  return rows.filter(r=>buildBelegMissingFelder(r).some(f=>f.feld===activeBelegFeldFilter));
+}
 function openFehlendModal(rowId){
   const row = getFilteredBelegPool().find(r=>r.id===rowId);
   if(!row) return;
@@ -1853,7 +1891,38 @@ function renderBelegAgg(){
     renderBelegAgg();
   });
 
-  const sichtRows = activeBelegAggSicht==="unvollstaendig" ? belegAggFilteredRows.filter(r=>!belegAggIstVollstaendig(r)) : belegAggFilteredRows;
+  const unvollstForRanking = belegAggFilteredRows.filter(r=>!belegAggIstVollstaendig(r));
+  const topFelder = computeTopFehlendeFelder(unvollstForRanking).slice(0, 12);
+  document.getElementById("beleg-top-felder-body").innerHTML = topFelder.length
+    ? topFelder.map(f=>{
+        const anteil = unvollstForRanking.length ? (f.count/unvollstForRanking.length*100) : 0;
+        const selected = f.feld===activeBelegFeldFilter;
+        return '<tr class="row-clickable'+(selected?" row-selected":"")+'" data-feld="'+esc(f.feld)+'">'+
+          '<td class="k-name">'+esc(f.feld)+'</td>'+
+          '<td>'+(f.zielstatus ? '<span class="badge info"><span class="dot"></span>'+esc(f.zielstatus)+'</span>' : '<span class="k-quelle">—</span>')+'</td>'+
+          '<td class="ov-num">'+f.count.toLocaleString("de-DE")+'</td>'+
+          '<td class="ov-num">'+anteil.toFixed(0)+' %</td>'+
+        '</tr>';
+      }).join("")
+    : '<tr><td colspan="4" class="cell-empty">Keine unvollständigen Beispiel-Belege '+periodLabel+' für die aktuelle Filterkombination.</td></tr>';
+  document.querySelectorAll("#beleg-top-felder-body tr.row-clickable").forEach(tr=>{
+    tr.addEventListener("click", ()=>{
+      const feld = tr.dataset.feld;
+      activeBelegFeldFilter = (activeBelegFeldFilter===feld) ? null : feld;
+      activeBelegAggSicht = "unvollstaendig";
+      document.querySelectorAll("#beleg-agg-sicht-toggle .filter-chip").forEach(c=>c.dataset.active = (c.dataset.sicht==="unvollstaendig") ? "true":"false");
+      renderBelegAgg();
+    });
+  });
+  const feldHint = document.getElementById("beleg-top-felder-hint");
+  if(activeBelegFeldFilter){
+    feldHint.hidden = false;
+    feldHint.textContent = "Gefiltert auf Datenfeld „"+activeBelegFeldFilter+"“ — Klick auf das Datenfeld oben erneut, um den Filter aufzuheben.";
+  } else {
+    feldHint.hidden = true;
+  }
+
+  const sichtRows = belegFeldFilterRows(activeBelegAggSicht==="unvollstaendig" ? belegAggFilteredRows.filter(r=>!belegAggIstVollstaendig(r)) : belegAggFilteredRows);
   document.getElementById("beleg-agg-count").textContent = sichtRows.length.toLocaleString("de-DE")+" Beispiel-Beleg(e) "+periodLabel+" in der Stichprobe"+(sichtRows.length>50 ? " · Anzeige auf 50 begrenzt" : "");
 
   document.getElementById("beleg-agg-cluster-wrap").innerHTML = activeBelegAggSicht==="unvollstaendig"
