@@ -604,12 +604,29 @@
               <span class="filter-count" id="beleg-agg-count"></span>
             </div>
             <div id="beleg-top-felder-wrap" hidden>
-              <p class="subhead-sub">Aggregiert über alle unvollständigen Beispiel-Belege im gewählten Zeitraum und Filter (Stichprobe) — zeigt, <b>welche</b> Datenfelder am häufigsten fehlen, statt nur wie viele. Klick auf ein Datenfeld wechselt zu Sicht 2 und filtert die Beleg-Liste dort auf genau diese Fälle.</p>
-              <div class="table-wrap">
-                <table class="data-table" id="beleg-top-felder-table">
-                  <thead><tr><th>Datenfeld</th><th>AV-Zielstatus</th><th>Anzahl</th><th>Anteil an unvollständigen Belegen</th></tr></thead>
-                  <tbody id="beleg-top-felder-body"></tbody>
-                </table>
+              <p class="subhead-sub">Aggregiert über alle unvollständigen Beispiel-Belege im gewählten Zeitraum und Filter (Stichprobe) — zeigt, <b>welche</b> Datenfelder (einzeln oder in Kombination) am häufigsten fehlen, statt nur wie viele. Klick auf eine Zeile wechselt zu Sicht 2 und filtert die Beleg-Liste dort auf genau diese Fälle.</p>
+              <div class="filters">
+                <div class="filter-group" id="beleg-top-felder-submodus">
+                  <button class="filter-chip" type="button" data-submodus="einzeln" data-active="true">Einzelfelder</button>
+                  <button class="filter-chip" type="button" data-submodus="kombi">Feld-Kombinationen</button>
+                </div>
+              </div>
+              <div id="beleg-top-felder-einzeln-wrap">
+                <div class="table-wrap">
+                  <table class="data-table" id="beleg-top-felder-table">
+                    <thead><tr><th>Datenfeld</th><th>AV-Zielstatus</th><th>Anzahl</th><th>Anteil an unvollständigen Belegen</th></tr></thead>
+                    <tbody id="beleg-top-felder-body"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div id="beleg-top-felder-kombi-wrap" hidden>
+                <p class="subhead-sub">Zeigt Paare und Dreiergruppen von Datenfeldern, die im selben Beleg gemeinsam fehlten — z. B. ein Hinweis auf einen gemeinsamen Fehlerpfad im EM statt unabhängiger Einzelfehler.</p>
+                <div class="table-wrap">
+                  <table class="data-table" id="beleg-top-kombi-table">
+                    <thead><tr><th>Datenfeld-Kombination</th><th>Anzahl</th><th>Anteil an unvollständigen Belegen</th></tr></thead>
+                    <tbody id="beleg-top-kombi-body"></tbody>
+                  </table>
+                </div>
               </div>
               <p class="subhead-sub dp-ziffer-hint" id="beleg-top-felder-hint" hidden></p>
             </div>
@@ -1277,7 +1294,10 @@ function buildBelegAggDayRows(dateIso){
   return rows;
 }
 let activeBelegAggSicht = "alle";
+/* null = kein Filter aktiv; sonst ein Array mit 1 Feldname (Einzelfeld-Auswahl) oder 2–3
+   Feldnamen (Kombinations-Auswahl) — beide Sicht-3-Unteransichten teilen sich diesen Filter. */
 let activeBelegFeldFilter = null;
+let activeTopFelderSubmodus = "einzeln";
 /* Excel-artige Spaltensortierung der Beispiel-Belege-Tabelle: Klick auf eine sortierbare
    Spaltenüberschrift sortiert aufsteigend, erneuter Klick auf dieselbe Spalte dreht auf
    absteigend um (dritter Klick wieder aufsteigend usw.) — kein dritter "unsortiert"-Zustand,
@@ -1902,11 +1922,46 @@ function computeTopFehlendeFelder(rows){
   });
   return Array.from(tally.values()).sort((a,b)=>b.count-a.count || a.feld.localeCompare(b.feld));
 }
-/* Filtert eine Beleg-Menge auf das im Ranking ausgewählte Datenfeld (falls gesetzt) — greift bei
+const BELEG_KOMBI_SEP = "|||";
+/* Zählt, welche 2er- und 3er-Kombinationen von Datenfeldern gemeinsam (im selben Beleg) fehlten
+   — Ergänzung zum Einzelfeld-Ranking: zeigt nicht nur, welches Feld isoliert am häufigsten fehlt,
+   sondern welche Felder typischerweise gemeinsam fehlen (z. B. auf einen gemeinsamen Fehlerpfad
+   im EM hindeutend). */
+function computeTopFeldKombinationen(rows){
+  const tally = new Map();
+  rows.forEach(r=>{
+    const felder = Array.from(new Set(buildBelegMissingFelder(r).map(f=>f.feld))).sort();
+    for(let i=0;i<felder.length;i++){
+      for(let j=i+1;j<felder.length;j++){
+        const key2 = [felder[i],felder[j]].join(BELEG_KOMBI_SEP);
+        tally.set(key2, (tally.get(key2)||0)+1);
+        for(let k=j+1;k<felder.length;k++){
+          const key3 = [felder[i],felder[j],felder[k]].join(BELEG_KOMBI_SEP);
+          tally.set(key3, (tally.get(key3)||0)+1);
+        }
+      }
+    }
+  });
+  return Array.from(tally.entries())
+    .map(([key,count])=>({ felder:key.split(BELEG_KOMBI_SEP), count }))
+    .sort((a,b)=>b.count-a.count || a.felder.length-b.felder.length || a.felder.join().localeCompare(b.felder.join()));
+}
+/* Filtert eine Beleg-Menge auf die im Ranking ausgewählte(n) Datenfeld(er) (falls gesetzt) — ein
+   Einzelfeld ist ein 1-elementiges, eine Kombination ein 2-/3-elementiges Array; greift bei
    vollständigen Belegen automatisch leer, da buildBelegMissingFelder() für diese [] liefert. */
 function belegFeldFilterRows(rows){
   if(!activeBelegFeldFilter) return rows;
-  return rows.filter(r=>buildBelegMissingFelder(r).some(f=>f.feld===activeBelegFeldFilter));
+  return rows.filter(r=>{
+    const missing = buildBelegMissingFelder(r).map(f=>f.feld);
+    return activeBelegFeldFilter.every(name=>missing.includes(name));
+  });
+}
+function fmtFeldFilterLabel(felder){
+  return felder.map(f=>"„"+f+"“").join(" + ");
+}
+function sameFeldFilter(a,b){
+  if(!a || !b || a.length!==b.length) return false;
+  return a.every(f=>b.includes(f));
 }
 function openFehlendModal(rowId){
   const row = getFilteredBelegPool().find(r=>r.id===rowId);
@@ -2036,7 +2091,7 @@ function renderBelegAgg(){
   const feldFilterHint = document.getElementById("beleg-agg-feld-filter-hint");
   if(activeBelegFeldFilter && !isTopFelderSicht){
     feldFilterHint.hidden = false;
-    feldFilterHint.textContent = "Gefiltert auf Datenfeld „"+activeBelegFeldFilter+"“ (aus Sicht 3) — klicken, um den Filter aufzuheben.";
+    feldFilterHint.textContent = "Gefiltert auf Datenfeld "+fmtFeldFilterLabel(activeBelegFeldFilter)+" (aus Sicht 3) — klicken, um den Filter aufzuheben.";
     feldFilterHint.onclick = ()=>{ activeBelegFeldFilter = null; renderBelegAgg(); };
   } else {
     feldFilterHint.hidden = true;
@@ -2045,11 +2100,28 @@ function renderBelegAgg(){
 
   const unvollstForRanking = belegAggFilteredRows.filter(r=>!belegAggIstVollstaendig(r));
   if(isTopFelderSicht){
+    const isKombiModus = activeTopFelderSubmodus==="kombi";
+    document.getElementById("beleg-top-felder-einzeln-wrap").hidden = isKombiModus;
+    document.getElementById("beleg-top-felder-kombi-wrap").hidden = !isKombiModus;
+
+    /* Klick auf eine Zeile in Einzelfelder ODER Feld-Kombinationen: springt zu Sicht 2 und
+       filtert dort auf genau diese Feld(er); erneuter Klick auf dieselbe Auswahl hebt sie wieder
+       auf und bleibt dabei in Sicht 3, statt ungefragt wegzuspringen. */
+    const onRankingRowClick = felder => {
+      const turnsOn = !sameFeldFilter(activeBelegFeldFilter, felder);
+      activeBelegFeldFilter = turnsOn ? felder : null;
+      if(turnsOn){
+        activeBelegAggSicht = "unvollstaendig";
+        document.querySelectorAll("#beleg-agg-sicht-toggle .filter-chip").forEach(c=>c.dataset.active = (c.dataset.sicht==="unvollstaendig") ? "true":"false");
+      }
+      renderBelegAgg();
+    };
+
     const topFelder = computeTopFehlendeFelder(unvollstForRanking).slice(0, 12);
     document.getElementById("beleg-top-felder-body").innerHTML = topFelder.length
       ? topFelder.map(f=>{
           const anteil = unvollstForRanking.length ? (f.count/unvollstForRanking.length*100) : 0;
-          const selected = f.feld===activeBelegFeldFilter;
+          const selected = sameFeldFilter(activeBelegFeldFilter, [f.feld]);
           return '<tr class="row-clickable'+(selected?" row-selected":"")+'" data-feld="'+esc(f.feld)+'">'+
             '<td class="k-name">'+esc(f.feld)+'</td>'+
             '<td>'+(f.zielstatus ? '<span class="badge info"><span class="dot"></span>'+esc(f.zielstatus)+'</span>' : '<span class="k-quelle">—</span>')+'</td>'+
@@ -2059,23 +2131,29 @@ function renderBelegAgg(){
         }).join("")
       : '<tr><td colspan="4" class="cell-empty">Keine unvollständigen Beispiel-Belege '+periodLabel+' für die aktuelle Filterkombination.</td></tr>';
     document.querySelectorAll("#beleg-top-felder-body tr.row-clickable").forEach(tr=>{
-      tr.addEventListener("click", ()=>{
-        const feld = tr.dataset.feld;
-        const turnsOn = activeBelegFeldFilter!==feld;
-        activeBelegFeldFilter = turnsOn ? feld : null;
-        /* Nur beim Auswählen eines Felds in Sicht 2 springen (direkt zur gefilterten Liste);
-           beim Abwählen in Sicht 3 (Ranking) bleiben, statt ungefragt wegzuspringen. */
-        if(turnsOn){
-          activeBelegAggSicht = "unvollstaendig";
-          document.querySelectorAll("#beleg-agg-sicht-toggle .filter-chip").forEach(c=>c.dataset.active = (c.dataset.sicht==="unvollstaendig") ? "true":"false");
-        }
-        renderBelegAgg();
-      });
+      tr.addEventListener("click", ()=>onRankingRowClick([tr.dataset.feld]));
     });
+
+    const topKombis = computeTopFeldKombinationen(unvollstForRanking).slice(0, 12);
+    document.getElementById("beleg-top-kombi-body").innerHTML = topKombis.length
+      ? topKombis.map(k=>{
+          const anteil = unvollstForRanking.length ? (k.count/unvollstForRanking.length*100) : 0;
+          const selected = sameFeldFilter(activeBelegFeldFilter, k.felder);
+          return '<tr class="row-clickable'+(selected?" row-selected":"")+'" data-felder="'+esc(k.felder.join(BELEG_KOMBI_SEP))+'">'+
+            '<td class="k-name">'+k.felder.map(f=>esc(f)).join(' <span class="k-quelle">+</span> ')+'</td>'+
+            '<td class="ov-num">'+k.count.toLocaleString("de-DE")+'</td>'+
+            '<td class="ov-num">'+anteil.toFixed(0)+' %</td>'+
+          '</tr>';
+        }).join("")
+      : '<tr><td colspan="3" class="cell-empty">Keine gemeinsam fehlenden Datenfeld-Kombinationen '+periodLabel+' für die aktuelle Filterkombination.</td></tr>';
+    document.querySelectorAll("#beleg-top-kombi-body tr.row-clickable").forEach(tr=>{
+      tr.addEventListener("click", ()=>onRankingRowClick(tr.dataset.felder.split(BELEG_KOMBI_SEP)));
+    });
+
     const feldHint = document.getElementById("beleg-top-felder-hint");
     if(activeBelegFeldFilter){
       feldHint.hidden = false;
-      feldHint.textContent = "Aktiver Filter: Datenfeld „"+activeBelegFeldFilter+"“ (wirkt auf die Beleg-Liste in Sicht 2) — Zeile erneut anklicken, um ihn aufzuheben.";
+      feldHint.textContent = "Aktiver Filter: Datenfeld "+fmtFeldFilterLabel(activeBelegFeldFilter)+" (wirkt auf die Beleg-Liste in Sicht 2) — Zeile erneut anklicken, um ihn aufzuheben.";
     } else {
       feldHint.hidden = true;
     }
@@ -2433,6 +2511,13 @@ document.getElementById("beleg-agg-sicht-toggle").querySelectorAll(".filter-chip
   chip.addEventListener("click", ()=>{
     activeBelegAggSicht = chip.dataset.sicht;
     document.querySelectorAll("#beleg-agg-sicht-toggle .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
+    renderBelegAgg();
+  });
+});
+document.getElementById("beleg-top-felder-submodus").querySelectorAll(".filter-chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    activeTopFelderSubmodus = chip.dataset.submodus;
+    document.querySelectorAll("#beleg-top-felder-submodus .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
     renderBelegAgg();
   });
 });
