@@ -133,6 +133,7 @@
   }
   .beleg-agg-headline .num{font-size:2.1rem; font-weight:800; font-variant-numeric:tabular-nums; line-height:1;}
   .beleg-agg-headline .sub{font-size:.86rem; opacity:.88;}
+  .beleg-agg-headline[hidden], .kpi-row[hidden], .filters[hidden]{display:none;}
   .beleg-agg-zt{display:flex; flex-wrap:wrap; gap:4px;}
 
   /* ---------- Given/When/Then scenario box ---------- */
@@ -172,6 +173,21 @@
   .av-visible-cols b{color:var(--ink); font-weight:700;}
   .av-visible-cols .col-chip{display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; background:var(--c-ok-bg); color:var(--c-ok); font-weight:700; font-size:.72rem;}
   .av-visible-cols .col-chip.is-off{background:var(--c-offen-bg); color:var(--c-offen); text-decoration:line-through; opacity:.75;}
+
+  /* ---------- Jahresscheibe: Liniendiagramm ---------- */
+  .jahr-chart-legend{display:flex; gap:20px; margin:-4px 0 10px; flex-wrap:wrap;}
+  .jahr-legend-item{display:inline-flex; align-items:center; gap:6px; font-size:.78rem; color:var(--ink-soft);}
+  .jahr-legend-swatch{width:14px; height:3px; border-radius:2px; display:inline-block;}
+  .jahr-legend-swatch--total{background:var(--navy);}
+  .jahr-legend-swatch--quote{background:var(--orange); background-image:linear-gradient(90deg, var(--orange) 0 60%, transparent 60% 100%); background-size:8px 3px;}
+  .jahr-chart-svg{width:100%; height:auto; display:block; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-sm); margin-bottom:16px;}
+  .jahr-chart-grid{stroke:var(--border); stroke-width:1;}
+  .jahr-chart-axis-label{font-size:10px; fill:var(--ink-soft); font-family:inherit;}
+  .jahr-chart-line{stroke-width:2.5; stroke-linejoin:round; stroke-linecap:round;}
+  .jahr-chart-line--total{stroke:var(--navy);}
+  .jahr-chart-line--quote{stroke:var(--orange); stroke-dasharray:6 4;}
+  .jahr-chart-dot--total{fill:var(--navy);}
+  .jahr-chart-dot--quote{fill:var(--orange);}
 
   /* ---------- Tables ---------- */
   .table-wrap{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow-x:auto; box-shadow:var(--shadow-sm); margin-bottom:16px;}
@@ -459,6 +475,7 @@
               <div class="filter-group" id="beleg-agg-zeitraum-modus">
                 <button class="filter-chip" type="button" data-modus="tag" data-active="true">Tagesscheibe</button>
                 <button class="filter-chip" type="button" data-modus="monat">Monat (Management)</button>
+                <button class="filter-chip" type="button" data-modus="jahr">Jahresscheibe</button>
               </div>
               <input type="date" id="beleg-agg-tag-input" class="filter-date-input">
               <select id="beleg-agg-monat-input" class="filter-date-input" hidden></select>
@@ -561,7 +578,24 @@
             </div>
             <div class="beleg-agg-headline" id="beleg-agg-headline"></div>
             <div class="kpi-row" id="beleg-agg-kpi"></div>
-            <div class="filters">
+            <div id="beleg-jahr-wrap" hidden>
+              <div class="subhead-row">
+                <div class="subhead">Verlauf über die letzten 12 Monate</div>
+              </div>
+              <p class="subhead-sub">Belege gesamt (linke Achse) und Vollständigkeitsquote (rechte Achse, %) je Monat — jeweils wie bei der Monatssicht ermittelt, hier aber über die Zeit statt für einen einzelnen Monat. Der aktuelle, noch laufende Monat ist entsprechend gekennzeichnet.</p>
+              <div class="jahr-chart-legend">
+                <span class="jahr-legend-item"><span class="jahr-legend-swatch jahr-legend-swatch--total"></span>Belege gesamt</span>
+                <span class="jahr-legend-item"><span class="jahr-legend-swatch jahr-legend-swatch--quote"></span>Vollständigkeitsquote</span>
+              </div>
+              <div id="beleg-jahr-chart"></div>
+              <div class="table-wrap">
+                <table class="data-table" id="beleg-jahr-table">
+                  <thead><tr><th>Monat</th><th>Belege gesamt</th><th>Vollständigkeitsquote</th></tr></thead>
+                  <tbody id="beleg-jahr-table-body"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="filters" id="beleg-agg-sicht-row">
               <div class="filter-group" id="beleg-agg-sicht-toggle">
                 <button class="filter-chip" type="button" data-sicht="alle" data-active="true">Sicht 1 · Alle Belege</button>
                 <button class="filter-chip" type="button" data-sicht="unvollstaendig">Sicht 2 · Nur unvollständige Belege</button>
@@ -1432,6 +1466,69 @@ function fmtMonatDe(yearMonth){
   const [y,m] = yearMonth.split("-").map(Number);
   return MONATE[m-1]+" "+y;
 }
+function fmtMonatDeKurz(yearMonth){
+  const MONATE_KURZ = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+  const [y,m] = yearMonth.split("-").map(Number);
+  return MONATE_KURZ[m-1]+" "+String(y).slice(2);
+}
+/* Jahresscheibe (MVP1): dieselbe Monats-Kennzahl wie die Monatssicht (dpMonthlyStats +
+   belegAggHeadlineRatio()/belegAggKanalIshDelta() für die aktiven Filter), aber für die letzten
+   12 Kalendermonate bis einschließlich des laufenden (ggf. unvollständigen) Monats — für den
+   Trendverlauf statt eines einzelnen Zeitpunkts. */
+function computeBelegJahrReihe(){
+  const todayYm = dpIsoToday().slice(0,7);
+  let [y,m] = todayYm.split("-").map(Number);
+  const yms = [];
+  for(let i=0;i<12;i++){
+    yms.unshift(y+"-"+String(m).padStart(2,"0"));
+    m--; if(m<1){ m=12; y--; }
+  }
+  return yms.map(ym=>{
+    const s = dpMonthlyStats(ym);
+    const total = Math.round(s.total*belegAggHeadlineRatio());
+    const quote = s.total ? Math.max(0, Math.min(100, Math.round((s.quote+belegAggKanalIshDelta())*10)/10)) : 0;
+    return { ym, label:fmtMonatDe(ym), labelKurz:fmtMonatDeKurz(ym), total, quote, isCurrent:ym===todayYm };
+  });
+}
+function renderBelegJahrChartSvg(months){
+  const W = 920, H = 280, padL = 52, padR = 52, padT = 16, padB = 34;
+  const innerW = W-padL-padR, innerH = H-padT-padB;
+  const maxTotal = Math.max(1, ...months.map(m=>m.total));
+  const niceMaxTotal = Math.max(500, Math.ceil(maxTotal/500)*500);
+  const n = months.length;
+  const xAt = i => n>1 ? padL + (innerW*i)/(n-1) : padL+innerW/2;
+  const yTotal = v => padT + innerH - (v/niceMaxTotal)*innerH;
+  const yQuote = v => padT + innerH - (v/100)*innerH;
+
+  const gridLines = [0,25,50,75,100].map(pct=>{
+    const y = padT + innerH - (innerH*pct/100);
+    return '<line x1="'+padL+'" y1="'+y+'" x2="'+(padL+innerW)+'" y2="'+y+'" class="jahr-chart-grid"/>'+
+      '<text x="'+(padL-8)+'" y="'+(y+3)+'" class="jahr-chart-axis-label" text-anchor="end">'+Math.round(niceMaxTotal*pct/100).toLocaleString("de-DE")+'</text>'+
+      '<text x="'+(padL+innerW+8)+'" y="'+(y+3)+'" class="jahr-chart-axis-label" text-anchor="start">'+pct+' %</text>';
+  }).join("");
+
+  const totalPoints = months.map((m,i)=>xAt(i)+","+yTotal(m.total)).join(" ");
+  const quotePoints = months.map((m,i)=>xAt(i)+","+yQuote(m.quote)).join(" ");
+  const totalDots = months.map((m,i)=>'<circle cx="'+xAt(i)+'" cy="'+yTotal(m.total)+'" r="3.5" class="jahr-chart-dot jahr-chart-dot--total"><title>'+esc(m.label)+': '+m.total.toLocaleString("de-DE")+' Belege</title></circle>').join("");
+  const quoteDots = months.map((m,i)=>'<circle cx="'+xAt(i)+'" cy="'+yQuote(m.quote)+'" r="3.5" class="jahr-chart-dot jahr-chart-dot--quote"><title>'+esc(m.label)+': '+m.quote.toFixed(1).replace(".",",")+' % vollständig</title></circle>').join("");
+  const xLabels = months.map((m,i)=>'<text x="'+xAt(i)+'" y="'+(H-10)+'" class="jahr-chart-axis-label" text-anchor="middle">'+esc(m.labelKurz)+(m.isCurrent?"*":"")+'</text>').join("");
+
+  return '<svg viewBox="0 0 '+W+' '+H+'" class="jahr-chart-svg" role="img" aria-label="Verlauf Belege gesamt und Vollständigkeitsquote über die letzten 12 Monate">'+
+    gridLines+
+    '<polyline points="'+totalPoints+'" class="jahr-chart-line jahr-chart-line--total" fill="none"/>'+
+    '<polyline points="'+quotePoints+'" class="jahr-chart-line jahr-chart-line--quote" fill="none"/>'+
+    totalDots+quoteDots+xLabels+
+  '</svg>';
+}
+function renderBelegJahr(){
+  const months = computeBelegJahrReihe();
+  document.getElementById("beleg-jahr-chart").innerHTML = renderBelegJahrChartSvg(months);
+  document.getElementById("beleg-jahr-table-body").innerHTML = months.map(m=>
+    '<tr><td class="k-name">'+esc(m.label)+(m.isCurrent?' <span class="k-quelle">(laufender Monat)</span>':'')+'</td>'+
+    '<td class="ov-num">'+m.total.toLocaleString("de-DE")+'</td>'+
+    '<td class="ov-num">'+m.quote.toFixed(1).replace(".",",")+' %</td></tr>'
+  ).join("");
+}
 
 const AV_ZIELSTATUS_ORDER = ["M","K","K**","MbA","SWH","TM","P"];
 
@@ -1871,6 +1968,19 @@ document.addEventListener("keydown", e=>{
 });
 
 function renderBelegAgg(){
+  const isJahr = activeBelegZeitraumModus==="jahr";
+  document.getElementById("beleg-jahr-wrap").hidden = !isJahr;
+  document.getElementById("beleg-agg-headline").hidden = isJahr;
+  document.getElementById("beleg-agg-kpi").hidden = isJahr;
+  document.getElementById("beleg-agg-sicht-row").hidden = isJahr;
+  if(isJahr){
+    document.getElementById("beleg-agg-zeitraum-hint").textContent = "Jahresscheibe: Verlauf der letzten 12 Kalendermonate (je Monat ermittelt wie bei der Monatssicht) — zeigt, ob sich Belegaufkommen und Vollständigkeit über die Zeit systematisch verändern, statt nur einen einzelnen Zeitpunkt zu zeigen.";
+    document.getElementById("beleg-top-felder-wrap").hidden = true;
+    document.getElementById("beleg-agg-cluster-wrap").hidden = true;
+    document.getElementById("beleg-agg-feld-filter-hint").hidden = true;
+    renderBelegJahr();
+    return;
+  }
   const isMonat = activeBelegZeitraumModus==="monat";
   const stats = isMonat ? dpMonthlyStats(activeBelegMonat) : dpDailyStats(activeBelegTag);
   /* ALLE Filter (Dok.-Art, Zeilentyp, Eingangskanal, Verarbeitungsverfahren) skalieren jetzt auch
