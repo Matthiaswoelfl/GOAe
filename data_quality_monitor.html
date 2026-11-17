@@ -1919,6 +1919,20 @@ function renderBelegAgg(){
   document.getElementById("beleg-top-felder-wrap").hidden = !isTopFelderSicht;
   document.getElementById("beleg-agg-cluster-wrap").hidden = isTopFelderSicht;
 
+  /* Dieser Hinweis (neben der Beleg-Liste, nicht der in Sicht 3 selbst) gehört immer — bei jedem
+     renderBelegAgg()-Aufruf, auch wenn gerade Sicht 3 aktiv ist und unten früh zurückgekehrt wird
+     — aktualisiert, sonst bliebe er nach einem Abwählen des Felds direkt in Sicht 3 fälschlich in
+     seinem letzten (sichtbaren) Zustand hängen. */
+  const feldFilterHint = document.getElementById("beleg-agg-feld-filter-hint");
+  if(activeBelegFeldFilter && !isTopFelderSicht){
+    feldFilterHint.hidden = false;
+    feldFilterHint.textContent = "Gefiltert auf Datenfeld „"+activeBelegFeldFilter+"“ (aus Sicht 3) — klicken, um den Filter aufzuheben.";
+    feldFilterHint.onclick = ()=>{ activeBelegFeldFilter = null; renderBelegAgg(); };
+  } else {
+    feldFilterHint.hidden = true;
+    feldFilterHint.onclick = null;
+  }
+
   const unvollstForRanking = belegAggFilteredRows.filter(r=>!belegAggIstVollstaendig(r));
   if(isTopFelderSicht){
     const topFelder = computeTopFehlendeFelder(unvollstForRanking).slice(0, 12);
@@ -1951,22 +1965,12 @@ function renderBelegAgg(){
     const feldHint = document.getElementById("beleg-top-felder-hint");
     if(activeBelegFeldFilter){
       feldHint.hidden = false;
-      feldHint.textContent = "Aktiver Filter aus Sicht 2: Datenfeld „"+activeBelegFeldFilter+"“ — in Sicht 2 erneut auf das Datenfeld klicken, um ihn aufzuheben.";
+      feldHint.textContent = "Aktiver Filter: Datenfeld „"+activeBelegFeldFilter+"“ (wirkt auf die Beleg-Liste in Sicht 2) — Zeile erneut anklicken, um ihn aufzuheben.";
     } else {
       feldHint.hidden = true;
     }
     document.getElementById("beleg-agg-count").textContent = unvollstForRanking.length.toLocaleString("de-DE")+" unvollständige Beispiel-Beleg(e) "+periodLabel+" in der Stichprobe — Basis für das Ranking";
     return;
-  }
-
-  const feldFilterHint = document.getElementById("beleg-agg-feld-filter-hint");
-  if(activeBelegFeldFilter){
-    feldFilterHint.hidden = false;
-    feldFilterHint.textContent = "Gefiltert auf Datenfeld „"+activeBelegFeldFilter+"“ (aus Sicht 3) — klicken, um den Filter aufzuheben.";
-    feldFilterHint.onclick = ()=>{ activeBelegFeldFilter = null; renderBelegAgg(); };
-  } else {
-    feldFilterHint.hidden = true;
-    feldFilterHint.onclick = null;
   }
 
   const sichtRows = belegFeldFilterRows(activeBelegAggSicht==="unvollstaendig" ? unvollstForRanking : belegAggFilteredRows);
