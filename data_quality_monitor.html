@@ -162,17 +162,6 @@
   .badge.crit{background:var(--c-crit-bg); color:var(--c-crit);} .badge.crit .dot{background:var(--c-crit);}
   .badge.offen{background:var(--c-offen-bg); color:var(--c-offen);} .badge.offen .dot{background:var(--c-offen);}
   .badge.info{background:var(--c-info-bg); color:var(--c-info);} .badge.info .dot{background:var(--c-info);}
-  .col-toggle-btn{
-    appearance:none; cursor:pointer; font-family:inherit; border:1.5px solid currentColor;
-    box-shadow:0 1px 2px rgba(20,25,40,.08); transition:transform .1s ease, box-shadow .12s ease, filter .12s ease;
-  }
-  .col-toggle-btn:hover{filter:brightness(0.95); transform:translateY(-1px); box-shadow:0 3px 8px rgba(20,25,40,.14);}
-  .col-toggle-btn:active{transform:translateY(0); box-shadow:0 1px 2px rgba(20,25,40,.1);}
-  .col-toggle-btn .icon{width:13px; height:13px;}
-  .av-visible-cols{display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:-6px 0 14px; font-size:.78rem; color:var(--ink-soft);}
-  .av-visible-cols b{color:var(--ink); font-weight:700;}
-  .av-visible-cols .col-chip{display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; background:var(--c-ok-bg); color:var(--c-ok); font-weight:700; font-size:.72rem;}
-  .av-visible-cols .col-chip.is-off{background:var(--c-offen-bg); color:var(--c-offen); text-decoration:line-through; opacity:.75;}
 
   /* ---------- Verlaufskurve (Jahresscheibe): Liniendiagramm ---------- */
   .jahr-toolbar{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px 20px; margin:-4px 0 10px;}
@@ -685,20 +674,6 @@
             </div>
             <div id="dp-cluster-wrap" hidden></div>
             <button type="button" class="dp-table-collapsed-hint" id="dp-table-collapsed-hint" hidden></button>
-
-            <div class="subhead">Auswertungskatalog</div>
-            <p class="subhead-sub">Beispielhafte Auswertungsmöglichkeiten des DQM auf dem Datenpool. Die Einträge der Kategorie „Anzeige" sind klickbar (Aktiv/Inaktiv) und blenden die jeweilige Spalte im Datenpool-Dashboard oben ein oder aus.</p>
-            <div class="av-visible-cols" id="av-visible-cols"></div>
-            <div class="filters">
-              <input class="filter-search" id="av-search" type="search" placeholder="Auswertungskatalog durchsuchen…">
-              <span class="filter-count" id="av-count"></span>
-            </div>
-            <div class="table-wrap">
-              <table class="data-table">
-                <thead><tr><th>Kategorie</th><th>Auswertung</th><th>Beschreibung</th><th>Status</th></tr></thead>
-                <tbody id="av-body"></tbody>
-              </table>
-            </div>
           </div>
         </div>
       </div>
@@ -1764,8 +1739,7 @@ function dpEffectiveValue(row, metric){
   return Math.max(0, Math.min(100, v));
 }
 
-/* Spalten der Datenpool-Tabelle, die über den Auswertungskatalog unten ein-/ausgeblendet werden
-   können ("Spalte: ..."-Einträge in AUSWERTUNGEN). "Datenfeld" bleibt als Identitätsspalte immer sichtbar. */
+/* Spalten der Datenpool-Tabelle. "Datenfeld" bleibt als Identitätsspalte immer sichtbar. */
 const DP_COLUMNS = [
   { key:"dokart", label:"Dok.-Art" },
   { key:"zielstatus", label:"AV-Zielstatus" },
@@ -1774,29 +1748,6 @@ const DP_COLUMNS = [
   { key:"anzahl", label:"Anzahl" },
 ];
 const dpColumnState = { dokart:true, zielstatus:true, zeilentyp:true, vollst:true, anzahl:true };
-
-const AUSWERTUNGEN = [
-  { kat:"Erfassung", name:"Prüfung der Erfassung", beschreibung:"Klassifikation der Erfassungsart je Datensatz: Dok.-Art, VP, VNR oder AV (Datenextraktion).", status:"verfuegbar" },
-  { kat:"Änderung", name:"Prüfung der Änderungen", beschreibung:"Nachweis von Datenänderungen an VNR, Belegdaten und GO-Daten entlang der Verarbeitung.", status:"verfuegbar" },
-  { kat:"Vollständigkeit", name:"Prüfung der Füllung des Datenpools", beschreibung:"Anteil befüllter vs. erwarteter Datenfelder je Dok.-Art im Datenpool.", status:"verfuegbar" },
-  { kat:"Vollständigkeit", name:"Prüfung der Vollständigkeit der Daten", beschreibung:"Abgleich der bereitgestellten Datenfelder gegen das erwartete Soll-Feldset je Belegtyp.", status:"verfuegbar" },
-  { kat:"Qualität", name:"Prüfung der Richtigkeit (Plausiprüfung)", beschreibung:"Plausibilitätsprüfung der Dateninhalte — siehe Arbeitspaket „EM5.1“.", status:"in-arbeit" },
-  { kat:"Qualität", name:"Auswertung EM QSL", beschreibung:"Auswertung der Qualitätsschlüssel (QSL) aus dem Eingangsmanagement.", status:"verfuegbar" },
-  { kat:"Reporting", name:"Mengenbericht je Dok.-Art", beschreibung:"Bericht mit Menge je DOK-Art, interaktionslos, NK2, NK3, Dokumente, Tabellen, Felder, VNR, VP.", status:"verfuegbar" },
-  { kat:"Kanal", name:"Auswertung Eingangskanal", beschreibung:"Auswertung nach Eingangskanal und Mediumsubtyp (Papier, Mail, KuPo, App, …).", status:"verfuegbar" },
-  { kat:"Struktur", name:"Auswertbarkeit „Neuer Datenpool“", beschreibung:"Großer Topf ohne feste Attribute bzw. Feldebene — strukturfreie Auswertbarkeit.", status:"in-arbeit" },
-  { kat:"Suche", name:"Auswertbarkeit von Inhalten", beschreibung:"Inhaltssuche über den Datenpool, z. B. nach Arzt-ID oder Leistungserbringer (LE).", status:"verfuegbar" },
-  { kat:"E2E", name:"E2E-Betrachtung EM / SMILE", beschreibung:"Vollständigkeitsprüfung über die Prozesskette: Dokumente vollständig, Tabelle vollständig.", status:"verfuegbar" },
-  { kat:"Reporting", name:"Häufigkeit je Dokumentenart", beschreibung:"Wie häufig eine Dokumentenart eingegangen ist und wie oft sie nachträglich geändert wurde.", status:"verfuegbar" },
-  { kat:"Vollständigkeit", name:"Vollständigkeitsquote je Dokumentenart", beschreibung:"Prozentuale Anzeige je Dokumentenart, wie vollständig ein Dokument vom EM nach SMILE kommt.", status:"verfuegbar" },
-  { kat:"Trace", name:"Nachträgliche Belegverfolgung", beschreibung:"Verfolgung des Belegs und der erfassten/geänderten Daten: Dokumente, VNR, VP, Tabellen, Felder.", status:"verfuegbar" },
-  { kat:"Anzeige", name:"Spalte: Dok.-Art", beschreibung:"Blendet die Spalte „Dok.-Art“ im Datenpool-Dashboard oben ein oder aus.", col:"dokart" },
-  { kat:"Anzeige", name:"Spalte: AV-Zielstatus", beschreibung:"Blendet die Spalte „AV-Zielstatus“ im Datenpool-Dashboard oben ein oder aus.", col:"zielstatus" },
-  { kat:"Anzeige", name:"Spalte: Zeilentyp", beschreibung:"Blendet die Spalte „Zeilentyp“ im Datenpool-Dashboard oben ein oder aus.", col:"zeilentyp" },
-  { kat:"Anzeige", name:"Spalte: Vollständigkeit", beschreibung:"Blendet die Spalte „Vollständigkeit“ im Datenpool-Dashboard oben ein oder aus.", col:"vollst" },
-  { kat:"Anzeige", name:"Spalte: Anzahl", beschreibung:"Blendet die Spalte „Anzahl“ (Häufigkeit des Datenfelds im Datenpool) im Datenpool-Dashboard oben ein oder aus.", col:"anzahl" },
-];
-const AV_STATUS_LABEL = { verfuegbar:"Verfügbar", "in-arbeit":"In Arbeit" };
 
 
 /* ============================================================
@@ -2015,39 +1966,6 @@ function setDpTableCollapsed(collapsed){
     updateDpTableCollapsedHint(rows.length);
   }
 }
-function renderAvVisibleCols(){
-  document.getElementById("av-visible-cols").innerHTML =
-    '<b>Sichtbare Spalten im Datenpool-Dashboard:</b>'+
-    DP_COLUMNS.map(c=>'<span class="col-chip'+(dpColumnState[c.key]?"":" is-off")+'">'+esc(c.label)+'</span>').join("");
-}
-function renderAvTable(){
-  renderAvVisibleCols();
-  const q = (document.getElementById("av-search").value||"").trim().toLowerCase();
-  const rows = !q ? AUSWERTUNGEN : AUSWERTUNGEN.filter(a=>
-    (a.name+" "+a.beschreibung+" "+a.kat).toLowerCase().includes(q)
-  );
-  document.getElementById("av-count").textContent = rows.length+" von "+AUSWERTUNGEN.length+" Auswertungen";
-  document.getElementById("av-body").innerHTML = rows.length ? rows.map(a=>{
-    const on = a.col ? dpColumnState[a.col] : null;
-    const statusCell = a.col
-      ? '<button type="button" class="col-toggle-btn badge '+(on?"ok":"offen")+'" data-col="'+a.col+'">'+icon(on?"eye":"eye-off")+(on?"Aktiv":"Inaktiv")+'</button>'
-      : '<span class="badge '+(a.status==="verfuegbar"?"ok":"warn")+'"><span class="dot"></span>'+AV_STATUS_LABEL[a.status]+'</span>';
-    return '<tr>'+
-      '<td class="k-quelle">'+esc(a.kat)+'</td>'+
-      '<td class="k-name">'+esc(a.name)+'</td>'+
-      '<td>'+esc(a.beschreibung)+'</td>'+
-      '<td>'+statusCell+'</td>'+
-    '</tr>';
-  }).join("") : '<tr><td colspan="4" class="cell-empty">Keine Auswertung gefunden.</td></tr>';
-  document.querySelectorAll("#av-body .col-toggle-btn").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      dpColumnState[btn.dataset.col] = !dpColumnState[btn.dataset.col];
-      renderAvTable();
-      renderDpTable();
-    });
-  });
-}
-
 /* ---------- QSL-Verteilung: Donut-Modal ---------- */
 function donutSegments(dist, n){
   const r = 40, cx = 50, cy = 50, sw = 16;
@@ -2520,7 +2438,7 @@ function renderBelegTopClusterView(rows, periodLabel){
     '</details>'+
   '</div>';
 }
-function renderDatenpool(){ renderBelegAgg(); renderDpTable(); renderAvTable(); }
+function renderDatenpool(){ renderBelegAgg(); renderDpTable(); }
 
 
 /* ============================================================
@@ -2801,7 +2719,6 @@ document.getElementById("beleg-top-felder-submodus").querySelectorAll(".filter-c
     renderBelegAgg();
   });
 });
-document.getElementById("av-search").addEventListener("input", renderAvTable);
 document.getElementById("dp-table-toggle").addEventListener("click", ()=>setDpTableCollapsed(!dpTableCollapsed));
 document.getElementById("dp-table-collapsed-hint").addEventListener("click", ()=>setDpTableCollapsed(false));
 document.getElementById("dp-ziffer-search").addEventListener("input", e=>{
