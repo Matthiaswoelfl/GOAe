@@ -587,8 +587,18 @@
                   <span class="jahr-legend-item"><span class="jahr-legend-swatch jahr-legend-swatch--quote"></span>Vollständigkeitsquote</span>
                 </div>
                 <div class="jahr-range-inputs">
-                  <label class="jahr-range-label">Start<input type="date" id="beleg-jahr-start-input" class="filter-date-input"></label>
-                  <label class="jahr-range-label">Ende<input type="date" id="beleg-jahr-end-input" class="filter-date-input"></label>
+                  <label class="jahr-range-label">Start
+                    <input type="date" id="beleg-jahr-start-tag" class="filter-date-input">
+                    <select id="beleg-jahr-start-woche" class="filter-date-input" hidden></select>
+                    <select id="beleg-jahr-start-monat" class="filter-date-input" hidden></select>
+                    <select id="beleg-jahr-start-jahr" class="filter-date-input" hidden></select>
+                  </label>
+                  <label class="jahr-range-label">Ende
+                    <input type="date" id="beleg-jahr-end-tag" class="filter-date-input">
+                    <select id="beleg-jahr-end-woche" class="filter-date-input" hidden></select>
+                    <select id="beleg-jahr-end-monat" class="filter-date-input" hidden></select>
+                    <select id="beleg-jahr-end-jahr" class="filter-date-input" hidden></select>
+                  </label>
                   <div class="filter-group" id="beleg-jahr-granularitaet">
                     <button class="filter-chip" type="button" data-granularitaet="tag" data-active="true">Tagesgenau</button>
                     <button class="filter-chip" type="button" data-granularitaet="woche">Wochengenau</button>
@@ -1498,6 +1508,25 @@ function dpIsoWeekKey(iso){
   const week = 1+Math.round((thursday-firstThursday)/(7*86400000));
   return thursday.getFullYear()+"-W"+String(week).padStart(2,"0");
 }
+function dpIsoFromDate(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function dpIsoWeekStart(iso){
+  const d = new Date(iso+"T00:00:00");
+  const dayNr = (d.getDay()+6)%7; // Montag=0 … Sonntag=6
+  d.setDate(d.getDate()-dayNr);
+  return dpIsoFromDate(d);
+}
+function dpIsoWeekEnd(iso){
+  const d = new Date(dpIsoWeekStart(iso)+"T00:00:00");
+  d.setDate(d.getDate()+6);
+  return dpIsoFromDate(d);
+}
+function dpMonthStart(yearMonth){ return yearMonth+"-01"; }
+function dpMonthEnd(yearMonth){
+  const [y,m] = yearMonth.split("-").map(Number);
+  return yearMonth+"-"+String(new Date(y,m,0).getDate()).padStart(2,"0");
+}
+function dpYearStart(year){ return year+"-01-01"; }
+function dpYearEnd(year){ return year+"-12-31"; }
 const GRANULARITAET_LABEL = { tag:"Tag", woche:"Woche", monat:"Monat", jahr:"Jahr" };
 function belegJahrBucketKey(iso, granularitaet){
   if(granularitaet==="jahr") return iso.slice(0,4);
@@ -1584,7 +1613,88 @@ function renderBelegJahrChartSvg(tage){
     totalDots+quoteDots+xLabels+
   '</svg>';
 }
+/* Start-/End-Auswahlfeld passt sich der Granularität an: Tagesgenau bleibt ein normaler
+   Kalendertag-Picker, Wochen-/Monats-/Jahresgenau werden als Dropdown mit KW-/Monats-/
+   Jahresoptionen angezeigt (kein natives <input type="week"/"month">, dessen Darstellung je nach
+   Browser uneinheitlich/unlokalisiert ist — selbes Argument wie beim Monats-Dropdown der
+   Tagesscheibe/Monatssicht). Der zugrundeliegende Zeitraum bleibt dabei weiterhin
+   activeBelegJahrStart/-End (ISO-Tagesdatum); beim Wechsel der Granularität wird er auf die
+   Bucket-Grenzen der neuen Granularität "eingerastet" (z. B. Start auf den Montag der Woche). */
+const BELEG_JAHR_MIN_DATE = dpIsoMinusDays(BELEG_AGG_LOOKBACK_DAYS);
+function snapBelegJahrRange(){
+  const g = activeBelegJahrGranularitaet;
+  if(g==="woche"){
+    activeBelegJahrStart = dpIsoWeekStart(activeBelegJahrStart);
+    activeBelegJahrEnd = dpIsoWeekEnd(activeBelegJahrEnd);
+  } else if(g==="monat"){
+    activeBelegJahrStart = dpMonthStart(activeBelegJahrStart.slice(0,7));
+    activeBelegJahrEnd = dpMonthEnd(activeBelegJahrEnd.slice(0,7));
+  } else if(g==="jahr"){
+    activeBelegJahrStart = dpYearStart(activeBelegJahrStart.slice(0,4));
+    activeBelegJahrEnd = dpYearEnd(activeBelegJahrEnd.slice(0,4));
+  }
+  if(activeBelegJahrStart<BELEG_JAHR_MIN_DATE) activeBelegJahrStart = BELEG_JAHR_MIN_DATE;
+  const today = dpIsoToday();
+  if(activeBelegJahrEnd>today) activeBelegJahrEnd = today;
+}
+function belegJahrWocheOptionHtml(mondayIso){
+  const key = dpIsoWeekKey(mondayIso);
+  const kw = key.split("-W")[1];
+  const end = dpIsoWeekEnd(mondayIso);
+  return '<option value="'+mondayIso+'">KW '+kw+'/'+key.slice(0,4)+' ('+fmtDateDeKurz(mondayIso)+'–'+fmtDateDeKurz(end)+')</option>';
+}
+/* Options-Listen für die 3 Dropdown-Granularitäten werden einmalig beim Laden erzeugt (der
+   erlaubte Zeitraum ändert sich nicht zur Laufzeit), neuester Eintrag zuerst — analog zum
+   bestehenden Monats-Dropdown der Monatssicht. */
+function populateBelegJahrRangeSelects(){
+  const today = dpIsoToday();
+  const minDate = BELEG_JAHR_MIN_DATE;
+
+  const wocheOpts = [];
+  let w = dpIsoWeekStart(today);
+  const wMin = dpIsoWeekStart(minDate);
+  while(w>=wMin){ wocheOpts.push(belegJahrWocheOptionHtml(w)); const d=new Date(w+"T00:00:00"); d.setDate(d.getDate()-7); w=dpIsoFromDate(d); }
+  ["beleg-jahr-start-woche","beleg-jahr-end-woche"].forEach(id=>{ document.getElementById(id).innerHTML = wocheOpts.join(""); });
+
+  const monatOpts = [];
+  let [my,mm] = today.slice(0,7).split("-").map(Number);
+  const [minY,minM] = minDate.slice(0,7).split("-").map(Number);
+  while(my>minY || (my===minY && mm>=minM)){
+    const ym = my+"-"+String(mm).padStart(2,"0");
+    monatOpts.push('<option value="'+ym+'">'+esc(fmtMonatDe(ym))+'</option>');
+    mm--; if(mm<1){ mm=12; my--; }
+  }
+  ["beleg-jahr-start-monat","beleg-jahr-end-monat"].forEach(id=>{ document.getElementById(id).innerHTML = monatOpts.join(""); });
+
+  const jahrOpts = [];
+  for(let y=Number(today.slice(0,4)); y>=Number(minDate.slice(0,4)); y--){ jahrOpts.push('<option value="'+y+'">'+y+'</option>'); }
+  ["beleg-jahr-start-jahr","beleg-jahr-end-jahr"].forEach(id=>{ document.getElementById(id).innerHTML = jahrOpts.join(""); });
+}
+/* Zeigt je Granularität genau das passende Start-/End-Eingabefeld und synchronisiert dessen Wert
+   mit dem aktuellen (bereits eingerasteten) Zeitraum. */
+function renderBelegJahrRangeInputs(){
+  const g = activeBelegJahrGranularitaet;
+  ["tag","woche","monat","jahr"].forEach(mode=>{
+    document.getElementById("beleg-jahr-start-"+mode).hidden = (mode!==g);
+    document.getElementById("beleg-jahr-end-"+mode).hidden = (mode!==g);
+  });
+  if(g==="tag"){
+    document.getElementById("beleg-jahr-start-tag").value = activeBelegJahrStart;
+    document.getElementById("beleg-jahr-end-tag").value = activeBelegJahrEnd;
+  } else if(g==="woche"){
+    document.getElementById("beleg-jahr-start-woche").value = activeBelegJahrStart;
+    document.getElementById("beleg-jahr-end-woche").value = dpIsoWeekStart(activeBelegJahrEnd);
+  } else if(g==="monat"){
+    document.getElementById("beleg-jahr-start-monat").value = activeBelegJahrStart.slice(0,7);
+    document.getElementById("beleg-jahr-end-monat").value = activeBelegJahrEnd.slice(0,7);
+  } else if(g==="jahr"){
+    document.getElementById("beleg-jahr-start-jahr").value = activeBelegJahrStart.slice(0,4);
+    document.getElementById("beleg-jahr-end-jahr").value = activeBelegJahrEnd.slice(0,4);
+  }
+}
 function renderBelegJahr(){
+  snapBelegJahrRange();
+  renderBelegJahrRangeInputs();
   const granLabel = GRANULARITAET_LABEL[activeBelegJahrGranularitaet];
   document.getElementById("beleg-jahr-intro").textContent = "Belege gesamt (linke Achse) und Vollständigkeitsquote (rechte Achse, %) je "+granLabel+" — Betrachtungszeitraum "+fmtDateDe(activeBelegJahrStart)+" bis "+fmtDateDe(activeBelegJahrEnd)+".";
   document.getElementById("beleg-jahr-table-col1").textContent = granLabel;
@@ -2543,20 +2653,43 @@ belegAggMonatInput.addEventListener("change", ()=>{
   activeBelegMonat = belegAggMonatInput.value || dpIsoToday().slice(0,7);
   renderBelegAgg();
 });
-const belegJahrStartInput = document.getElementById("beleg-jahr-start-input");
-const belegJahrEndInput = document.getElementById("beleg-jahr-end-input");
-[belegJahrStartInput, belegJahrEndInput].forEach(inp=>{
+const belegJahrStartTagInput = document.getElementById("beleg-jahr-start-tag");
+const belegJahrEndTagInput = document.getElementById("beleg-jahr-end-tag");
+[belegJahrStartTagInput, belegJahrEndTagInput].forEach(inp=>{
   inp.max = dpIsoToday();
-  inp.min = dpIsoMinusDays(BELEG_AGG_LOOKBACK_DAYS);
+  inp.min = BELEG_JAHR_MIN_DATE;
 });
-belegJahrStartInput.value = activeBelegJahrStart;
-belegJahrEndInput.value = activeBelegJahrEnd;
-belegJahrStartInput.addEventListener("change", ()=>{
-  activeBelegJahrStart = belegJahrStartInput.value || activeBelegJahrStart;
+populateBelegJahrRangeSelects();
+belegJahrStartTagInput.addEventListener("change", ()=>{
+  activeBelegJahrStart = belegJahrStartTagInput.value || activeBelegJahrStart;
   renderBelegAgg();
 });
-belegJahrEndInput.addEventListener("change", ()=>{
-  activeBelegJahrEnd = belegJahrEndInput.value || activeBelegJahrEnd;
+belegJahrEndTagInput.addEventListener("change", ()=>{
+  activeBelegJahrEnd = belegJahrEndTagInput.value || activeBelegJahrEnd;
+  renderBelegAgg();
+});
+document.getElementById("beleg-jahr-start-woche").addEventListener("change", e=>{
+  activeBelegJahrStart = e.target.value;
+  renderBelegAgg();
+});
+document.getElementById("beleg-jahr-end-woche").addEventListener("change", e=>{
+  activeBelegJahrEnd = dpIsoWeekEnd(e.target.value);
+  renderBelegAgg();
+});
+document.getElementById("beleg-jahr-start-monat").addEventListener("change", e=>{
+  activeBelegJahrStart = dpMonthStart(e.target.value);
+  renderBelegAgg();
+});
+document.getElementById("beleg-jahr-end-monat").addEventListener("change", e=>{
+  activeBelegJahrEnd = dpMonthEnd(e.target.value);
+  renderBelegAgg();
+});
+document.getElementById("beleg-jahr-start-jahr").addEventListener("change", e=>{
+  activeBelegJahrStart = dpYearStart(e.target.value);
+  renderBelegAgg();
+});
+document.getElementById("beleg-jahr-end-jahr").addEventListener("change", e=>{
+  activeBelegJahrEnd = dpYearEnd(e.target.value);
   renderBelegAgg();
 });
 document.getElementById("beleg-jahr-granularitaet").querySelectorAll(".filter-chip").forEach(chip=>{
