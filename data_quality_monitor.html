@@ -2154,7 +2154,7 @@ function renderBelegAgg(){
   }
 
   const sichtRows = belegFeldFilterRows(activeBelegAggSicht==="unvollstaendig" ? unvollstForRanking : belegAggFilteredRows);
-  document.getElementById("beleg-agg-count").textContent = sichtRows.length.toLocaleString("de-DE")+" Beispiel-Beleg(e) "+periodLabel+" in der Stichprobe"+(sichtRows.length>50 ? " · Anzeige auf 50 begrenzt" : "");
+  document.getElementById("beleg-agg-count").textContent = sichtRows.length.toLocaleString("de-DE")+" Beispiel-Beleg(e) "+periodLabel+" in der Stichprobe";
 
   document.getElementById("beleg-agg-cluster-wrap").innerHTML = activeBelegAggSicht==="unvollstaendig"
     ? renderBelegClusterView(sichtRows, periodLabel)
