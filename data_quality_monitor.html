@@ -683,6 +683,7 @@
                 <tbody id="dp-body"></tbody>
               </table>
             </div>
+            <div id="dp-cluster-wrap" hidden></div>
             <button type="button" class="dp-table-collapsed-hint" id="dp-table-collapsed-hint" hidden></button>
 
             <div class="subhead">Auswertungskatalog</div>
@@ -938,112 +939,116 @@ const DATENPOOL_FELDER = [
   {id:"univ-4",feld:"Leistungserbringer (LE)",dokArt:"Alle Dok.-Arten",zielstatus:null,req:null,vollst:95.5,befuell:93.8,erkennung:94.4,quelle:"erfassung",n:1142,off:400,qsl:{sicher:79,unsicher:9,nicht:2,korrigiert:6,bestaetigt:3,sonstige:1}},
   {id:"univ-5",feld:"Eingangskanal",dokArt:"Alle Dok.-Arten",zielstatus:null,req:null,vollst:100.0,befuell:100.0,erkennung:100.0,quelle:"erfassung",n:1142,off:400,qsl:{sicher:97,unsicher:0,nicht:0,korrigiert:1,bestaetigt:1,sonstige:1}},
   {id:"univ-6",feld:"Behandlungsdatum",dokArt:"Alle Dok.-Arten",zielstatus:null,req:null,vollst:99.6,befuell:99.1,erkennung:99.4,quelle:"erfassung",n:1142,off:400,qsl:{sicher:89,unsicher:4,nicht:1,korrigiert:3,bestaetigt:2,sonstige:1}},
-  {id:"3552-10",feld:"Leistungserbringer (LE)",dokArt:"RE ambulant neu (3552)",zielstatus:"K",req:"bedingt",vollst:91.6,befuell:86.5,erkennung:92.3,quelle:"av",n:612,off:76,qsl:{sicher:69,unsicher:20,nicht:2,korrigiert:8,bestaetigt:1,sonstige:0}},
-  {id:"3552-42",feld:"Umsatzsteuer für GOÄ-Leistungen in %",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"bedingt",vollst:86.8,befuell:82.6,erkennung:86.4,quelle:"av",n:612,off:84,qsl:{sicher:64,unsicher:12,nicht:6,korrigiert:15,bestaetigt:3,sonstige:0}},
-  {id:"3552-43",feld:"Umsatzsteuer für GOÄ-Leistungen in €",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"bedingt",vollst:89.0,befuell:85.9,erkennung:90.5,quelle:"av",n:612,off:47,qsl:{sicher:77,unsicher:4,nicht:3,korrigiert:5,bestaetigt:0,sonstige:11}},
-  {id:"3552-61",feld:"Umsatzsteuer für GOZ-Leistungen in %",dokArt:"RE ambulant neu (3552)",zielstatus:"K",req:"bedingt",vollst:78.1,befuell:73.6,erkennung:78.0,quelle:"av",n:612,off:64,qsl:{sicher:70,unsicher:5,nicht:7,korrigiert:5,bestaetigt:0,sonstige:13}},
-  {id:"3552-62",feld:"Umsatzsteuer für GOZ-Leistungen in €",dokArt:"RE ambulant neu (3552)",zielstatus:"K",req:"bedingt",vollst:94.1,befuell:92.0,erkennung:93.2,quelle:"av",n:612,off:53,qsl:{sicher:80,unsicher:13,nicht:0,korrigiert:3,bestaetigt:4,sonstige:0}},
-  {id:"3552-65",feld:"Abzüglich Vorleistung anderer Kostenträger/Vorauszahlungen",dokArt:"RE ambulant neu (3552)",zielstatus:"MbA",req:"bedingt",vollst:80.5,befuell:78.0,erkennung:82.9,quelle:"av",n:612,off:91,qsl:{sicher:70,unsicher:10,nicht:0,korrigiert:2,bestaetigt:5,sonstige:13}},
-  {id:"3552-11",feld:"Kontoinhaber/-in",dokArt:"RE ambulant neu (3552)",zielstatus:"MbA",req:"bedingt",vollst:81.0,befuell:75.5,erkennung:83.1,quelle:"av",n:612,off:85,qsl:{sicher:73,unsicher:4,nicht:7,korrigiert:7,bestaetigt:2,sonstige:7}},
-  {id:"3552-13",feld:"IBAN",dokArt:"RE ambulant neu (3552)",zielstatus:"MbA",req:"bedingt",vollst:83.4,befuell:79.6,erkennung:84.1,quelle:"av",n:612,off:36,qsl:{sicher:68,unsicher:3,nicht:2,korrigiert:15,bestaetigt:0,sonstige:12}},
-  {id:"3552-14",feld:"BIC",dokArt:"RE ambulant neu (3552)",zielstatus:"K",req:"kann",vollst:78.9,befuell:76.9,erkennung:79.7,quelle:"av",n:612,off:72,qsl:{sicher:69,unsicher:17,nicht:6,korrigiert:4,bestaetigt:4,sonstige:0}},
-  {id:"3552-9",feld:"BSNR Betriebsstättennummer",dokArt:"RE ambulant neu (3552)",zielstatus:"TM",req:"kann",vollst:75.0,befuell:70.8,erkennung:77.9,quelle:"av",n:612,off:15,qsl:{sicher:62,unsicher:12,nicht:1,korrigiert:4,bestaetigt:2,sonstige:19}},
-  {id:"3552-19",feld:"ICD10 Code",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"muss",vollst:91.4,befuell:87.7,erkennung:89.3,quelle:"av",n:612,off:61,qsl:{sicher:72,unsicher:10,nicht:3,korrigiert:11,bestaetigt:4,sonstige:0}},
-  {id:"3552-20",feld:"Diagnose Klartext",dokArt:"RE ambulant neu (3552)",zielstatus:"K**",req:"muss",vollst:81.4,befuell:79.1,erkennung:80.3,quelle:"av",n:612,off:33,qsl:{sicher:65,unsicher:16,nicht:2,korrigiert:12,bestaetigt:5,sonstige:0}},
-  {id:"3552-21",feld:"Zusatzkennzeichen Diagnosesicherheit",dokArt:"RE ambulant neu (3552)",zielstatus:"SWH",req:"kann",vollst:92.1,befuell:89.9,erkennung:93.0,quelle:"av",n:612,off:3,qsl:{sicher:82,unsicher:7,nicht:4,korrigiert:7,bestaetigt:0,sonstige:0}},
-  {id:"3552-22",feld:"Lokalisierung",dokArt:"RE ambulant neu (3552)",zielstatus:"SWH",req:"kann",vollst:89.3,befuell:86.5,erkennung:88.8,quelle:"av",n:612,off:62,qsl:{sicher:74,unsicher:8,nicht:5,korrigiert:11,bestaetigt:1,sonstige:1}},
-  {id:"3552-18",feld:"Name, Adresse, LANR (Lebenslange Arztnummer), BSNR (Betriebsstättennummer)",dokArt:"RE ambulant neu (3552)",zielstatus:"K",req:"kann",vollst:78.5,befuell:73.3,erkennung:77.5,quelle:"av",n:612,off:39,qsl:{sicher:65,unsicher:13,nicht:7,korrigiert:10,bestaetigt:5,sonstige:0}},
-  {id:"3552-27",feld:"Behandlungsdatum",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"muss",vollst:96.5,befuell:93.1,erkennung:93.2,quelle:"av",n:612,off:15,qsl:{sicher:65,unsicher:19,nicht:7,korrigiert:9,bestaetigt:0,sonstige:0}},
-  {id:"3552-28",feld:"Anzahl",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"muss",vollst:89.7,befuell:87.7,erkennung:89.3,quelle:"av",n:612,off:15,qsl:{sicher:75,unsicher:3,nicht:0,korrigiert:14,bestaetigt:5,sonstige:3}},
-  {id:"3552-29",feld:"Präfix(e)",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"bedingt",vollst:91.8,befuell:88.2,erkennung:94.2,quelle:"av",n:612,off:73,qsl:{sicher:80,unsicher:5,nicht:2,korrigiert:3,bestaetigt:0,sonstige:10}},
-  {id:"3552-30",feld:"GOÄ-Nummer",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"bedingt",vollst:95.6,befuell:90.4,erkennung:92.5,quelle:"av",n:612,off:40,qsl:{sicher:61,unsicher:19,nicht:3,korrigiert:13,bestaetigt:4,sonstige:0}},
-  {id:"3552-31",feld:"Titel der Leistungslegende/Kurzbezeichnung",dokArt:"RE ambulant neu (3552)",zielstatus:"K**",req:"muss",vollst:85.1,befuell:82.6,erkennung:86.0,quelle:"av",n:612,off:36,qsl:{sicher:70,unsicher:15,nicht:4,korrigiert:7,bestaetigt:4,sonstige:0}},
-  {id:"3552-32",feld:"Begründung",dokArt:"RE ambulant neu (3552)",zielstatus:"K**",req:"bedingt",vollst:90.8,befuell:86.9,erkennung:89.6,quelle:"av",n:612,off:64,qsl:{sicher:70,unsicher:10,nicht:5,korrigiert:13,bestaetigt:2,sonstige:0}},
-  {id:"3552-33",feld:"Dauer gemäß Leistungslegende",dokArt:"RE ambulant neu (3552)",zielstatus:"P",req:"bedingt",vollst:82.5,befuell:79.6,erkennung:81.3,quelle:"av",n:612,off:32,qsl:{sicher:67,unsicher:19,nicht:3,korrigiert:8,bestaetigt:3,sonstige:0}},
-  {id:"3552-34",feld:"Faktor-Grund",dokArt:"RE ambulant neu (3552)",zielstatus:"P",req:"bedingt",vollst:79.3,befuell:76.7,erkennung:79.9,quelle:"av",n:612,off:93,qsl:{sicher:70,unsicher:16,nicht:0,korrigiert:9,bestaetigt:2,sonstige:3}},
-  {id:"3552-35",feld:"GO Faktor",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"bedingt",vollst:83.8,befuell:79.6,erkennung:82.5,quelle:"av",n:612,off:17,qsl:{sicher:69,unsicher:16,nicht:1,korrigiert:4,bestaetigt:5,sonstige:5}},
-  {id:"3552-36",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"RE ambulant neu (3552)",zielstatus:"P",req:"bedingt",vollst:89.7,befuell:84.2,erkennung:88.8,quelle:"av",n:612,off:43,qsl:{sicher:75,unsicher:14,nicht:1,korrigiert:10,bestaetigt:0,sonstige:0}},
-  {id:"3552-37",feld:"Betrag EUR",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"bedingt",vollst:79.1,befuell:75.1,erkennung:78.6,quelle:"av",n:612,off:38,qsl:{sicher:69,unsicher:16,nicht:5,korrigiert:7,bestaetigt:3,sonstige:0}},
-  {id:"3552-47",feld:"Behandlungsdatum",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"muss",vollst:91.2,befuell:87.1,erkennung:92.4,quelle:"av",n:612,off:85,qsl:{sicher:77,unsicher:10,nicht:5,korrigiert:2,bestaetigt:1,sonstige:5}},
-  {id:"3552-48",feld:"Anzahl",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"muss",vollst:91.8,befuell:87.2,erkennung:90.4,quelle:"av",n:612,off:60,qsl:{sicher:86,unsicher:7,nicht:3,korrigiert:1,bestaetigt:3,sonstige:0}},
-  {id:"3552-49",feld:"Präfix(e)",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"bedingt",vollst:83.7,befuell:81.2,erkennung:81.3,quelle:"av",n:612,off:17,qsl:{sicher:70,unsicher:8,nicht:5,korrigiert:6,bestaetigt:1,sonstige:10}},
-  {id:"3552-50",feld:"GOZ Nummer",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"muss",vollst:83.2,befuell:78.7,erkennung:83.7,quelle:"av",n:612,off:91,qsl:{sicher:71,unsicher:4,nicht:4,korrigiert:4,bestaetigt:3,sonstige:14}},
-  {id:"3552-51",feld:"Titel der Leistungslegende/Kurzbezeichnung",dokArt:"RE ambulant neu (3552)",zielstatus:"K**",req:"muss",vollst:85.7,befuell:83.3,erkennung:87.1,quelle:"av",n:612,off:16,qsl:{sicher:63,unsicher:17,nicht:4,korrigiert:12,bestaetigt:4,sonstige:0}},
-  {id:"3552-52",feld:"Begründung",dokArt:"RE ambulant neu (3552)",zielstatus:"K**",req:"bedingt",vollst:93.5,befuell:91.3,erkennung:94.5,quelle:"av",n:612,off:29,qsl:{sicher:71,unsicher:16,nicht:0,korrigiert:13,bestaetigt:0,sonstige:0}},
-  {id:"3552-53",feld:"Zahn/Region",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"bedingt",vollst:86.6,befuell:82.4,erkennung:88.7,quelle:"av",n:612,off:63,qsl:{sicher:73,unsicher:16,nicht:7,korrigiert:1,bestaetigt:3,sonstige:0}},
-  {id:"3552-54",feld:"GO Faktor",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"muss",vollst:92.1,befuell:87.8,erkennung:92.2,quelle:"av",n:612,off:93,qsl:{sicher:78,unsicher:6,nicht:1,korrigiert:12,bestaetigt:1,sonstige:2}},
-  {id:"3552-55",feld:"lfd. Nummer (Zahn-) Ärztin/Arzt",dokArt:"RE ambulant neu (3552)",zielstatus:"P",req:"bedingt",vollst:83.9,befuell:79.1,erkennung:84.0,quelle:"av",n:612,off:8,qsl:{sicher:77,unsicher:6,nicht:3,korrigiert:2,bestaetigt:4,sonstige:8}},
-  {id:"3552-56",feld:"Betrag EUR",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"bedingt",vollst:92.9,befuell:88.8,erkennung:93.6,quelle:"av",n:612,off:38,qsl:{sicher:70,unsicher:17,nicht:3,korrigiert:9,bestaetigt:1,sonstige:0}},
-  {id:"3552-7",feld:"Leistungserbringer (LE)",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"muss",vollst:91.7,befuell:88.7,erkennung:92.8,quelle:"av",n:612,off:65,qsl:{sicher:76,unsicher:8,nicht:5,korrigiert:9,bestaetigt:2,sonstige:0}},
-  {id:"3552-15",feld:"Pos_LNR`s Nachname, Vorname, Geburtsdatum",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"muss",vollst:83.5,befuell:80.0,erkennung:84.1,quelle:"av",n:612,off:60,qsl:{sicher:70,unsicher:7,nicht:4,korrigiert:12,bestaetigt:5,sonstige:2}},
-  {id:"3552-23",feld:"Datum",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"bedingt",vollst:84.0,befuell:80.0,erkennung:84.5,quelle:"av",n:612,off:43,qsl:{sicher:72,unsicher:7,nicht:7,korrigiert:8,bestaetigt:0,sonstige:6}},
-  {id:"3552-24",feld:"OPS-Code",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"bedingt",vollst:91.7,befuell:88.5,erkennung:91.5,quelle:"av",n:612,off:76,qsl:{sicher:78,unsicher:4,nicht:6,korrigiert:11,bestaetigt:1,sonstige:0}},
-  {id:"3552-25",feld:"Unverschlüsselte operative Leistung im Klartext",dokArt:"RE ambulant neu (3552)",zielstatus:"K**",req:"bedingt",vollst:94.5,befuell:91.0,erkennung:94.1,quelle:"av",n:612,off:76,qsl:{sicher:82,unsicher:7,nicht:7,korrigiert:1,bestaetigt:3,sonstige:0}},
-  {id:"3552-26",feld:"Lokalisierung",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"kann",vollst:92.0,befuell:89.7,erkennung:90.0,quelle:"av",n:612,off:70,qsl:{sicher:78,unsicher:5,nicht:0,korrigiert:13,bestaetigt:2,sonstige:2}},
-  {id:"3552-6",feld:"Rechnungsbetrag",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"muss",vollst:86.5,befuell:84.3,erkennung:87.0,quelle:"av",n:612,off:27,qsl:{sicher:63,unsicher:17,nicht:6,korrigiert:12,bestaetigt:2,sonstige:0}},
-  {id:"3552-2",feld:"Rechnungsdatum",dokArt:"RE ambulant neu (3552)",zielstatus:"K",req:"muss",vollst:83.6,befuell:79.0,erkennung:83.7,quelle:"av",n:612,off:27,qsl:{sicher:66,unsicher:12,nicht:7,korrigiert:11,bestaetigt:4,sonstige:0}},
-  {id:"3552-1",feld:"Leistungserbringer (LE)",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"muss",vollst:95.1,befuell:93.0,erkennung:94.4,quelle:"av",n:612,off:20,qsl:{sicher:81,unsicher:10,nicht:1,korrigiert:3,bestaetigt:5,sonstige:0}},
-  {id:"3552-3",feld:"Rechnungsnummer",dokArt:"RE ambulant neu (3552)",zielstatus:"M",req:"muss",vollst:94.1,befuell:88.6,erkennung:94.0,quelle:"av",n:612,off:64,qsl:{sicher:72,unsicher:6,nicht:5,korrigiert:15,bestaetigt:2,sonstige:0}},
-  {id:"3552-67",feld:"Sonstiger Hinweis",dokArt:"RE ambulant neu (3552)",zielstatus:"K",req:"kann",vollst:79.4,befuell:74.0,erkennung:78.8,quelle:"av",n:612,off:28,qsl:{sicher:65,unsicher:20,nicht:4,korrigiert:11,bestaetigt:0,sonstige:0}},
-  {id:"3552-17",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"RE ambulant neu (3552)",zielstatus:"K",req:"bedingt",vollst:82.4,befuell:76.9,erkennung:83.9,quelle:"av",n:612,off:41,qsl:{sicher:73,unsicher:5,nicht:1,korrigiert:10,bestaetigt:5,sonstige:6}},
-  {id:"3552-16",feld:"Vorname, Name, LANR (Lebenslange Arztnummer)",dokArt:"RE ambulant neu (3552)",zielstatus:"K",req:"muss",vollst:81.7,befuell:79.6,erkennung:81.8,quelle:"av",n:612,off:93,qsl:{sicher:76,unsicher:12,nicht:1,korrigiert:5,bestaetigt:0,sonstige:6}},
-  {id:"3552-4",feld:"Verwendungszweck",dokArt:"RE ambulant neu (3552)",zielstatus:"K",req:"kann",vollst:87.6,befuell:85.0,erkennung:89.3,quelle:"av",n:612,off:93,qsl:{sicher:74,unsicher:15,nicht:0,korrigiert:10,bestaetigt:0,sonstige:1}},
-  {id:"3552-5",feld:"Zahlungsziel",dokArt:"RE ambulant neu (3552)",zielstatus:"K",req:"kann",vollst:81.8,befuell:76.8,erkennung:80.3,quelle:"av",n:612,off:2,qsl:{sicher:68,unsicher:6,nicht:0,korrigiert:5,bestaetigt:4,sonstige:17}},
-  {id:"3549-10",feld:"Leistungserbringer (LE)",dokArt:"RE stationär neu (3549)",zielstatus:"K",req:"bedingt",vollst:84.4,befuell:81.3,erkennung:83.4,quelle:"av",n:158,off:78,qsl:{sicher:74,unsicher:13,nicht:3,korrigiert:5,bestaetigt:5,sonstige:0}},
-  {id:"3549-39",feld:"Abzüglich Minderung iHv. 15% oder 25% gem. § 6a GOÄ in %",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"bedingt",vollst:81.5,befuell:78.7,erkennung:81.1,quelle:"av",n:158,off:76,qsl:{sicher:67,unsicher:13,nicht:5,korrigiert:2,bestaetigt:0,sonstige:13}},
-  {id:"3549-40",feld:"Abzüglich Minderung iHv. 15% oder 25% gem. § 6a GOÄ in €",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"bedingt",vollst:95.5,befuell:90.9,erkennung:96.5,quelle:"av",n:158,off:53,qsl:{sicher:82,unsicher:7,nicht:1,korrigiert:5,bestaetigt:5,sonstige:0}},
-  {id:"3549-42",feld:"Umsatzsteuer für GOÄ-Leistungen in %",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"bedingt",vollst:94.7,befuell:90.8,erkennung:94.2,quelle:"av",n:158,off:22,qsl:{sicher:76,unsicher:6,nicht:0,korrigiert:14,bestaetigt:4,sonstige:0}},
-  {id:"3549-43",feld:"Umsatzsteuer für GOÄ-Leistungen in €",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"bedingt",vollst:82.2,befuell:79.8,erkennung:83.5,quelle:"av",n:158,off:65,qsl:{sicher:69,unsicher:3,nicht:6,korrigiert:8,bestaetigt:0,sonstige:14}},
-  {id:"3549-61",feld:"Umsatzsteuer für GOZ-Leistungen in %",dokArt:"RE stationär neu (3549)",zielstatus:"K",req:"bedingt",vollst:87.6,befuell:84.8,erkennung:87.8,quelle:"av",n:158,off:35,qsl:{sicher:73,unsicher:15,nicht:6,korrigiert:6,bestaetigt:0,sonstige:0}},
-  {id:"3549-62",feld:"Umsatzsteuer für GOZ-Leistungen in €",dokArt:"RE stationär neu (3549)",zielstatus:"K",req:"bedingt",vollst:97.5,befuell:93.5,erkennung:94.7,quelle:"av",n:158,off:88,qsl:{sicher:80,unsicher:9,nicht:7,korrigiert:4,bestaetigt:0,sonstige:0}},
-  {id:"3549-65",feld:"Abzüglich Vorleistung anderer Kostenträger/Vorauszahlungen",dokArt:"RE stationär neu (3549)",zielstatus:"MbA",req:"bedingt",vollst:82.5,befuell:80.4,erkennung:81.0,quelle:"av",n:158,off:52,qsl:{sicher:70,unsicher:15,nicht:0,korrigiert:15,bestaetigt:0,sonstige:0}},
-  {id:"3549-58",feld:"Abzüglich Minderung iHv. 15% oder 25% gem. § 7 GOZ in %",dokArt:"RE stationär neu (3549)",zielstatus:"MbA",req:"bedingt",vollst:81.1,befuell:78.6,erkennung:80.2,quelle:"av",n:158,off:46,qsl:{sicher:75,unsicher:3,nicht:6,korrigiert:10,bestaetigt:2,sonstige:4}},
-  {id:"3549-59",feld:"Abzüglich Minderung iHv. 15% oder 25% gem. § 7 GOZ in €",dokArt:"RE stationär neu (3549)",zielstatus:"MbA",req:"bedingt",vollst:87.5,befuell:82.3,erkennung:89.0,quelle:"av",n:158,off:2,qsl:{sicher:73,unsicher:13,nicht:2,korrigiert:9,bestaetigt:3,sonstige:0}},
-  {id:"3549-11",feld:"Kontoinhaber/-in",dokArt:"RE stationär neu (3549)",zielstatus:"MbA",req:"bedingt",vollst:79.7,befuell:75.1,erkennung:80.5,quelle:"av",n:158,off:19,qsl:{sicher:73,unsicher:17,nicht:2,korrigiert:1,bestaetigt:0,sonstige:7}},
-  {id:"3549-13",feld:"IBAN",dokArt:"RE stationär neu (3549)",zielstatus:"MbA",req:"bedingt",vollst:95.0,befuell:91.9,erkennung:92.3,quelle:"av",n:158,off:85,qsl:{sicher:66,unsicher:12,nicht:7,korrigiert:13,bestaetigt:2,sonstige:0}},
-  {id:"3549-14",feld:"BIC",dokArt:"RE stationär neu (3549)",zielstatus:"K",req:"kann",vollst:76.9,befuell:72.3,erkennung:78.2,quelle:"av",n:158,off:86,qsl:{sicher:68,unsicher:14,nicht:6,korrigiert:7,bestaetigt:2,sonstige:3}},
-  {id:"3549-9",feld:"BSNR Betriebsstättennummer",dokArt:"RE stationär neu (3549)",zielstatus:"TM",req:"kann",vollst:80.5,befuell:78.1,erkennung:80.8,quelle:"av",n:158,off:72,qsl:{sicher:69,unsicher:8,nicht:1,korrigiert:10,bestaetigt:1,sonstige:11}},
-  {id:"3549-19",feld:"ICD10 Code",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"muss",vollst:97.8,befuell:92.7,erkennung:95.6,quelle:"av",n:158,off:41,qsl:{sicher:78,unsicher:16,nicht:2,korrigiert:2,bestaetigt:2,sonstige:0}},
-  {id:"3549-20",feld:"Diagnose Klartext",dokArt:"RE stationär neu (3549)",zielstatus:"K**",req:"muss",vollst:93.3,befuell:90.3,erkennung:90.9,quelle:"av",n:158,off:31,qsl:{sicher:58,unsicher:20,nicht:4,korrigiert:14,bestaetigt:4,sonstige:0}},
-  {id:"3549-21",feld:"Zusatzkennzeichen Diagnosesicherheit",dokArt:"RE stationär neu (3549)",zielstatus:"SWH",req:"kann",vollst:75.0,befuell:70.6,erkennung:75.4,quelle:"av",n:158,off:42,qsl:{sicher:64,unsicher:16,nicht:6,korrigiert:3,bestaetigt:2,sonstige:9}},
-  {id:"3549-22",feld:"Lokalisierung",dokArt:"RE stationär neu (3549)",zielstatus:"SWH",req:"kann",vollst:84.2,befuell:79.5,erkennung:83.1,quelle:"av",n:158,off:34,qsl:{sicher:64,unsicher:15,nicht:6,korrigiert:10,bestaetigt:5,sonstige:0}},
-  {id:"3549-18",feld:"Name, Adresse, LANR (Lebenslange Arztnummer), BSNR (Betriebsstättennummer)",dokArt:"RE stationär neu (3549)",zielstatus:"K",req:"kann",vollst:89.4,befuell:86.9,erkennung:88.0,quelle:"av",n:158,off:7,qsl:{sicher:77,unsicher:11,nicht:2,korrigiert:4,bestaetigt:3,sonstige:3}},
-  {id:"3549-27",feld:"Behandlungsdatum",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"muss",vollst:82.2,befuell:78.8,erkennung:80.7,quelle:"av",n:158,off:4,qsl:{sicher:64,unsicher:20,nicht:6,korrigiert:10,bestaetigt:0,sonstige:0}},
-  {id:"3549-28",feld:"Anzahl",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"muss",vollst:92.2,befuell:87.4,erkennung:90.1,quelle:"av",n:158,off:50,qsl:{sicher:81,unsicher:9,nicht:1,korrigiert:8,bestaetigt:1,sonstige:0}},
-  {id:"3549-29",feld:"Präfix(e)",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"bedingt",vollst:86.0,befuell:84.0,erkennung:85.5,quelle:"av",n:158,off:74,qsl:{sicher:71,unsicher:20,nicht:1,korrigiert:8,bestaetigt:0,sonstige:0}},
-  {id:"3549-30",feld:"GOÄ-Nummer",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"bedingt",vollst:83.1,befuell:80.0,erkennung:83.2,quelle:"av",n:158,off:15,qsl:{sicher:70,unsicher:8,nicht:7,korrigiert:10,bestaetigt:5,sonstige:0}},
-  {id:"3549-31",feld:"Titel der Leistungslegende/Kurzbezeichnung",dokArt:"RE stationär neu (3549)",zielstatus:"K**",req:"muss",vollst:87.0,befuell:83.1,erkennung:86.7,quelle:"av",n:158,off:37,qsl:{sicher:74,unsicher:19,nicht:1,korrigiert:3,bestaetigt:3,sonstige:0}},
-  {id:"3549-32",feld:"Begründung",dokArt:"RE stationär neu (3549)",zielstatus:"K**",req:"bedingt",vollst:93.5,befuell:88.8,erkennung:93.6,quelle:"av",n:158,off:34,qsl:{sicher:76,unsicher:11,nicht:5,korrigiert:5,bestaetigt:3,sonstige:0}},
-  {id:"3549-33",feld:"Dauer gemäß Leistungslegende",dokArt:"RE stationär neu (3549)",zielstatus:"P",req:"bedingt",vollst:89.8,befuell:85.8,erkennung:87.8,quelle:"av",n:158,off:6,qsl:{sicher:76,unsicher:8,nicht:4,korrigiert:1,bestaetigt:1,sonstige:10}},
-  {id:"3549-34",feld:"Faktor-Grund",dokArt:"RE stationär neu (3549)",zielstatus:"P",req:"bedingt",vollst:88.7,befuell:84.9,erkennung:89.6,quelle:"av",n:158,off:95,qsl:{sicher:77,unsicher:14,nicht:2,korrigiert:7,bestaetigt:0,sonstige:0}},
-  {id:"3549-35",feld:"GO Faktor",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"bedingt",vollst:88.5,befuell:85.1,erkennung:88.3,quelle:"av",n:158,off:37,qsl:{sicher:69,unsicher:15,nicht:4,korrigiert:11,bestaetigt:1,sonstige:0}},
-  {id:"3549-36",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"RE stationär neu (3549)",zielstatus:"P",req:"bedingt",vollst:88.8,befuell:84.8,erkennung:86.4,quelle:"av",n:158,off:86,qsl:{sicher:75,unsicher:17,nicht:4,korrigiert:4,bestaetigt:0,sonstige:0}},
-  {id:"3549-37",feld:"Betrag EUR",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"bedingt",vollst:82.7,befuell:79.0,erkennung:81.7,quelle:"av",n:158,off:76,qsl:{sicher:68,unsicher:3,nicht:2,korrigiert:4,bestaetigt:4,sonstige:19}},
-  {id:"3549-47",feld:"Behandlungsdatum",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"muss",vollst:81.6,befuell:76.7,erkennung:82.0,quelle:"av",n:158,off:71,qsl:{sicher:72,unsicher:10,nicht:4,korrigiert:9,bestaetigt:3,sonstige:2}},
-  {id:"3549-48",feld:"Anzahl",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"muss",vollst:95.5,befuell:93.2,erkennung:97.1,quelle:"av",n:158,off:77,qsl:{sicher:67,unsicher:10,nicht:5,korrigiert:13,bestaetigt:5,sonstige:0}},
-  {id:"3549-49",feld:"Präfix(e)",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"bedingt",vollst:79.1,befuell:74.2,erkennung:77.3,quelle:"av",n:158,off:59,qsl:{sicher:61,unsicher:20,nicht:3,korrigiert:14,bestaetigt:2,sonstige:0}},
-  {id:"3549-50",feld:"GOZ Nummer",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"muss",vollst:93.8,befuell:89.5,erkennung:95.5,quelle:"av",n:158,off:19,qsl:{sicher:83,unsicher:3,nicht:3,korrigiert:6,bestaetigt:5,sonstige:0}},
-  {id:"3549-51",feld:"Titel der Leistungslegende/Kurzbezeichnung",dokArt:"RE stationär neu (3549)",zielstatus:"K**",req:"muss",vollst:94.2,befuell:89.3,erkennung:93.6,quelle:"av",n:158,off:46,qsl:{sicher:78,unsicher:5,nicht:4,korrigiert:8,bestaetigt:5,sonstige:0}},
-  {id:"3549-52",feld:"Begründung",dokArt:"RE stationär neu (3549)",zielstatus:"K**",req:"bedingt",vollst:79.9,befuell:74.6,erkennung:80.5,quelle:"av",n:158,off:13,qsl:{sicher:60,unsicher:18,nicht:4,korrigiert:13,bestaetigt:5,sonstige:0}},
-  {id:"3549-53",feld:"Zahn/Region",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"bedingt",vollst:86.5,befuell:83.7,erkennung:87.7,quelle:"av",n:158,off:62,qsl:{sicher:68,unsicher:9,nicht:7,korrigiert:13,bestaetigt:3,sonstige:0}},
-  {id:"3549-54",feld:"GO Faktor",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"muss",vollst:85.2,befuell:81.4,erkennung:84.7,quelle:"av",n:158,off:21,qsl:{sicher:75,unsicher:3,nicht:2,korrigiert:7,bestaetigt:5,sonstige:8}},
-  {id:"3549-55",feld:"lfd. Nummer (Zahn-) Ärztin/Arzt",dokArt:"RE stationär neu (3549)",zielstatus:"P",req:"bedingt",vollst:91.8,befuell:88.6,erkennung:88.7,quelle:"av",n:158,off:77,qsl:{sicher:60,unsicher:19,nicht:5,korrigiert:12,bestaetigt:4,sonstige:0}},
-  {id:"3549-56",feld:"Betrag EUR",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"bedingt",vollst:92.3,befuell:90.2,erkennung:93.8,quelle:"av",n:158,off:27,qsl:{sicher:86,unsicher:6,nicht:0,korrigiert:8,bestaetigt:0,sonstige:0}},
-  {id:"3549-7",feld:"Leistungserbringer (LE)",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"muss",vollst:85.4,befuell:82.3,erkennung:86.3,quelle:"av",n:158,off:25,qsl:{sicher:77,unsicher:4,nicht:5,korrigiert:2,bestaetigt:3,sonstige:9}},
-  {id:"3549-15",feld:"Pos_LNR`s Nachname, Vorname, Geburtsdatum",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"muss",vollst:87.8,befuell:85.6,erkennung:90.2,quelle:"av",n:158,off:71,qsl:{sicher:73,unsicher:4,nicht:6,korrigiert:15,bestaetigt:2,sonstige:0}},
-  {id:"3549-23",feld:"Datum",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"bedingt",vollst:84.0,befuell:79.4,erkennung:83.4,quelle:"av",n:158,off:61,qsl:{sicher:69,unsicher:6,nicht:1,korrigiert:5,bestaetigt:3,sonstige:16}},
-  {id:"3549-24",feld:"OPS-Code",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"bedingt",vollst:85.5,befuell:82.0,erkennung:87.2,quelle:"av",n:158,off:62,qsl:{sicher:71,unsicher:5,nicht:7,korrigiert:14,bestaetigt:2,sonstige:1}},
-  {id:"3549-25",feld:"Unverschlüsselte operative Leistung im Klartext",dokArt:"RE stationär neu (3549)",zielstatus:"K**",req:"bedingt",vollst:96.0,befuell:92.0,erkennung:94.6,quelle:"av",n:158,off:93,qsl:{sicher:63,unsicher:18,nicht:5,korrigiert:13,bestaetigt:1,sonstige:0}},
-  {id:"3549-26",feld:"Lokalisierung",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"kann",vollst:88.0,befuell:84.5,erkennung:86.0,quelle:"av",n:158,off:92,qsl:{sicher:65,unsicher:16,nicht:6,korrigiert:11,bestaetigt:2,sonstige:0}},
-  {id:"3549-6",feld:"Rechnungsbetrag",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"muss",vollst:80.4,befuell:78.0,erkennung:79.8,quelle:"av",n:158,off:21,qsl:{sicher:69,unsicher:5,nicht:5,korrigiert:10,bestaetigt:3,sonstige:8}},
-  {id:"3549-2",feld:"Rechnungsdatum",dokArt:"RE stationär neu (3549)",zielstatus:"K",req:"muss",vollst:95.1,befuell:92.8,erkennung:94.9,quelle:"av",n:158,off:40,qsl:{sicher:76,unsicher:5,nicht:5,korrigiert:10,bestaetigt:4,sonstige:0}},
-  {id:"3549-1",feld:"Leistungserbringer (LE)",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"muss",vollst:89.8,befuell:84.7,erkennung:90.4,quelle:"av",n:158,off:64,qsl:{sicher:64,unsicher:16,nicht:5,korrigiert:13,bestaetigt:2,sonstige:0}},
-  {id:"3549-3",feld:"Rechnungsnummer",dokArt:"RE stationär neu (3549)",zielstatus:"M",req:"muss",vollst:95.6,befuell:91.0,erkennung:92.1,quelle:"av",n:158,off:35,qsl:{sicher:60,unsicher:20,nicht:6,korrigiert:13,bestaetigt:1,sonstige:0}},
-  {id:"3549-67",feld:"Sonstiger Hinweis",dokArt:"RE stationär neu (3549)",zielstatus:"K",req:"kann",vollst:89.0,befuell:84.8,erkennung:90.3,quelle:"av",n:158,off:82,qsl:{sicher:67,unsicher:20,nicht:3,korrigiert:7,bestaetigt:3,sonstige:0}},
-  {id:"3549-17",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"RE stationär neu (3549)",zielstatus:"K",req:"bedingt",vollst:91.5,befuell:88.7,erkennung:89.3,quelle:"av",n:158,off:86,qsl:{sicher:74,unsicher:6,nicht:6,korrigiert:14,bestaetigt:0,sonstige:0}},
-  {id:"3549-16",feld:"Vorname, Name, LANR (Lebenslange Arztnummer)",dokArt:"RE stationär neu (3549)",zielstatus:"K",req:"muss",vollst:89.6,befuell:86.3,erkennung:89.1,quelle:"av",n:158,off:28,qsl:{sicher:75,unsicher:18,nicht:3,korrigiert:4,bestaetigt:0,sonstige:0}},
-  {id:"3549-4",feld:"Verwendungszweck",dokArt:"RE stationär neu (3549)",zielstatus:"K",req:"kann",vollst:90.4,befuell:88.0,erkennung:87.4,quelle:"av",n:158,off:36,qsl:{sicher:76,unsicher:9,nicht:0,korrigiert:11,bestaetigt:2,sonstige:2}},
-  {id:"3549-5",feld:"Zahlungsziel",dokArt:"RE stationär neu (3549)",zielstatus:"K",req:"kann",vollst:80.3,befuell:78.1,erkennung:77.5,quelle:"av",n:158,off:86,qsl:{sicher:73,unsicher:3,nicht:5,korrigiert:13,bestaetigt:1,sonstige:5}},
+  {id:"3552-nk1a",feld:"VP",dokArt:"RE ambulant neu (3552)",nk:"1",zielstatus:"M",req:"muss",vollst:98.9,befuell:98.1,erkennung:98.6,quelle:"erfassung",n:612,off:15,qsl:{sicher:88,unsicher:6,nicht:1,korrigiert:4,bestaetigt:1,sonstige:0}},
+  {id:"3552-nk1b",feld:"Belegklassifikation",dokArt:"RE ambulant neu (3552)",nk:"1",zielstatus:"M",req:"muss",vollst:99.4,befuell:99.0,erkennung:99.3,quelle:"erfassung",n:612,off:10,qsl:{sicher:91,unsicher:4,nicht:1,korrigiert:3,bestaetigt:1,sonstige:0}},
+  {id:"3552-10",feld:"Leistungserbringer (LE)",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"K",req:"bedingt",vollst:91.6,befuell:86.5,erkennung:92.3,quelle:"av",n:612,off:76,qsl:{sicher:69,unsicher:20,nicht:2,korrigiert:8,bestaetigt:1,sonstige:0}},
+  {id:"3552-42",feld:"Umsatzsteuer für GOÄ-Leistungen in %",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"M",req:"bedingt",vollst:86.8,befuell:82.6,erkennung:86.4,quelle:"av",n:612,off:84,qsl:{sicher:64,unsicher:12,nicht:6,korrigiert:15,bestaetigt:3,sonstige:0}},
+  {id:"3552-43",feld:"Umsatzsteuer für GOÄ-Leistungen in €",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"M",req:"bedingt",vollst:89.0,befuell:85.9,erkennung:90.5,quelle:"av",n:612,off:47,qsl:{sicher:77,unsicher:4,nicht:3,korrigiert:5,bestaetigt:0,sonstige:11}},
+  {id:"3552-61",feld:"Umsatzsteuer für GOZ-Leistungen in %",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"K",req:"bedingt",vollst:78.1,befuell:73.6,erkennung:78.0,quelle:"av",n:612,off:64,qsl:{sicher:70,unsicher:5,nicht:7,korrigiert:5,bestaetigt:0,sonstige:13}},
+  {id:"3552-62",feld:"Umsatzsteuer für GOZ-Leistungen in €",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"K",req:"bedingt",vollst:94.1,befuell:92.0,erkennung:93.2,quelle:"av",n:612,off:53,qsl:{sicher:80,unsicher:13,nicht:0,korrigiert:3,bestaetigt:4,sonstige:0}},
+  {id:"3552-65",feld:"Abzüglich Vorleistung anderer Kostenträger/Vorauszahlungen",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"MbA",req:"bedingt",vollst:80.5,befuell:78.0,erkennung:82.9,quelle:"av",n:612,off:91,qsl:{sicher:70,unsicher:10,nicht:0,korrigiert:2,bestaetigt:5,sonstige:13}},
+  {id:"3552-11",feld:"Kontoinhaber/-in",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"MbA",req:"bedingt",vollst:81.0,befuell:75.5,erkennung:83.1,quelle:"av",n:612,off:85,qsl:{sicher:73,unsicher:4,nicht:7,korrigiert:7,bestaetigt:2,sonstige:7}},
+  {id:"3552-13",feld:"IBAN",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"MbA",req:"bedingt",vollst:83.4,befuell:79.6,erkennung:84.1,quelle:"av",n:612,off:36,qsl:{sicher:68,unsicher:3,nicht:2,korrigiert:15,bestaetigt:0,sonstige:12}},
+  {id:"3552-14",feld:"BIC",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"K",req:"kann",vollst:78.9,befuell:76.9,erkennung:79.7,quelle:"av",n:612,off:72,qsl:{sicher:69,unsicher:17,nicht:6,korrigiert:4,bestaetigt:4,sonstige:0}},
+  {id:"3552-9",feld:"BSNR Betriebsstättennummer",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"TM",req:"kann",vollst:75.0,befuell:70.8,erkennung:77.9,quelle:"av",n:612,off:15,qsl:{sicher:62,unsicher:12,nicht:1,korrigiert:4,bestaetigt:2,sonstige:19}},
+  {id:"3552-19",feld:"ICD10 Code",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"M",req:"muss",vollst:91.4,befuell:87.7,erkennung:89.3,quelle:"av",n:612,off:61,qsl:{sicher:72,unsicher:10,nicht:3,korrigiert:11,bestaetigt:4,sonstige:0}},
+  {id:"3552-20",feld:"Diagnose Klartext",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"K**",req:"muss",vollst:81.4,befuell:79.1,erkennung:80.3,quelle:"av",n:612,off:33,qsl:{sicher:65,unsicher:16,nicht:2,korrigiert:12,bestaetigt:5,sonstige:0}},
+  {id:"3552-21",feld:"Zusatzkennzeichen Diagnosesicherheit",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"SWH",req:"kann",vollst:92.1,befuell:89.9,erkennung:93.0,quelle:"av",n:612,off:3,qsl:{sicher:82,unsicher:7,nicht:4,korrigiert:7,bestaetigt:0,sonstige:0}},
+  {id:"3552-22",feld:"Lokalisierung",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"SWH",req:"kann",vollst:89.3,befuell:86.5,erkennung:88.8,quelle:"av",n:612,off:62,qsl:{sicher:74,unsicher:8,nicht:5,korrigiert:11,bestaetigt:1,sonstige:1}},
+  {id:"3552-18",feld:"Name, Adresse, LANR (Lebenslange Arztnummer), BSNR (Betriebsstättennummer)",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"K",req:"kann",vollst:78.5,befuell:73.3,erkennung:77.5,quelle:"av",n:612,off:39,qsl:{sicher:65,unsicher:13,nicht:7,korrigiert:10,bestaetigt:5,sonstige:0}},
+  {id:"3552-27",feld:"Behandlungsdatum",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"M",req:"muss",vollst:96.5,befuell:93.1,erkennung:93.2,quelle:"av",n:612,off:15,qsl:{sicher:65,unsicher:19,nicht:7,korrigiert:9,bestaetigt:0,sonstige:0}},
+  {id:"3552-28",feld:"Anzahl",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"muss",vollst:89.7,befuell:87.7,erkennung:89.3,quelle:"av",n:612,off:15,qsl:{sicher:75,unsicher:3,nicht:0,korrigiert:14,bestaetigt:5,sonstige:3}},
+  {id:"3552-29",feld:"Präfix(e)",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"bedingt",vollst:91.8,befuell:88.2,erkennung:94.2,quelle:"av",n:612,off:73,qsl:{sicher:80,unsicher:5,nicht:2,korrigiert:3,bestaetigt:0,sonstige:10}},
+  {id:"3552-30",feld:"GOÄ-Nummer",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"bedingt",vollst:95.6,befuell:90.4,erkennung:92.5,quelle:"av",n:612,off:40,qsl:{sicher:61,unsicher:19,nicht:3,korrigiert:13,bestaetigt:4,sonstige:0}},
+  {id:"3552-31",feld:"Titel der Leistungslegende/Kurzbezeichnung",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"K**",req:"muss",vollst:85.1,befuell:82.6,erkennung:86.0,quelle:"av",n:612,off:36,qsl:{sicher:70,unsicher:15,nicht:4,korrigiert:7,bestaetigt:4,sonstige:0}},
+  {id:"3552-32",feld:"Begründung",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"K**",req:"bedingt",vollst:90.8,befuell:86.9,erkennung:89.6,quelle:"av",n:612,off:64,qsl:{sicher:70,unsicher:10,nicht:5,korrigiert:13,bestaetigt:2,sonstige:0}},
+  {id:"3552-33",feld:"Dauer gemäß Leistungslegende",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"P",req:"bedingt",vollst:82.5,befuell:79.6,erkennung:81.3,quelle:"av",n:612,off:32,qsl:{sicher:67,unsicher:19,nicht:3,korrigiert:8,bestaetigt:3,sonstige:0}},
+  {id:"3552-34",feld:"Faktor-Grund",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"P",req:"bedingt",vollst:79.3,befuell:76.7,erkennung:79.9,quelle:"av",n:612,off:93,qsl:{sicher:70,unsicher:16,nicht:0,korrigiert:9,bestaetigt:2,sonstige:3}},
+  {id:"3552-35",feld:"GO Faktor",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"bedingt",vollst:83.8,befuell:79.6,erkennung:82.5,quelle:"av",n:612,off:17,qsl:{sicher:69,unsicher:16,nicht:1,korrigiert:4,bestaetigt:5,sonstige:5}},
+  {id:"3552-36",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"P",req:"bedingt",vollst:89.7,befuell:84.2,erkennung:88.8,quelle:"av",n:612,off:43,qsl:{sicher:75,unsicher:14,nicht:1,korrigiert:10,bestaetigt:0,sonstige:0}},
+  {id:"3552-37",feld:"Betrag EUR",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"bedingt",vollst:79.1,befuell:75.1,erkennung:78.6,quelle:"av",n:612,off:38,qsl:{sicher:69,unsicher:16,nicht:5,korrigiert:7,bestaetigt:3,sonstige:0}},
+  {id:"3552-47",feld:"Behandlungsdatum",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"muss",vollst:91.2,befuell:87.1,erkennung:92.4,quelle:"av",n:612,off:85,qsl:{sicher:77,unsicher:10,nicht:5,korrigiert:2,bestaetigt:1,sonstige:5}},
+  {id:"3552-48",feld:"Anzahl",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"muss",vollst:91.8,befuell:87.2,erkennung:90.4,quelle:"av",n:612,off:60,qsl:{sicher:86,unsicher:7,nicht:3,korrigiert:1,bestaetigt:3,sonstige:0}},
+  {id:"3552-49",feld:"Präfix(e)",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"bedingt",vollst:83.7,befuell:81.2,erkennung:81.3,quelle:"av",n:612,off:17,qsl:{sicher:70,unsicher:8,nicht:5,korrigiert:6,bestaetigt:1,sonstige:10}},
+  {id:"3552-50",feld:"GOZ Nummer",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"muss",vollst:83.2,befuell:78.7,erkennung:83.7,quelle:"av",n:612,off:91,qsl:{sicher:71,unsicher:4,nicht:4,korrigiert:4,bestaetigt:3,sonstige:14}},
+  {id:"3552-51",feld:"Titel der Leistungslegende/Kurzbezeichnung",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"K**",req:"muss",vollst:85.7,befuell:83.3,erkennung:87.1,quelle:"av",n:612,off:16,qsl:{sicher:63,unsicher:17,nicht:4,korrigiert:12,bestaetigt:4,sonstige:0}},
+  {id:"3552-52",feld:"Begründung",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"K**",req:"bedingt",vollst:93.5,befuell:91.3,erkennung:94.5,quelle:"av",n:612,off:29,qsl:{sicher:71,unsicher:16,nicht:0,korrigiert:13,bestaetigt:0,sonstige:0}},
+  {id:"3552-53",feld:"Zahn/Region",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"bedingt",vollst:86.6,befuell:82.4,erkennung:88.7,quelle:"av",n:612,off:63,qsl:{sicher:73,unsicher:16,nicht:7,korrigiert:1,bestaetigt:3,sonstige:0}},
+  {id:"3552-54",feld:"GO Faktor",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"muss",vollst:92.1,befuell:87.8,erkennung:92.2,quelle:"av",n:612,off:93,qsl:{sicher:78,unsicher:6,nicht:1,korrigiert:12,bestaetigt:1,sonstige:2}},
+  {id:"3552-55",feld:"lfd. Nummer (Zahn-) Ärztin/Arzt",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"P",req:"bedingt",vollst:83.9,befuell:79.1,erkennung:84.0,quelle:"av",n:612,off:8,qsl:{sicher:77,unsicher:6,nicht:3,korrigiert:2,bestaetigt:4,sonstige:8}},
+  {id:"3552-56",feld:"Betrag EUR",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"bedingt",vollst:92.9,befuell:88.8,erkennung:93.6,quelle:"av",n:612,off:38,qsl:{sicher:70,unsicher:17,nicht:3,korrigiert:9,bestaetigt:1,sonstige:0}},
+  {id:"3552-7",feld:"Leistungserbringer (LE)",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"muss",vollst:91.7,befuell:88.7,erkennung:92.8,quelle:"av",n:612,off:65,qsl:{sicher:76,unsicher:8,nicht:5,korrigiert:9,bestaetigt:2,sonstige:0}},
+  {id:"3552-15",feld:"Pos_LNR`s Nachname, Vorname, Geburtsdatum",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"muss",vollst:83.5,befuell:80.0,erkennung:84.1,quelle:"av",n:612,off:60,qsl:{sicher:70,unsicher:7,nicht:4,korrigiert:12,bestaetigt:5,sonstige:2}},
+  {id:"3552-23",feld:"Datum",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"bedingt",vollst:84.0,befuell:80.0,erkennung:84.5,quelle:"av",n:612,off:43,qsl:{sicher:72,unsicher:7,nicht:7,korrigiert:8,bestaetigt:0,sonstige:6}},
+  {id:"3552-24",feld:"OPS-Code",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"bedingt",vollst:91.7,befuell:88.5,erkennung:91.5,quelle:"av",n:612,off:76,qsl:{sicher:78,unsicher:4,nicht:6,korrigiert:11,bestaetigt:1,sonstige:0}},
+  {id:"3552-25",feld:"Unverschlüsselte operative Leistung im Klartext",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"K**",req:"bedingt",vollst:94.5,befuell:91.0,erkennung:94.1,quelle:"av",n:612,off:76,qsl:{sicher:82,unsicher:7,nicht:7,korrigiert:1,bestaetigt:3,sonstige:0}},
+  {id:"3552-26",feld:"Lokalisierung",dokArt:"RE ambulant neu (3552)",nk:"3",zielstatus:"M",req:"kann",vollst:92.0,befuell:89.7,erkennung:90.0,quelle:"av",n:612,off:70,qsl:{sicher:78,unsicher:5,nicht:0,korrigiert:13,bestaetigt:2,sonstige:2}},
+  {id:"3552-6",feld:"Rechnungsbetrag",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"M",req:"muss",vollst:86.5,befuell:84.3,erkennung:87.0,quelle:"av",n:612,off:27,qsl:{sicher:63,unsicher:17,nicht:6,korrigiert:12,bestaetigt:2,sonstige:0}},
+  {id:"3552-2",feld:"Rechnungsdatum",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"K",req:"muss",vollst:83.6,befuell:79.0,erkennung:83.7,quelle:"av",n:612,off:27,qsl:{sicher:66,unsicher:12,nicht:7,korrigiert:11,bestaetigt:4,sonstige:0}},
+  {id:"3552-1",feld:"Leistungserbringer (LE)",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"M",req:"muss",vollst:95.1,befuell:93.0,erkennung:94.4,quelle:"av",n:612,off:20,qsl:{sicher:81,unsicher:10,nicht:1,korrigiert:3,bestaetigt:5,sonstige:0}},
+  {id:"3552-3",feld:"Rechnungsnummer",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"M",req:"muss",vollst:94.1,befuell:88.6,erkennung:94.0,quelle:"av",n:612,off:64,qsl:{sicher:72,unsicher:6,nicht:5,korrigiert:15,bestaetigt:2,sonstige:0}},
+  {id:"3552-67",feld:"Sonstiger Hinweis",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"K",req:"kann",vollst:79.4,befuell:74.0,erkennung:78.8,quelle:"av",n:612,off:28,qsl:{sicher:65,unsicher:20,nicht:4,korrigiert:11,bestaetigt:0,sonstige:0}},
+  {id:"3552-17",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"K",req:"bedingt",vollst:82.4,befuell:76.9,erkennung:83.9,quelle:"av",n:612,off:41,qsl:{sicher:73,unsicher:5,nicht:1,korrigiert:10,bestaetigt:5,sonstige:6}},
+  {id:"3552-16",feld:"Vorname, Name, LANR (Lebenslange Arztnummer)",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"K",req:"muss",vollst:81.7,befuell:79.6,erkennung:81.8,quelle:"av",n:612,off:93,qsl:{sicher:76,unsicher:12,nicht:1,korrigiert:5,bestaetigt:0,sonstige:6}},
+  {id:"3552-4",feld:"Verwendungszweck",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"K",req:"kann",vollst:87.6,befuell:85.0,erkennung:89.3,quelle:"av",n:612,off:93,qsl:{sicher:74,unsicher:15,nicht:0,korrigiert:10,bestaetigt:0,sonstige:1}},
+  {id:"3552-5",feld:"Zahlungsziel",dokArt:"RE ambulant neu (3552)",nk:"2",zielstatus:"K",req:"kann",vollst:81.8,befuell:76.8,erkennung:80.3,quelle:"av",n:612,off:2,qsl:{sicher:68,unsicher:6,nicht:0,korrigiert:5,bestaetigt:4,sonstige:17}},
+  {id:"3549-nk1a",feld:"VP",dokArt:"RE stationär neu (3549)",nk:"1",zielstatus:"M",req:"muss",vollst:97.8,befuell:96.9,erkennung:97.5,quelle:"erfassung",n:158,off:18,qsl:{sicher:84,unsicher:8,nicht:2,korrigiert:5,bestaetigt:1,sonstige:0}},
+  {id:"3549-nk1b",feld:"Belegklassifikation",dokArt:"RE stationär neu (3549)",nk:"1",zielstatus:"M",req:"muss",vollst:99.0,befuell:98.4,erkennung:98.9,quelle:"erfassung",n:158,off:12,qsl:{sicher:89,unsicher:5,nicht:1,korrigiert:4,bestaetigt:1,sonstige:0}},
+  {id:"3549-10",feld:"Leistungserbringer (LE)",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"K",req:"bedingt",vollst:84.4,befuell:81.3,erkennung:83.4,quelle:"av",n:158,off:78,qsl:{sicher:74,unsicher:13,nicht:3,korrigiert:5,bestaetigt:5,sonstige:0}},
+  {id:"3549-39",feld:"Abzüglich Minderung iHv. 15% oder 25% gem. § 6a GOÄ in %",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"M",req:"bedingt",vollst:81.5,befuell:78.7,erkennung:81.1,quelle:"av",n:158,off:76,qsl:{sicher:67,unsicher:13,nicht:5,korrigiert:2,bestaetigt:0,sonstige:13}},
+  {id:"3549-40",feld:"Abzüglich Minderung iHv. 15% oder 25% gem. § 6a GOÄ in €",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"M",req:"bedingt",vollst:95.5,befuell:90.9,erkennung:96.5,quelle:"av",n:158,off:53,qsl:{sicher:82,unsicher:7,nicht:1,korrigiert:5,bestaetigt:5,sonstige:0}},
+  {id:"3549-42",feld:"Umsatzsteuer für GOÄ-Leistungen in %",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"M",req:"bedingt",vollst:94.7,befuell:90.8,erkennung:94.2,quelle:"av",n:158,off:22,qsl:{sicher:76,unsicher:6,nicht:0,korrigiert:14,bestaetigt:4,sonstige:0}},
+  {id:"3549-43",feld:"Umsatzsteuer für GOÄ-Leistungen in €",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"M",req:"bedingt",vollst:82.2,befuell:79.8,erkennung:83.5,quelle:"av",n:158,off:65,qsl:{sicher:69,unsicher:3,nicht:6,korrigiert:8,bestaetigt:0,sonstige:14}},
+  {id:"3549-61",feld:"Umsatzsteuer für GOZ-Leistungen in %",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"K",req:"bedingt",vollst:87.6,befuell:84.8,erkennung:87.8,quelle:"av",n:158,off:35,qsl:{sicher:73,unsicher:15,nicht:6,korrigiert:6,bestaetigt:0,sonstige:0}},
+  {id:"3549-62",feld:"Umsatzsteuer für GOZ-Leistungen in €",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"K",req:"bedingt",vollst:97.5,befuell:93.5,erkennung:94.7,quelle:"av",n:158,off:88,qsl:{sicher:80,unsicher:9,nicht:7,korrigiert:4,bestaetigt:0,sonstige:0}},
+  {id:"3549-65",feld:"Abzüglich Vorleistung anderer Kostenträger/Vorauszahlungen",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"MbA",req:"bedingt",vollst:82.5,befuell:80.4,erkennung:81.0,quelle:"av",n:158,off:52,qsl:{sicher:70,unsicher:15,nicht:0,korrigiert:15,bestaetigt:0,sonstige:0}},
+  {id:"3549-58",feld:"Abzüglich Minderung iHv. 15% oder 25% gem. § 7 GOZ in %",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"MbA",req:"bedingt",vollst:81.1,befuell:78.6,erkennung:80.2,quelle:"av",n:158,off:46,qsl:{sicher:75,unsicher:3,nicht:6,korrigiert:10,bestaetigt:2,sonstige:4}},
+  {id:"3549-59",feld:"Abzüglich Minderung iHv. 15% oder 25% gem. § 7 GOZ in €",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"MbA",req:"bedingt",vollst:87.5,befuell:82.3,erkennung:89.0,quelle:"av",n:158,off:2,qsl:{sicher:73,unsicher:13,nicht:2,korrigiert:9,bestaetigt:3,sonstige:0}},
+  {id:"3549-11",feld:"Kontoinhaber/-in",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"MbA",req:"bedingt",vollst:79.7,befuell:75.1,erkennung:80.5,quelle:"av",n:158,off:19,qsl:{sicher:73,unsicher:17,nicht:2,korrigiert:1,bestaetigt:0,sonstige:7}},
+  {id:"3549-13",feld:"IBAN",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"MbA",req:"bedingt",vollst:95.0,befuell:91.9,erkennung:92.3,quelle:"av",n:158,off:85,qsl:{sicher:66,unsicher:12,nicht:7,korrigiert:13,bestaetigt:2,sonstige:0}},
+  {id:"3549-14",feld:"BIC",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"K",req:"kann",vollst:76.9,befuell:72.3,erkennung:78.2,quelle:"av",n:158,off:86,qsl:{sicher:68,unsicher:14,nicht:6,korrigiert:7,bestaetigt:2,sonstige:3}},
+  {id:"3549-9",feld:"BSNR Betriebsstättennummer",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"TM",req:"kann",vollst:80.5,befuell:78.1,erkennung:80.8,quelle:"av",n:158,off:72,qsl:{sicher:69,unsicher:8,nicht:1,korrigiert:10,bestaetigt:1,sonstige:11}},
+  {id:"3549-19",feld:"ICD10 Code",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"M",req:"muss",vollst:97.8,befuell:92.7,erkennung:95.6,quelle:"av",n:158,off:41,qsl:{sicher:78,unsicher:16,nicht:2,korrigiert:2,bestaetigt:2,sonstige:0}},
+  {id:"3549-20",feld:"Diagnose Klartext",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"K**",req:"muss",vollst:93.3,befuell:90.3,erkennung:90.9,quelle:"av",n:158,off:31,qsl:{sicher:58,unsicher:20,nicht:4,korrigiert:14,bestaetigt:4,sonstige:0}},
+  {id:"3549-21",feld:"Zusatzkennzeichen Diagnosesicherheit",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"SWH",req:"kann",vollst:75.0,befuell:70.6,erkennung:75.4,quelle:"av",n:158,off:42,qsl:{sicher:64,unsicher:16,nicht:6,korrigiert:3,bestaetigt:2,sonstige:9}},
+  {id:"3549-22",feld:"Lokalisierung",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"SWH",req:"kann",vollst:84.2,befuell:79.5,erkennung:83.1,quelle:"av",n:158,off:34,qsl:{sicher:64,unsicher:15,nicht:6,korrigiert:10,bestaetigt:5,sonstige:0}},
+  {id:"3549-18",feld:"Name, Adresse, LANR (Lebenslange Arztnummer), BSNR (Betriebsstättennummer)",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"K",req:"kann",vollst:89.4,befuell:86.9,erkennung:88.0,quelle:"av",n:158,off:7,qsl:{sicher:77,unsicher:11,nicht:2,korrigiert:4,bestaetigt:3,sonstige:3}},
+  {id:"3549-27",feld:"Behandlungsdatum",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"M",req:"muss",vollst:82.2,befuell:78.8,erkennung:80.7,quelle:"av",n:158,off:4,qsl:{sicher:64,unsicher:20,nicht:6,korrigiert:10,bestaetigt:0,sonstige:0}},
+  {id:"3549-28",feld:"Anzahl",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"muss",vollst:92.2,befuell:87.4,erkennung:90.1,quelle:"av",n:158,off:50,qsl:{sicher:81,unsicher:9,nicht:1,korrigiert:8,bestaetigt:1,sonstige:0}},
+  {id:"3549-29",feld:"Präfix(e)",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"bedingt",vollst:86.0,befuell:84.0,erkennung:85.5,quelle:"av",n:158,off:74,qsl:{sicher:71,unsicher:20,nicht:1,korrigiert:8,bestaetigt:0,sonstige:0}},
+  {id:"3549-30",feld:"GOÄ-Nummer",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"bedingt",vollst:83.1,befuell:80.0,erkennung:83.2,quelle:"av",n:158,off:15,qsl:{sicher:70,unsicher:8,nicht:7,korrigiert:10,bestaetigt:5,sonstige:0}},
+  {id:"3549-31",feld:"Titel der Leistungslegende/Kurzbezeichnung",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"K**",req:"muss",vollst:87.0,befuell:83.1,erkennung:86.7,quelle:"av",n:158,off:37,qsl:{sicher:74,unsicher:19,nicht:1,korrigiert:3,bestaetigt:3,sonstige:0}},
+  {id:"3549-32",feld:"Begründung",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"K**",req:"bedingt",vollst:93.5,befuell:88.8,erkennung:93.6,quelle:"av",n:158,off:34,qsl:{sicher:76,unsicher:11,nicht:5,korrigiert:5,bestaetigt:3,sonstige:0}},
+  {id:"3549-33",feld:"Dauer gemäß Leistungslegende",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"P",req:"bedingt",vollst:89.8,befuell:85.8,erkennung:87.8,quelle:"av",n:158,off:6,qsl:{sicher:76,unsicher:8,nicht:4,korrigiert:1,bestaetigt:1,sonstige:10}},
+  {id:"3549-34",feld:"Faktor-Grund",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"P",req:"bedingt",vollst:88.7,befuell:84.9,erkennung:89.6,quelle:"av",n:158,off:95,qsl:{sicher:77,unsicher:14,nicht:2,korrigiert:7,bestaetigt:0,sonstige:0}},
+  {id:"3549-35",feld:"GO Faktor",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"bedingt",vollst:88.5,befuell:85.1,erkennung:88.3,quelle:"av",n:158,off:37,qsl:{sicher:69,unsicher:15,nicht:4,korrigiert:11,bestaetigt:1,sonstige:0}},
+  {id:"3549-36",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"P",req:"bedingt",vollst:88.8,befuell:84.8,erkennung:86.4,quelle:"av",n:158,off:86,qsl:{sicher:75,unsicher:17,nicht:4,korrigiert:4,bestaetigt:0,sonstige:0}},
+  {id:"3549-37",feld:"Betrag EUR",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"bedingt",vollst:82.7,befuell:79.0,erkennung:81.7,quelle:"av",n:158,off:76,qsl:{sicher:68,unsicher:3,nicht:2,korrigiert:4,bestaetigt:4,sonstige:19}},
+  {id:"3549-47",feld:"Behandlungsdatum",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"muss",vollst:81.6,befuell:76.7,erkennung:82.0,quelle:"av",n:158,off:71,qsl:{sicher:72,unsicher:10,nicht:4,korrigiert:9,bestaetigt:3,sonstige:2}},
+  {id:"3549-48",feld:"Anzahl",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"muss",vollst:95.5,befuell:93.2,erkennung:97.1,quelle:"av",n:158,off:77,qsl:{sicher:67,unsicher:10,nicht:5,korrigiert:13,bestaetigt:5,sonstige:0}},
+  {id:"3549-49",feld:"Präfix(e)",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"bedingt",vollst:79.1,befuell:74.2,erkennung:77.3,quelle:"av",n:158,off:59,qsl:{sicher:61,unsicher:20,nicht:3,korrigiert:14,bestaetigt:2,sonstige:0}},
+  {id:"3549-50",feld:"GOZ Nummer",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"muss",vollst:93.8,befuell:89.5,erkennung:95.5,quelle:"av",n:158,off:19,qsl:{sicher:83,unsicher:3,nicht:3,korrigiert:6,bestaetigt:5,sonstige:0}},
+  {id:"3549-51",feld:"Titel der Leistungslegende/Kurzbezeichnung",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"K**",req:"muss",vollst:94.2,befuell:89.3,erkennung:93.6,quelle:"av",n:158,off:46,qsl:{sicher:78,unsicher:5,nicht:4,korrigiert:8,bestaetigt:5,sonstige:0}},
+  {id:"3549-52",feld:"Begründung",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"K**",req:"bedingt",vollst:79.9,befuell:74.6,erkennung:80.5,quelle:"av",n:158,off:13,qsl:{sicher:60,unsicher:18,nicht:4,korrigiert:13,bestaetigt:5,sonstige:0}},
+  {id:"3549-53",feld:"Zahn/Region",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"bedingt",vollst:86.5,befuell:83.7,erkennung:87.7,quelle:"av",n:158,off:62,qsl:{sicher:68,unsicher:9,nicht:7,korrigiert:13,bestaetigt:3,sonstige:0}},
+  {id:"3549-54",feld:"GO Faktor",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"muss",vollst:85.2,befuell:81.4,erkennung:84.7,quelle:"av",n:158,off:21,qsl:{sicher:75,unsicher:3,nicht:2,korrigiert:7,bestaetigt:5,sonstige:8}},
+  {id:"3549-55",feld:"lfd. Nummer (Zahn-) Ärztin/Arzt",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"P",req:"bedingt",vollst:91.8,befuell:88.6,erkennung:88.7,quelle:"av",n:158,off:77,qsl:{sicher:60,unsicher:19,nicht:5,korrigiert:12,bestaetigt:4,sonstige:0}},
+  {id:"3549-56",feld:"Betrag EUR",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"bedingt",vollst:92.3,befuell:90.2,erkennung:93.8,quelle:"av",n:158,off:27,qsl:{sicher:86,unsicher:6,nicht:0,korrigiert:8,bestaetigt:0,sonstige:0}},
+  {id:"3549-7",feld:"Leistungserbringer (LE)",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"muss",vollst:85.4,befuell:82.3,erkennung:86.3,quelle:"av",n:158,off:25,qsl:{sicher:77,unsicher:4,nicht:5,korrigiert:2,bestaetigt:3,sonstige:9}},
+  {id:"3549-15",feld:"Pos_LNR`s Nachname, Vorname, Geburtsdatum",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"muss",vollst:87.8,befuell:85.6,erkennung:90.2,quelle:"av",n:158,off:71,qsl:{sicher:73,unsicher:4,nicht:6,korrigiert:15,bestaetigt:2,sonstige:0}},
+  {id:"3549-23",feld:"Datum",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"bedingt",vollst:84.0,befuell:79.4,erkennung:83.4,quelle:"av",n:158,off:61,qsl:{sicher:69,unsicher:6,nicht:1,korrigiert:5,bestaetigt:3,sonstige:16}},
+  {id:"3549-24",feld:"OPS-Code",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"bedingt",vollst:85.5,befuell:82.0,erkennung:87.2,quelle:"av",n:158,off:62,qsl:{sicher:71,unsicher:5,nicht:7,korrigiert:14,bestaetigt:2,sonstige:1}},
+  {id:"3549-25",feld:"Unverschlüsselte operative Leistung im Klartext",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"K**",req:"bedingt",vollst:96.0,befuell:92.0,erkennung:94.6,quelle:"av",n:158,off:93,qsl:{sicher:63,unsicher:18,nicht:5,korrigiert:13,bestaetigt:1,sonstige:0}},
+  {id:"3549-26",feld:"Lokalisierung",dokArt:"RE stationär neu (3549)",nk:"3",zielstatus:"M",req:"kann",vollst:88.0,befuell:84.5,erkennung:86.0,quelle:"av",n:158,off:92,qsl:{sicher:65,unsicher:16,nicht:6,korrigiert:11,bestaetigt:2,sonstige:0}},
+  {id:"3549-6",feld:"Rechnungsbetrag",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"M",req:"muss",vollst:80.4,befuell:78.0,erkennung:79.8,quelle:"av",n:158,off:21,qsl:{sicher:69,unsicher:5,nicht:5,korrigiert:10,bestaetigt:3,sonstige:8}},
+  {id:"3549-2",feld:"Rechnungsdatum",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"K",req:"muss",vollst:95.1,befuell:92.8,erkennung:94.9,quelle:"av",n:158,off:40,qsl:{sicher:76,unsicher:5,nicht:5,korrigiert:10,bestaetigt:4,sonstige:0}},
+  {id:"3549-1",feld:"Leistungserbringer (LE)",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"M",req:"muss",vollst:89.8,befuell:84.7,erkennung:90.4,quelle:"av",n:158,off:64,qsl:{sicher:64,unsicher:16,nicht:5,korrigiert:13,bestaetigt:2,sonstige:0}},
+  {id:"3549-3",feld:"Rechnungsnummer",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"M",req:"muss",vollst:95.6,befuell:91.0,erkennung:92.1,quelle:"av",n:158,off:35,qsl:{sicher:60,unsicher:20,nicht:6,korrigiert:13,bestaetigt:1,sonstige:0}},
+  {id:"3549-67",feld:"Sonstiger Hinweis",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"K",req:"kann",vollst:89.0,befuell:84.8,erkennung:90.3,quelle:"av",n:158,off:82,qsl:{sicher:67,unsicher:20,nicht:3,korrigiert:7,bestaetigt:3,sonstige:0}},
+  {id:"3549-17",feld:"lfd. Nummer Ärztin/Arzt",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"K",req:"bedingt",vollst:91.5,befuell:88.7,erkennung:89.3,quelle:"av",n:158,off:86,qsl:{sicher:74,unsicher:6,nicht:6,korrigiert:14,bestaetigt:0,sonstige:0}},
+  {id:"3549-16",feld:"Vorname, Name, LANR (Lebenslange Arztnummer)",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"K",req:"muss",vollst:89.6,befuell:86.3,erkennung:89.1,quelle:"av",n:158,off:28,qsl:{sicher:75,unsicher:18,nicht:3,korrigiert:4,bestaetigt:0,sonstige:0}},
+  {id:"3549-4",feld:"Verwendungszweck",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"K",req:"kann",vollst:90.4,befuell:88.0,erkennung:87.4,quelle:"av",n:158,off:36,qsl:{sicher:76,unsicher:9,nicht:0,korrigiert:11,bestaetigt:2,sonstige:2}},
+  {id:"3549-5",feld:"Zahlungsziel",dokArt:"RE stationär neu (3549)",nk:"2",zielstatus:"K",req:"kann",vollst:80.3,befuell:78.1,erkennung:77.5,quelle:"av",n:158,off:86,qsl:{sicher:73,unsicher:3,nicht:5,korrigiert:13,bestaetigt:1,sonstige:5}},
 ];
 
 /* Zeilentyp: Klassifikation einzelner Abrechnungszeilen/-positionen im Datenpool (nicht jedes
@@ -1878,12 +1883,86 @@ function getFilteredDpRows(){
   rows = rows.filter(r=>dpRowLieferdatum(r)<=activeDpDate);
   return rows;
 }
+function dpTheadHtml(label){
+  const ths = ['<th>'+esc(label)+'</th>'];
+  DP_COLUMNS.forEach(c=>{ if(dpColumnState[c.key]) ths.push('<th>'+esc(c.label)+'</th>'); });
+  return '<tr>'+ths.join("")+'</tr>';
+}
 function renderDpThead(){
   const mode = dpMode();
   const label = mode==="ziffer" ? "GO-Zeile" : mode==="vnr" ? "Eingereichter Beleg" : "Datenfeld";
-  const ths = ['<th>'+label+'</th>'];
-  DP_COLUMNS.forEach(c=>{ if(dpColumnState[c.key]) ths.push('<th>'+esc(c.label)+'</th>'); });
-  document.getElementById("dp-thead").innerHTML = '<tr>'+ths.join("")+'</tr>';
+  document.getElementById("dp-thead").innerHTML = dpTheadHtml(label);
+}
+/* Einzelne Datenfeld-Zeile — gemeinsam genutzt von der flachen Tabelle (GO-Ziffer-/VNR-Suche)
+   und den geclusterten Tabellen der normalen Datenfeld-Ansicht. */
+function dpRowCellsHtml(r){
+  const vollst = dpEffectiveValue(r, "vollst");
+  const cells = ['<td class="k-name">'+esc(r.feld)+'</td>'];
+  if(dpColumnState.dokart) cells.push('<td class="k-quelle">'+esc(r.dokArt)+'</td>');
+  if(dpColumnState.zielstatus) cells.push('<td>'+(r.zielstatus?'<span class="badge info"><span class="dot"></span>'+esc(r.zielstatus)+'</span>':'<span class="k-quelle">—</span>')+'</td>');
+  if(dpColumnState.zeilentyp) cells.push('<td>'+(r.zeilentyp?'<span class="badge info"><span class="dot"></span>'+esc(r.zeilentyp)+' · '+esc(ZEILENTYP_LABEL[r.zeilentyp])+'</span>':'<span class="k-quelle">—</span>')+'</td>');
+  if(dpColumnState.vollst) cells.push('<td><button type="button" class="qsl-trigger" data-rowid="'+esc(r.id)+'" title="QSL-Verteilung anzeigen">'+bar(vollst)+icon("pie")+'</button></td>');
+  if(dpColumnState.anzahl) cells.push('<td class="mono">'+r.n.toLocaleString("de-DE")+'</td>');
+  return '<tr>'+cells.join("")+'</tr>';
+}
+function wireDpRowTriggers(containerSel){
+  document.querySelectorAll(containerSel+" .qsl-trigger").forEach(btn=>{
+    btn.addEventListener("click", ()=>openQslModal(btn.dataset.rowid));
+  });
+}
+/* Normale Datenfeld-Ansicht (kein GO-Ziffer-/VNR-Suchtreffer): statt einer flachen Liste eine
+   Akte→Beleg→NK-Zwischenebene (Workshop-Feedback) — oben die "Aktenebene" (akten-/dok.-art-
+   übergreifende Felder, hier auf VNR und Eingangskanal begrenzt), darunter je Dok.-Art eine
+   Zwischenebene nach NK1 (Beleg-Identifikation: VP, Belegklassifikation), NK2 (Belegdaten wie
+   Rechnungsnummer, Diagnosen, Leistungserbringer, IBAN) und NK3 (Daten der GO-Datei wie Faktor,
+   Anzahl, GOÄ-Nummer). */
+const NK_LABEL = { "1":"NK1-Daten", "2":"NK2-Daten", "3":"NK3-Daten" };
+const DP_AKTENEBENE_FELDER = ["VNR","Eingangskanal"];
+function fmtFeldCount(n){ return n===1 ? "1 Datenfeld" : n.toLocaleString("de-DE")+" Datenfelder"; }
+function dpClusterTableHtml(rows){
+  return '<table class="data-table"><thead>'+dpTheadHtml("Datenfeld")+'</thead><tbody>'+rows.map(dpRowCellsHtml).join("")+'</tbody></table>';
+}
+function renderDpClusterHtml(rows){
+  if(!rows.length) return '<div class="cell-empty" style="padding:18px;">Keine Datenfelder in dieser Auswahl.</div>';
+  const akteRows = rows.filter(r=>r.dokArt==="Alle Dok.-Arten" && DP_AKTENEBENE_FELDER.includes(r.feld));
+  const akteBlock = '<details class="beleg-cluster">'+
+    '<summary class="beleg-cluster-summary">'+
+      '<span class="beleg-cluster-summary-main"><span class="beleg-cluster-label">Aktenebene (Alle Dok.-Arten)</span></span>'+
+      '<span class="beleg-cluster-count">'+fmtFeldCount(akteRows.length)+'</span>'+
+    '</summary>'+
+    '<div class="beleg-cluster-body">'+
+      (akteRows.length ? dpClusterTableHtml(akteRows) : '<p class="beleg-cluster-trunc-note">Keine Datenfelder auf Aktenebene in dieser Auswahl.</p>')+
+    '</div>'+
+  '</details>';
+
+  const dokArtBlocks = DP_DOKARTEN.map(d=>d.label).filter(dokArt=>rows.some(r=>r.dokArt===dokArt)).map(dokArt=>{
+    const dokRows = rows.filter(r=>r.dokArt===dokArt);
+    const nkBlocks = ["1","2","3"].map(nk=>{
+      const nkRows = dokRows.filter(r=>r.nk===nk);
+      if(!nkRows.length) return "";
+      return '<details class="beleg-cluster">'+
+        '<summary class="beleg-cluster-summary">'+
+          '<span class="beleg-cluster-summary-main"><span class="beleg-cluster-label">'+esc(NK_LABEL[nk])+'</span></span>'+
+          '<span class="beleg-cluster-count">'+fmtFeldCount(nkRows.length)+'</span>'+
+        '</summary>'+
+        '<div class="beleg-cluster-body">'+dpClusterTableHtml(nkRows)+'</div>'+
+      '</details>';
+    }).join("");
+    return '<details class="beleg-cluster">'+
+      '<summary class="beleg-cluster-summary">'+
+        '<span class="beleg-cluster-summary-main"><span class="beleg-cluster-label">'+esc(dokArt)+'</span></span>'+
+        '<span class="beleg-cluster-count">'+fmtFeldCount(dokRows.length)+'</span>'+
+      '</summary>'+
+      '<div class="beleg-cluster-body beleg-cluster-body--nested"><div class="beleg-cluster-list">'+nkBlocks+'</div></div>'+
+    '</details>';
+  }).join("");
+
+  return '<div class="beleg-cluster-list">'+akteBlock+dokArtBlocks+'</div>';
+}
+function applyDpVisibility(){
+  const isNormal = dpMode()==="normal";
+  document.getElementById("dp-table-wrap").hidden = dpTableCollapsed || isNormal;
+  document.getElementById("dp-cluster-wrap").hidden = dpTableCollapsed || !isNormal;
 }
 function renderDpTable(){
   renderDpThead();
@@ -1905,20 +1984,15 @@ function renderDpTable(){
   } else {
     document.getElementById("dp-count").textContent = rows.length+" von "+DATENPOOL_FELDER.length+" Datenfeldern"+dokNote+zielNote+zeilentypNote+kanalNote;
   }
-  const colCount = 1 + DP_COLUMNS.filter(c=>dpColumnState[c.key]).length;
-  document.getElementById("dp-body").innerHTML = rows.length ? rows.map(r=>{
-    const vollst = dpEffectiveValue(r, "vollst");
-    const cells = ['<td class="k-name">'+esc(r.feld)+'</td>'];
-    if(dpColumnState.dokart) cells.push('<td class="k-quelle">'+esc(r.dokArt)+'</td>');
-    if(dpColumnState.zielstatus) cells.push('<td>'+(r.zielstatus?'<span class="badge info"><span class="dot"></span>'+esc(r.zielstatus)+'</span>':'<span class="k-quelle">—</span>')+'</td>');
-    if(dpColumnState.zeilentyp) cells.push('<td>'+(r.zeilentyp?'<span class="badge info"><span class="dot"></span>'+esc(r.zeilentyp)+' · '+esc(ZEILENTYP_LABEL[r.zeilentyp])+'</span>':'<span class="k-quelle">—</span>')+'</td>');
-    if(dpColumnState.vollst) cells.push('<td><button type="button" class="qsl-trigger" data-rowid="'+esc(r.id)+'" title="QSL-Verteilung anzeigen">'+bar(vollst)+icon("pie")+'</button></td>');
-    if(dpColumnState.anzahl) cells.push('<td class="mono">'+r.n.toLocaleString("de-DE")+'</td>');
-    return '<tr>'+cells.join("")+'</tr>';
-  }).join("") : '<tr><td colspan="'+colCount+'" class="cell-empty">'+emptyMsg+'</td></tr>';
-  document.querySelectorAll("#dp-body .qsl-trigger").forEach(btn=>{
-    btn.addEventListener("click", ()=>openQslModal(btn.dataset.rowid));
-  });
+  if(mode==="normal"){
+    document.getElementById("dp-cluster-wrap").innerHTML = renderDpClusterHtml(rows);
+    wireDpRowTriggers("#dp-cluster-wrap");
+  } else {
+    const colCount = 1 + DP_COLUMNS.filter(c=>dpColumnState[c.key]).length;
+    document.getElementById("dp-body").innerHTML = rows.length ? rows.map(dpRowCellsHtml).join("") : '<tr><td colspan="'+colCount+'" class="cell-empty">'+emptyMsg+'</td></tr>';
+    wireDpRowTriggers("#dp-body");
+  }
+  applyDpVisibility();
   updateDpTableCollapsedHint(rows.length);
 }
 let dpTableCollapsed = false;
@@ -1932,7 +2006,7 @@ function updateDpTableCollapsedHint(rowCount){
 }
 function setDpTableCollapsed(collapsed){
   dpTableCollapsed = collapsed;
-  document.getElementById("dp-table-wrap").hidden = collapsed;
+  applyDpVisibility();
   document.getElementById("dp-table-collapsed-hint").hidden = !collapsed;
   document.getElementById("dp-table-toggle-label").textContent = collapsed ? "Tabelle ausklappen" : "Tabelle einklappen";
   document.getElementById("dp-table-toggle-icon").style.transform = collapsed ? "rotate(-90deg)" : "rotate(0deg)";
