@@ -458,8 +458,8 @@
   <section id="view-datenpool">
     <div class="view-wrap">
       <div class="mvp-tabs" id="dp-mvp-tabs">
-        <button type="button" class="mvp-tab-btn" data-mvp="mvp1" data-active="true">MVP1 · Belegebene</button>
-        <button type="button" class="mvp-tab-btn" data-mvp="mvp2">MVP2 · Datenfeldebene</button>
+        <button type="button" class="mvp-tab-btn" data-mvp="mvp1" data-active="true">Basisanforderung - Belegebene</button>
+        <button type="button" class="mvp-tab-btn" data-mvp="mvp2">Ausbaustufe - Datenfeldebene</button>
       </div>
 
       <div class="view-head">
@@ -470,7 +470,7 @@
         <aside class="dp-sidebar">
           <div class="dp-sidebar-section">
             <div class="dp-sidebar-head">Filter</div>
-            <p class="dp-sidebar-intro">Diese Filter wirken auf MVP1 und MVP2. Ausnahme: Datenpool-Stand (Datum) nur bei MVP2 — MVP1 hat dafür die eigene Tagesscheiben-/Monatssicht.</p>
+            <p class="dp-sidebar-intro">Diese Filter wirken auf Basisanforderung und Ausbaustufe. Ausnahme: Datenpool-Stand (Datum) nur bei der Ausbaustufe — die Basisanforderung hat dafür die eigene Tagesscheiben-/Monatssicht.</p>
           </div>
 
           <div class="dp-sidebar-section mvp1-only" id="mvp1-sidebar-extra">
@@ -497,7 +497,7 @@
               </div>
               <span class="filter-count" id="dp-count"></span>
             </div>
-            <p class="subhead-sub dp-ziffer-hint">Kumulativer Stichtag: zeigt alle Datenfelder, die bis zu diesem Datum im Datenpool verfügbar waren (wächst mit der Zeit) — anders als die Tagesscheibe/Monatssicht bei MVP1, die nicht-kumulativ genau den gewählten Zeitraum zeigt.</p>
+            <p class="subhead-sub dp-ziffer-hint">Kumulativer Stichtag: zeigt alle Datenfelder, die bis zu diesem Datum im Datenpool verfügbar waren (wächst mit der Zeit) — anders als die Tagesscheibe/Monatssicht bei der Basisanforderung, die nicht-kumulativ genau den gewählten Zeitraum zeigt.</p>
           </div>
 
           <div class="dp-sidebar-section">
@@ -525,7 +525,7 @@
                 <button class="filter-chip" type="button" data-ziel="P">P</button>
               </div>
             </div>
-            <p class="subhead-sub dp-ziffer-hint">AV-Zielstatus ist auf Belegebene (MVP1) nicht anwendbar (felderspezifisch) und wirkt daher nur hier auf MVP2.</p>
+            <p class="subhead-sub dp-ziffer-hint">AV-Zielstatus ist auf Belegebene (Basisanforderung) nicht anwendbar (felderspezifisch) und wirkt daher nur hier auf die Ausbaustufe.</p>
           </div>
 
           <div class="dp-sidebar-section">
@@ -656,10 +656,6 @@
             <div class="filters">
               <span class="filter-dim-label">GO-Ziffer-Suche</span>
               <input class="filter-search" id="dp-ziffer-search" type="search" placeholder="z. B. 1200 (Sonographie)…">
-              <div class="filter-group" id="dp-ziffer-sicht-toggle">
-                <button class="filter-chip" type="button" data-sicht="zeile" data-active="true">Zeilen-Sicht</button>
-                <button class="filter-chip" type="button" data-sicht="beleg">Beleg-Sicht</button>
-              </div>
             </div>
             <div class="filters">
               <span class="filter-dim-label">VNR-Suche</span>
@@ -1058,7 +1054,6 @@ let activeDpZeilentyp = "alle";
 let activeDpKanal = "alle";
 let activeDpIsh = "alle";
 let dpZifferQuery = "";
-let dpZifferSicht = "zeile";
 let dpVnrQuery = "";
 
 /* GO-Ziffer-Suche: echte GOÄneu-Ziffern aus dem Gebührenverzeichnis (Modul Belegwerkstatt).
@@ -1151,34 +1146,6 @@ function buildGoZifferRows(matches){
     });
   });
   return rows;
-}
-
-/* GO-Ziffer-Suche, Beleg-Sicht: zusätzlich zur Zeilen-Sicht (Qualität der GO-Zeile selbst,
-   s.o.) je Ziffer/Dok.-Art ein bis zwei Beispiel-Belege erzeugen, die diese Ziffer enthalten —
-   mit der Vollständigkeit des GESAMTEN Belegs (nicht nur der einen Zeile). Klärt die im
-   Workshop offene Frage "Zeile oder ganzer Beleg?" durch Angebot beider Sichten. */
-function buildGoZifferBelegRows(matches){
-  const rows = [];
-  matches.forEach(z=>{
-    DP_DOKARTEN.forEach(d=>{
-      const belegCount = 1 + (dpZifferHash(z.nr+"|"+d.code+"|belegcount")%2);
-      for(let i=0;i<belegCount;i++){
-        const seed = z.nr+"|"+d.code+"|belegsicht"+i;
-        const off = 1 + (dpZifferHash(seed+"|off")%90);
-        const belegId = "BLG-"+dpVnrPseudoDatum(off)+"-"+String(1000+(dpZifferHash(seed+"|seq")%9000));
-        const feldAnzahl = 14 + (dpZifferHash(seed+"|n")%22);
-        const m = dpGenerateMetrics(seed);
-        rows.push(Object.assign({
-          id:"zifferbeleg-"+z.nr+"-"+d.code+"-"+i,
-          feld:belegId+" — "+d.label+" (enthält GOÄ-Ziffer "+z.nr+")",
-          dokArt:d.label,
-          zielstatus:null, zeilentyp:null,
-          n:feldAnzahl, off,
-        }, m));
-      }
-    });
-  });
-  return rows.sort((a,b)=>a.off-b.off);
 }
 
 /* ============================================================
@@ -1733,7 +1700,7 @@ function getFilteredDpRows(){
     rows = buildVnrBelegRows(dpVnrQuery);
   } else if(mode==="ziffer"){
     const matches = getDpZifferMatches();
-    rows = matches.length ? (dpZifferSicht==="beleg" ? buildGoZifferBelegRows(matches) : buildGoZifferRows(matches)) : [];
+    rows = matches.length ? buildGoZifferRows(matches) : [];
   } else {
     rows = DATENPOOL_FELDER;
   }
@@ -1745,7 +1712,7 @@ function getFilteredDpRows(){
 }
 function renderDpThead(){
   const mode = dpMode();
-  const label = mode==="ziffer" ? (dpZifferSicht==="beleg" ? "Beleg mit dieser GO-Ziffer" : "GO-Zeile") : mode==="vnr" ? "Eingereichter Beleg" : "Datenfeld";
+  const label = mode==="ziffer" ? "GO-Zeile" : mode==="vnr" ? "Eingereichter Beleg" : "Datenfeld";
   const ths = ['<th>'+label+'</th>'];
   DP_COLUMNS.forEach(c=>{ if(dpColumnState[c.key]) ths.push('<th>'+esc(c.label)+'</th>'); });
   document.getElementById("dp-thead").innerHTML = '<tr>'+ths.join("")+'</tr>';
@@ -1761,9 +1728,8 @@ function renderDpTable(){
   let emptyMsg = "Keine Datenfelder in dieser Auswahl.";
   if(mode==="ziffer"){
     const matches = getDpZifferMatches();
-    const sichtNote = dpZifferSicht==="beleg" ? " · Beleg-Sicht" : " · Zeilen-Sicht";
     const zifferNote = matches.length ? " · GO-Ziffer-Suche: "+matches.map(z=>z.nr).join(", ") : " · GO-Ziffer-Suche „"+esc(dpZifferQuery.trim())+"“ ohne Treffer";
-    document.getElementById("dp-count").textContent = rows.length+" Zeile(n)"+dokNote+zeilentypNote+kanalNote+zifferNote+sichtNote;
+    document.getElementById("dp-count").textContent = rows.length+" Zeile(n)"+dokNote+zeilentypNote+kanalNote+zifferNote;
     emptyMsg = "Keine GO-Ziffer gefunden für „"+esc(dpZifferQuery.trim())+"“.";
   } else if(mode==="vnr"){
     document.getElementById("dp-count").textContent = rows.length+" eingereichte(r) Beleg(e) · VNR-Suche: "+esc(dpVnrQuery.trim())+dokNote+kanalNote;
@@ -2569,13 +2535,6 @@ document.getElementById("dp-table-collapsed-hint").addEventListener("click", ()=
 document.getElementById("dp-ziffer-search").addEventListener("input", e=>{
   dpZifferQuery = e.target.value;
   renderDpTable();
-});
-document.getElementById("dp-ziffer-sicht-toggle").querySelectorAll(".filter-chip").forEach(chip=>{
-  chip.addEventListener("click", ()=>{
-    dpZifferSicht = chip.dataset.sicht;
-    document.querySelectorAll("#dp-ziffer-sicht-toggle .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
-    renderDpTable();
-  });
 });
 document.getElementById("dp-vnr-search").addEventListener("input", e=>{
   dpVnrQuery = e.target.value;
