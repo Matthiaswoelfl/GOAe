@@ -459,7 +459,7 @@
         <aside class="dp-sidebar">
           <div class="dp-sidebar-section">
             <div class="dp-sidebar-head">Filter</div>
-            <p class="dp-sidebar-intro">Diese Filter wirken auf Basisanforderung und Ausbaustufe. Ausnahme: Datenpool-Stand (Datum) nur bei der Ausbaustufe — die Basisanforderung hat dafür die eigene Tagesscheiben-/Monatssicht.</p>
+            <p class="dp-sidebar-intro">Diese Filter wirken auf Basisanforderung und Ausbaustufe. Ausnahme: Die Zeitscheibe (Tag/Woche/Monat/Jahr) hat in beiden Bereichen ihre eigene, unabhängige Auswahl.</p>
           </div>
 
           <div class="dp-sidebar-section mvp1-only" id="mvp1-sidebar-extra">
@@ -479,14 +479,23 @@
 
           <div class="dp-sidebar-section mvp2-only" id="mvp2-sidebar-datenpoolstand" hidden>
             <div class="filters">
-              <span class="filter-dim-label">Datenpool-Stand</span>
+              <span class="filter-dim-label">Zeitscheibe</span>
+              <div class="filter-group" id="dp-zeitscheibe-granularitaet">
+                <button class="filter-chip" type="button" data-granularitaet="tag" data-active="true">Tagesscheibe</button>
+                <button class="filter-chip" type="button" data-granularitaet="woche">Wochenscheibe</button>
+                <button class="filter-chip" type="button" data-granularitaet="monat">Monatsscheibe</button>
+                <button class="filter-chip" type="button" data-granularitaet="jahr">Jahresscheibe</button>
+              </div>
               <div class="filter-group filter-group--date">
-                <input type="date" id="dp-date-input" class="filter-date-input">
+                <input type="date" id="dp-date-input-tag" class="filter-date-input">
+                <select id="dp-date-input-woche" class="filter-date-input" hidden></select>
+                <select id="dp-date-input-monat" class="filter-date-input" hidden></select>
+                <select id="dp-date-input-jahr" class="filter-date-input" hidden></select>
                 <button class="filter-chip" type="button" id="dp-date-today">Heute</button>
               </div>
               <span class="filter-count" id="dp-count"></span>
             </div>
-            <p class="subhead-sub dp-ziffer-hint">Kumulativer Stichtag: zeigt alle Datenfelder, die bis zu diesem Datum im Datenpool verfügbar waren (wächst mit der Zeit) — anders als die Tagesscheibe/Monatssicht bei der Basisanforderung, die nicht-kumulativ genau den gewählten Zeitraum zeigt.</p>
+            <p class="subhead-sub dp-ziffer-hint">Nicht kumulativ: zeigt die Datenfeld-Kennzahlen für die gewählte Zeitscheibe — anders als zuvor wächst die Liste nicht mit der Zeit, sondern die Werte schwanken je gewähltem Tag/Woche/Monat/Jahr.</p>
           </div>
 
           <div class="dp-sidebar-section">
@@ -1355,12 +1364,13 @@ function dpIsoMinusDays(days){
   d.setDate(d.getDate()-days);
   return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 }
-function dpRowLieferdatum(r){ return dpIsoMinusDays(r.off); }
 function fmtDateDe(iso){
   const parts = iso.split("-");
   return parts.length===3 ? parts[2]+"."+parts[1]+"."+parts[0] : iso;
 }
 let activeDpDate = dpIsoToday();
+let activeDpGranularitaet = "tag";
+const DP_ZEITSCHEIBE_LABEL = { tag:"Tagesscheibe", woche:"Wochenscheibe", monat:"Monatsscheibe", jahr:"Jahresscheibe" };
 
 /* ---------- Tagesscheibe / Monatssicht (MVP1, Management-Kennzahl) ----------
    Nicht-kumulativ: zeigt je Kalendertag, wie viele Belege an GENAU DIESEM Tag in den
@@ -1626,6 +1636,63 @@ function renderBelegJahrRangeInputs(){
     document.getElementById("beleg-jahr-end-jahr").value = activeBelegJahrEnd.slice(0,4);
   }
 }
+
+/* Zeitscheibe (Ausbaustufe, MVP2): ein einzelner Anker-Tag (activeDpDate), je nach Granularität auf
+   die Bucket-Grenzen eingerastet — selbes Muster wie Start/Ende der Verlaufskurve oben, nur für
+   einen einzelnen Zeitpunkt statt eines Zeitraums. */
+function snapDpDate(){
+  const g = activeDpGranularitaet;
+  if(g==="woche") activeDpDate = dpIsoWeekStart(activeDpDate);
+  else if(g==="monat") activeDpDate = dpMonthStart(activeDpDate.slice(0,7));
+  else if(g==="jahr") activeDpDate = dpYearStart(activeDpDate.slice(0,4));
+  if(activeDpDate<BELEG_JAHR_MIN_DATE) activeDpDate = BELEG_JAHR_MIN_DATE;
+  const today = dpIsoToday();
+  if(activeDpDate>today) activeDpDate = today;
+}
+function populateDpDateSelects(){
+  const today = dpIsoToday();
+  const minDate = BELEG_JAHR_MIN_DATE;
+
+  const wocheOpts = [];
+  let w = dpIsoWeekStart(today);
+  const wMin = dpIsoWeekStart(minDate);
+  while(w>=wMin){ wocheOpts.push(belegJahrWocheOptionHtml(w)); const d=new Date(w+"T00:00:00"); d.setDate(d.getDate()-7); w=dpIsoFromDate(d); }
+  document.getElementById("dp-date-input-woche").innerHTML = wocheOpts.join("");
+
+  const monatOpts = [];
+  let [my,mm] = today.slice(0,7).split("-").map(Number);
+  const [minY,minM] = minDate.slice(0,7).split("-").map(Number);
+  while(my>minY || (my===minY && mm>=minM)){
+    const ym = my+"-"+String(mm).padStart(2,"0");
+    monatOpts.push('<option value="'+ym+'">'+esc(fmtMonatDe(ym))+'</option>');
+    mm--; if(mm<1){ mm=12; my--; }
+  }
+  document.getElementById("dp-date-input-monat").innerHTML = monatOpts.join("");
+
+  const jahrOpts = [];
+  for(let y=Number(today.slice(0,4)); y>=Number(minDate.slice(0,4)); y--){ jahrOpts.push('<option value="'+y+'">'+y+'</option>'); }
+  document.getElementById("dp-date-input-jahr").innerHTML = jahrOpts.join("");
+}
+function renderDpDateInputs(){
+  const g = activeDpGranularitaet;
+  ["tag","woche","monat","jahr"].forEach(mode=>{
+    document.getElementById("dp-date-input-"+mode).hidden = (mode!==g);
+  });
+  if(g==="tag") document.getElementById("dp-date-input-tag").value = activeDpDate;
+  else if(g==="woche") document.getElementById("dp-date-input-woche").value = activeDpDate;
+  else if(g==="monat") document.getElementById("dp-date-input-monat").value = activeDpDate.slice(0,7);
+  else document.getElementById("dp-date-input-jahr").value = activeDpDate.slice(0,4);
+}
+function dpZeitscheibeLabel(){
+  const g = activeDpGranularitaet;
+  if(g==="woche"){
+    const key = dpIsoWeekKey(activeDpDate);
+    return DP_ZEITSCHEIBE_LABEL.woche+" KW "+key.split("-W")[1]+"/"+key.slice(0,4);
+  }
+  if(g==="monat") return DP_ZEITSCHEIBE_LABEL.monat+" "+fmtMonatDe(activeDpDate.slice(0,7));
+  if(g==="jahr") return DP_ZEITSCHEIBE_LABEL.jahr+" "+activeDpDate.slice(0,4);
+  return DP_ZEITSCHEIBE_LABEL.tag+" "+fmtDateDe(activeDpDate);
+}
 function renderBelegJahr(){
   snapBelegJahrRange();
   renderBelegJahrRangeInputs();
@@ -1673,16 +1740,41 @@ const DP_ISH_MODIFIER = {
   nichtish: { vollst:+0.3, befuell:+0.4, erkennung:+0.5 },
 };
 
-/* Datenpool-Stand (Datum): die Auswertungen schwanken je gewähltem Stichtag — ältere Stände
-   zeigen tendenziell etwas niedrigere Werte (noch nicht alle Nacherfassungen/Korrekturen
-   eingearbeitet), zusätzlich je Datenfeld/Ziffer ein deterministischer Tages-Jitter, damit
-   unterschiedliche Stichtage auch unterschiedliche, aber bei erneuter Auswahl stabile Werte zeigen. */
-function dpDateOffset(rowId, dateIso, metric){
+/* Zeitscheibe (Tag/Woche/Monat/Jahr): die Auswertungen schwanken je gewählter Zeitscheibe — ältere
+   Zeitscheiben zeigen tendenziell etwas niedrigere Werte (noch nicht alle Nacherfassungen/
+   Korrekturen eingearbeitet), zusätzlich je Datenfeld/Ziffer ein deterministischer Bucket-Jitter,
+   damit unterschiedliche Zeitscheiben auch unterschiedliche, aber bei erneuter Auswahl stabile
+   Werte zeigen. Nicht kumulativ: anders als zuvor wächst die Feldliste nicht mit der Zeit — nur
+   die Werte je Feld ändern sich mit der gewählten Zeitscheibe. */
+function dpBucketKey(dateIso, granularitaet){
+  if(granularitaet==="woche") return dpIsoWeekKey(dateIso);
+  if(granularitaet==="monat") return dateIso.slice(0,7);
+  if(granularitaet==="jahr") return dateIso.slice(0,4);
+  return dateIso;
+}
+function dpBucketDistance(dateIso, granularitaet){
   const today = dpIsoToday();
-  if(dateIso===today) return 0;
-  const dayDiff = Math.max(0, Math.round((new Date(today+"T00:00:00") - new Date(dateIso+"T00:00:00"))/86400000));
-  const trend = -Math.min(dayDiff, 60)/60*5;
-  const jitter = (dpZifferHash(rowId+"|"+dateIso+"|"+metric)%700)/100 - 3.5;
+  if(granularitaet==="woche"){
+    const a = dpIsoWeekStart(today), b = dpIsoWeekStart(dateIso);
+    return Math.max(0, Math.round((new Date(a+"T00:00:00") - new Date(b+"T00:00:00"))/(7*86400000)));
+  }
+  if(granularitaet==="monat"){
+    const [ty,tm] = today.slice(0,7).split("-").map(Number);
+    const [dy,dm] = dateIso.slice(0,7).split("-").map(Number);
+    return Math.max(0, (ty-dy)*12 + (tm-dm));
+  }
+  if(granularitaet==="jahr") return Math.max(0, Number(today.slice(0,4)) - Number(dateIso.slice(0,4)));
+  return Math.max(0, Math.round((new Date(today+"T00:00:00") - new Date(dateIso+"T00:00:00"))/86400000));
+}
+const DP_BUCKET_MAX_UNITS = { tag:60, woche:12, monat:12, jahr:3 };
+function dpDateOffset(rowId, dateIso, metric){
+  const granularitaet = activeDpGranularitaet;
+  const bucketKey = dpBucketKey(dateIso, granularitaet);
+  if(bucketKey===dpBucketKey(dpIsoToday(), granularitaet)) return 0;
+  const distance = dpBucketDistance(dateIso, granularitaet);
+  const maxUnits = DP_BUCKET_MAX_UNITS[granularitaet];
+  const trend = -Math.min(distance, maxUnits)/maxUnits*5;
+  const jitter = (dpZifferHash(rowId+"|"+bucketKey+"|"+metric)%700)/100 - 3.5;
   return trend + jitter;
 }
 function dpEffectiveValue(row, metric){
@@ -1785,7 +1877,6 @@ function getFilteredDpRows(){
   if(activeDpDokArt!=="alle") rows = rows.filter(r=>r.dokArt===activeDpDokArt || r.dokArt==="Alle Dok.-Arten");
   if(activeDpZielstatus!=="alle") rows = rows.filter(r=>r.zielstatus===activeDpZielstatus || r.zielstatus===null);
   if(activeDpZeilentyp!=="alle") rows = rows.filter(r=>r.zeilentyp===activeDpZeilentyp);
-  rows = rows.filter(r=>dpRowLieferdatum(r)<=activeDpDate);
   return rows;
 }
 function dpTheadHtml(label){
@@ -1870,6 +1961,8 @@ function applyDpVisibility(){
   document.getElementById("dp-cluster-wrap").hidden = dpTableCollapsed || !isNormal;
 }
 function renderDpTable(){
+  snapDpDate();
+  renderDpDateInputs();
   renderDpThead();
   const rows = getFilteredDpRows();
   const mode = dpMode();
@@ -1877,17 +1970,18 @@ function renderDpTable(){
   const dokNote = activeDpDokArt==="alle" ? "" : " · "+activeDpDokArt;
   const zielNote = activeDpZielstatus==="alle" ? "" : " · AV-Zielstatus: "+activeDpZielstatus;
   const zeilentypNote = activeDpZeilentyp==="alle" ? "" : " · Zeilentyp: "+activeDpZeilentyp+" · "+ZEILENTYP_LABEL[activeDpZeilentyp];
+  const zsNote = " · "+dpZeitscheibeLabel();
   let emptyMsg = "Keine Datenfelder in dieser Auswahl.";
   if(mode==="ziffer"){
     const matches = getDpZifferMatches();
     const zifferNote = matches.length ? " · GO-Ziffer-Suche: "+matches.map(z=>z.nr).join(", ") : " · GO-Ziffer-Suche „"+esc(dpZifferQuery.trim())+"“ ohne Treffer";
-    document.getElementById("dp-count").textContent = rows.length+" Zeile(n)"+dokNote+zeilentypNote+kanalNote+zifferNote;
+    document.getElementById("dp-count").textContent = rows.length+" Zeile(n)"+dokNote+zeilentypNote+kanalNote+zifferNote+zsNote;
     emptyMsg = "Keine GO-Ziffer gefunden für „"+esc(dpZifferQuery.trim())+"“.";
   } else if(mode==="vnr"){
-    document.getElementById("dp-count").textContent = rows.length+" eingereichte(r) Beleg(e) · VNR-Suche: "+esc(dpVnrQuery.trim())+dokNote+kanalNote;
+    document.getElementById("dp-count").textContent = rows.length+" eingereichte(r) Beleg(e) · VNR-Suche: "+esc(dpVnrQuery.trim())+dokNote+kanalNote+zsNote;
     emptyMsg = "Keine Belege zu dieser VNR im gewählten Filter.";
   } else {
-    document.getElementById("dp-count").textContent = rows.length+" von "+DATENPOOL_FELDER.length+" Datenfeldern"+dokNote+zielNote+zeilentypNote+kanalNote;
+    document.getElementById("dp-count").textContent = rows.length+" von "+DATENPOOL_FELDER.length+" Datenfeldern"+dokNote+zielNote+zeilentypNote+kanalNote+zsNote;
   }
   if(mode==="normal"){
     document.getElementById("dp-cluster-wrap").innerHTML = renderDpClusterHtml(rows);
@@ -2541,16 +2635,22 @@ document.getElementById("dp-zeilentyp-filter").querySelectorAll(".filter-chip").
     renderBelegAgg(); renderDpTable();
   });
 });
-const dpDateInput = document.getElementById("dp-date-input");
-dpDateInput.value = activeDpDate;
-dpDateInput.max = dpIsoToday();
-dpDateInput.addEventListener("change", ()=>{
-  activeDpDate = dpDateInput.value || dpIsoToday();
-  renderDpTable();
+document.getElementById("dp-zeitscheibe-granularitaet").querySelectorAll(".filter-chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    activeDpGranularitaet = chip.dataset.granularitaet;
+    document.querySelectorAll("#dp-zeitscheibe-granularitaet .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
+    renderDpTable();
+  });
+});
+document.getElementById("dp-date-input-tag").max = dpIsoToday();
+["tag","woche","monat","jahr"].forEach(mode=>{
+  document.getElementById("dp-date-input-"+mode).addEventListener("change", e=>{
+    activeDpDate = e.target.value || dpIsoToday();
+    renderDpTable();
+  });
 });
 document.getElementById("dp-date-today").addEventListener("click", ()=>{
   activeDpDate = dpIsoToday();
-  dpDateInput.value = activeDpDate;
   renderDpTable();
 });
 document.querySelectorAll("#beleg-agg-zeitraum-modus .filter-chip").forEach(chip=>{
@@ -2606,6 +2706,7 @@ const belegJahrEndTagInput = document.getElementById("beleg-jahr-end-tag");
   inp.min = BELEG_JAHR_MIN_DATE;
 });
 populateBelegJahrRangeSelects();
+populateDpDateSelects();
 belegJahrStartTagInput.addEventListener("change", ()=>{
   activeBelegJahrStart = belegJahrStartTagInput.value || activeBelegJahrStart;
   renderBelegAgg();
