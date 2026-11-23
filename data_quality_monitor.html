@@ -698,6 +698,24 @@
         <p>Nachverfolgung und Auswertung von Änderungen an bereitgestellten Datenfeldern zwischen Datenpool und nachgelagerter Verarbeitung in SMILE — Dashboard mit Schnittstellen zu Datenpool und Ablage, das das Delta der beiden Input-Quellen auf Datenfeld-Ebene bestimmt und anzeigt.</p>
       </div>
 
+      <div class="filters">
+        <span class="filter-dim-label">Zeitscheibe</span>
+        <div class="filter-group" id="sd-zeitscheibe-granularitaet">
+          <button class="filter-chip" type="button" data-granularitaet="tag" data-active="true">Tagesscheibe</button>
+          <button class="filter-chip" type="button" data-granularitaet="woche">Wochenscheibe</button>
+          <button class="filter-chip" type="button" data-granularitaet="monat">Monatsscheibe</button>
+          <button class="filter-chip" type="button" data-granularitaet="jahr">Jahresscheibe</button>
+        </div>
+        <div class="filter-group filter-group--date">
+          <input type="date" id="sd-date-input-tag" class="filter-date-input">
+          <select id="sd-date-input-woche" class="filter-date-input" hidden></select>
+          <select id="sd-date-input-monat" class="filter-date-input" hidden></select>
+          <select id="sd-date-input-jahr" class="filter-date-input" hidden></select>
+          <button class="filter-chip" type="button" id="sd-date-today">Heute</button>
+        </div>
+      </div>
+      <p class="subhead-sub dp-ziffer-hint">Nicht kumulativ: QSL-/Delta-Kennzahlen gelten für die gewählte Zeitscheibe — ältere Zeitscheiben zeigen tendenziell einen etwas höheren Delta-Anteil (noch nicht alle Korrekturen nachgezogen).</p>
+
       <div class="kpi-row" id="sd-kpi"></div>
 
       <div class="subhead">Gesamtübersicht: QSL vs. Delta zur Ablage</div>
@@ -1649,7 +1667,9 @@ function snapDpDate(){
   const today = dpIsoToday();
   if(activeDpDate>today) activeDpDate = today;
 }
-function populateDpDateSelects(){
+/* Gemeinsame Options-Listen für jede Woche-/Monat-/Jahr-Auswahl im Haus (Ausbaustufe, Modul 2 —
+   Anpassungen SMILE) — gleicher erlaubter Zeitraum (BELEG_JAHR_MIN_DATE bis heute) überall. */
+function zeitscheibeOptionsHtml(){
   const today = dpIsoToday();
   const minDate = BELEG_JAHR_MIN_DATE;
 
@@ -1657,7 +1677,6 @@ function populateDpDateSelects(){
   let w = dpIsoWeekStart(today);
   const wMin = dpIsoWeekStart(minDate);
   while(w>=wMin){ wocheOpts.push(belegJahrWocheOptionHtml(w)); const d=new Date(w+"T00:00:00"); d.setDate(d.getDate()-7); w=dpIsoFromDate(d); }
-  document.getElementById("dp-date-input-woche").innerHTML = wocheOpts.join("");
 
   const monatOpts = [];
   let [my,mm] = today.slice(0,7).split("-").map(Number);
@@ -1667,11 +1686,17 @@ function populateDpDateSelects(){
     monatOpts.push('<option value="'+ym+'">'+esc(fmtMonatDe(ym))+'</option>');
     mm--; if(mm<1){ mm=12; my--; }
   }
-  document.getElementById("dp-date-input-monat").innerHTML = monatOpts.join("");
 
   const jahrOpts = [];
   for(let y=Number(today.slice(0,4)); y>=Number(minDate.slice(0,4)); y--){ jahrOpts.push('<option value="'+y+'">'+y+'</option>'); }
-  document.getElementById("dp-date-input-jahr").innerHTML = jahrOpts.join("");
+
+  return { woche:wocheOpts.join(""), monat:monatOpts.join(""), jahr:jahrOpts.join("") };
+}
+function populateDpDateSelects(){
+  const opts = zeitscheibeOptionsHtml();
+  document.getElementById("dp-date-input-woche").innerHTML = opts.woche;
+  document.getElementById("dp-date-input-monat").innerHTML = opts.monat;
+  document.getElementById("dp-date-input-jahr").innerHTML = opts.jahr;
 }
 function renderDpDateInputs(){
   const g = activeDpGranularitaet;
@@ -1692,6 +1717,45 @@ function dpZeitscheibeLabel(){
   if(g==="monat") return DP_ZEITSCHEIBE_LABEL.monat+" "+fmtMonatDe(activeDpDate.slice(0,7));
   if(g==="jahr") return DP_ZEITSCHEIBE_LABEL.jahr+" "+activeDpDate.slice(0,4);
   return DP_ZEITSCHEIBE_LABEL.tag+" "+fmtDateDe(activeDpDate);
+}
+
+/* Zeitscheibe (Modul 2 — Anpassungen SMILE): identisches Muster wie die Ausbaustufe oben, eigener
+   Anker (activeSdDate/activeSdGranularitaet), da beide Bereiche unabhängig voneinander filterbar
+   sein sollen. */
+function snapSdDate(){
+  const g = activeSdGranularitaet;
+  if(g==="woche") activeSdDate = dpIsoWeekStart(activeSdDate);
+  else if(g==="monat") activeSdDate = dpMonthStart(activeSdDate.slice(0,7));
+  else if(g==="jahr") activeSdDate = dpYearStart(activeSdDate.slice(0,4));
+  if(activeSdDate<BELEG_JAHR_MIN_DATE) activeSdDate = BELEG_JAHR_MIN_DATE;
+  const today = dpIsoToday();
+  if(activeSdDate>today) activeSdDate = today;
+}
+function populateSdDateSelects(){
+  const opts = zeitscheibeOptionsHtml();
+  document.getElementById("sd-date-input-woche").innerHTML = opts.woche;
+  document.getElementById("sd-date-input-monat").innerHTML = opts.monat;
+  document.getElementById("sd-date-input-jahr").innerHTML = opts.jahr;
+}
+function renderSdDateInputs(){
+  const g = activeSdGranularitaet;
+  ["tag","woche","monat","jahr"].forEach(mode=>{
+    document.getElementById("sd-date-input-"+mode).hidden = (mode!==g);
+  });
+  if(g==="tag") document.getElementById("sd-date-input-tag").value = activeSdDate;
+  else if(g==="woche") document.getElementById("sd-date-input-woche").value = activeSdDate;
+  else if(g==="monat") document.getElementById("sd-date-input-monat").value = activeSdDate.slice(0,7);
+  else document.getElementById("sd-date-input-jahr").value = activeSdDate.slice(0,4);
+}
+function sdZeitscheibeLabel(){
+  const g = activeSdGranularitaet;
+  if(g==="woche"){
+    const key = dpIsoWeekKey(activeSdDate);
+    return DP_ZEITSCHEIBE_LABEL.woche+" KW "+key.split("-W")[1]+"/"+key.slice(0,4);
+  }
+  if(g==="monat") return DP_ZEITSCHEIBE_LABEL.monat+" "+fmtMonatDe(activeSdDate.slice(0,7));
+  if(g==="jahr") return DP_ZEITSCHEIBE_LABEL.jahr+" "+activeSdDate.slice(0,4);
+  return DP_ZEITSCHEIBE_LABEL.tag+" "+fmtDateDe(activeSdDate);
 }
 function renderBelegJahr(){
   snapBelegJahrRange();
@@ -1830,18 +1894,25 @@ const REQ_LABEL_SHORT = { muss:"Muss", bedingt:"Bedingt", kann:"Kann" };
 const REQ_BADGE = { muss:"info", bedingt:"warn", kann:"offen" };
 let activeSdFilter = "alle";
 let selectedSqDokArt = null;
+let activeSdDate = dpIsoToday();
+let activeSdGranularitaet = "tag";
 
 const SQ_OVERVIEW_ERL = [
-  { lead:"Einordnung", text:"Vergleich der vom EM an den Datenpool übergebenen Werte (inkl. QSL und Kann-/Mussfeld-Zuordnung) gegen den tatsächlich in SMILE/Ablage verwendeten Wert, Stichprobe "+heute()+"." },
   { lead:"Kernbefund", text:"Auch Felder mit „gutem“ QSL (sicher gefunden, manuell bestätigt) sind nicht automatisch deltafrei — ein Teil wird in SMILE dennoch verändert." },
   { lead:"Handlungsimplikation", text:"Ein Delta trotz „Sicher gefunden“ deutet auf eine nachgelagerte fachliche Korrektur oder eine Lücke in der QSL-Logik hin und sollte vorrangig untersucht werden." },
 ];
+function sqOverviewErlMitEinordnung(){
+  return [{ lead:"Einordnung", text:"Vergleich der vom EM an den Datenpool übergebenen Werte (inkl. QSL und Kann-/Mussfeld-Zuordnung) gegen den tatsächlich in SMILE/Ablage verwendeten Wert, "+sdZeitscheibeLabel()+"." }].concat(SQ_OVERVIEW_ERL);
+}
 const SQ_MATRIX_ERL = [
   { lead:"Lesart", text:"Je Dok.-Art und QSL die Anzahl Datenfelder, bei denen der SMILE/Ablage-Wert vom Datenpool-Wert abweicht." },
   { lead:"Auffälligkeit", text:"Delta in der Spalte „Sicher“ ist der kritischste Fall — das Feld galt als automatisch verlässlich befüllt und musste trotzdem angepasst werden." },
   { lead:"Nächster Schritt", text:"Dok.-Arten mit hohem Delta-Anteil bei „Sicher“ bzw. „Bestätigt“ sind vorrangige Kandidaten für eine Ursachenanalyse der QSL-Vergabe." },
 ];
-const SQ_MATRIX = (function(){
+/* Basis-Zähler je Dok.-Art/QSL (heutiger Stand). Nicht kumulativ je Zeitscheibe skaliert über
+   sdEffectiveMatrix() — ältere Zeitscheiben zeigen tendenziell einen höheren Delta-Anteil, analog
+   zum Vollständigkeits-/Erkennungsquote-Trend der Ausbaustufe (dpDateOffset). */
+const SQ_MATRIX_BASE = (function(){
   const dokArten = ["RE ambulant neu (3552)","RE stationär neu (3549)"];
   const base = {
     "RE ambulant neu (3552)": { sicher:14, unsicher:22, nicht:6, korrigiert:18, bestaetigt:4, sonstige:1 },
@@ -1850,6 +1921,25 @@ const SQ_MATRIX = (function(){
   return dokArten.map(d=>Object.assign({ dokArt:d }, base[d]));
 })();
 const QSL_DELTA_OHNE = 455;
+function sdBucketRatio(seedKey){
+  const granularitaet = activeSdGranularitaet;
+  const bucketKey = dpBucketKey(activeSdDate, granularitaet);
+  if(bucketKey===dpBucketKey(dpIsoToday(), granularitaet)) return 1;
+  const distance = dpBucketDistance(activeSdDate, granularitaet);
+  const maxUnits = DP_BUCKET_MAX_UNITS[granularitaet];
+  const trend = Math.min(distance, maxUnits)/maxUnits*0.18;
+  const jitter = (dpZifferHash(seedKey+"|"+bucketKey)%700)/10000 - 0.035;
+  return Math.max(0.5, 1 + trend + jitter);
+}
+function sdEffectiveMatrix(){
+  return SQ_MATRIX_BASE.map(r=>{
+    const out = { dokArt:r.dokArt };
+    ["sicher","unsicher","nicht","korrigiert","bestaetigt","sonstige"].forEach(k=>{
+      out[k] = Math.round(r[k]*sdBucketRatio(r.dokArt+"|"+k));
+    });
+    return out;
+  });
+}
 
 
 /* ============================================================
@@ -2496,14 +2586,15 @@ function qslLabel(key){ const k = QSL_KATEGORIEN.find(x=>x.key===key); return k 
 function qslSlot(key){ const k = QSL_KATEGORIEN.find(x=>x.key===key); return k ? k.slot : 1; }
 
 /* Gemeinsame Grundlage für die KPI-Kacheln und die Gesamtübersicht darunter — beide beschreiben
-   denselben Vergleich (Datenpool vs. SMILE/Ablage, Stichprobe von heute) und müssen deshalb exakt
-   dieselben Zahlen zeigen statt zweier unabhängig gepflegter Beispieldatensätze (Workshop-
-   Feedback: "das sollte schon alles deckungsgleich sein"). Quelle ist SQ_MATRIX/QSL_DELTA_OHNE;
-   SMILE_DELTA bleibt bewusst die viel kleinere, eigenständige Beispiel-Stichprobe für die
-   Datenfeld-Vergleichstabelle weiter unten (gleiches Prinzip wie Kopfzahl vs. Beispiel-Belege
-   bei MVP1), auf die sich aber auch keine der beiden Übersichten hier bezieht. */
+   denselben Vergleich (Datenpool vs. SMILE/Ablage, für die gewählte Zeitscheibe) und müssen deshalb
+   exakt dieselben Zahlen zeigen statt zweier unabhängig gepflegter Beispieldatensätze (Workshop-
+   Feedback: "das sollte schon alles deckungsgleich sein"). Quelle ist sdEffectiveMatrix()/
+   QSL_DELTA_OHNE; SMILE_DELTA bleibt bewusst die viel kleinere, eigenständige Beispiel-Stichprobe
+   für die Datenfeld-Vergleichstabelle weiter unten (gleiches Prinzip wie Kopfzahl vs. Beispiel-
+   Belege bei MVP1), auf die sich aber auch keine der beiden Übersichten hier bezieht. */
 function smileDeltaOverviewTotals(){
-  const col = k => SQ_MATRIX.reduce((s,r)=>s+r[k],0);
+  const matrix = sdEffectiveMatrix();
+  const col = k => matrix.reduce((s,r)=>s+r[k],0);
   const perKat = QSL_KATEGORIEN.map(k=>({ key:k.key, label:k.label, count: col(k.key) }));
   const gesamtDelta = perKat.reduce((s,k)=>s+k.count,0);
   const geprueft = gesamtDelta + QSL_DELTA_OHNE;
@@ -2513,7 +2604,7 @@ function smileDeltaOverviewTotals(){
 function renderSdKpi(){
   const { gesamtDelta, geprueft, sicherDelta } = smileDeltaOverviewTotals();
   document.getElementById("sd-kpi").innerHTML = [
-    ['Felder geprüft (heute)', geprueft.toLocaleString("de-DE"), "info"],
+    ['Felder geprüft ('+sdZeitscheibeLabel()+')', geprueft.toLocaleString("de-DE"), "info"],
     ['Felder mit Delta', gesamtDelta.toLocaleString("de-DE"), "crit"],
     ['Felder synchron', (geprueft-gesamtDelta).toLocaleString("de-DE"), "ok"],
     ['Delta-Quote', ((gesamtDelta/geprueft)*100).toFixed(1).replace(".",",")+" %", gesamtDelta?"warn":"ok"],
@@ -2526,7 +2617,7 @@ function renderSqOverview(){
 
   const rows = [
     { section:"1. Was haben wir betrachtet?" },
-    { kat:"Geprüfte Datenfeld-Vergleiche", anzahl:geprueft.toLocaleString("de-DE"), kommentar:"Datenpool vs. SMILE/Ablage, Stichprobe "+heute() },
+    { kat:"Geprüfte Datenfeld-Vergleiche", anzahl:geprueft.toLocaleString("de-DE"), kommentar:"Datenpool vs. SMILE/Ablage, "+sdZeitscheibeLabel() },
     { kat:"Davon mit Delta zur Ablage", anzahl:gesamtDelta.toLocaleString("de-DE"), kommentar:((gesamtDelta/geprueft)*100).toFixed(1).replace(".",",")+" % aller geprüften Felder" },
     { section:"2. Bei welchem QSL gab es wie viel Delta?" },
   ].concat(perKat.map(k=>({ kat:k.label, anzahl:k.count.toLocaleString("de-DE"), kommentar:((k.count/gesamtDelta)*100).toFixed(0)+" % aller Delta-Fälle" })));
@@ -2535,11 +2626,12 @@ function renderSqOverview(){
     r.section ? '<tr class="ov-section"><td colspan="3">'+esc(r.section)+'</td></tr>'
     : '<tr><td class="k-name">'+esc(r.kat)+'</td><td class="ov-num">'+esc(r.anzahl)+'</td><td class="k-quelle">'+esc(r.kommentar)+'</td></tr>'
   ).join("");
-  document.getElementById("sqov-erl").innerHTML = SQ_OVERVIEW_ERL.map(e=>'<li><b>'+esc(e.lead)+':</b> '+esc(e.text)+'</li>').join("");
+  document.getElementById("sqov-erl").innerHTML = sqOverviewErlMitEinordnung().map(e=>'<li><b>'+esc(e.lead)+':</b> '+esc(e.text)+'</li>').join("");
 }
 
 function renderSqMatrix(){
-  document.getElementById("sqxt-body").innerHTML = SQ_MATRIX.map(r=>{
+  const matrix = sdEffectiveMatrix();
+  document.getElementById("sqxt-body").innerHTML = matrix.map(r=>{
     const selected = r.dokArt===selectedSqDokArt;
     return '<tr class="row-clickable'+(selected?" row-selected":"")+'" data-dokart="'+esc(r.dokArt)+'">'+
       '<td class="k-name">'+esc(r.dokArt)+'</td>'+
@@ -2551,7 +2643,7 @@ function renderSqMatrix(){
       '<td class="ov-num">'+r.sonstige+'</td>'+
     '</tr>';
   }).join("") + '<tr class="ov-total"><td class="k-name">Gesamt</td>'+
-    ["sicher","unsicher","nicht","korrigiert","bestaetigt","sonstige"].map(k=>'<td class="ov-num">'+SQ_MATRIX.reduce((s,r)=>s+r[k],0)+'</td>').join("")+
+    ["sicher","unsicher","nicht","korrigiert","bestaetigt","sonstige"].map(k=>'<td class="ov-num">'+matrix.reduce((s,r)=>s+r[k],0)+'</td>').join("")+
   '</tr>';
 
   document.querySelectorAll("#sqxt-body tr.row-clickable").forEach(tr=>{
@@ -2599,7 +2691,7 @@ function renderSdTable(){
     '</tr>'
   ).join("") : '<tr><td colspan="10" class="cell-empty">Keine Datenfelder in dieser Auswahl.</td></tr>';
 }
-function renderSmileDelta(){ renderSdKpi(); renderSqOverview(); renderSqMatrix(); renderSdTable(); }
+function renderSmileDelta(){ snapSdDate(); renderSdDateInputs(); renderSdKpi(); renderSqOverview(); renderSqMatrix(); renderSdTable(); }
 
 /* ============================================================
    INIT / EVENTS
@@ -2652,6 +2744,24 @@ document.getElementById("dp-date-input-tag").max = dpIsoToday();
 document.getElementById("dp-date-today").addEventListener("click", ()=>{
   activeDpDate = dpIsoToday();
   renderDpTable();
+});
+document.getElementById("sd-zeitscheibe-granularitaet").querySelectorAll(".filter-chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    activeSdGranularitaet = chip.dataset.granularitaet;
+    document.querySelectorAll("#sd-zeitscheibe-granularitaet .filter-chip").forEach(c=>c.dataset.active = (c===chip) ? "true":"false");
+    renderSmileDelta();
+  });
+});
+document.getElementById("sd-date-input-tag").max = dpIsoToday();
+["tag","woche","monat","jahr"].forEach(mode=>{
+  document.getElementById("sd-date-input-"+mode).addEventListener("change", e=>{
+    activeSdDate = e.target.value || dpIsoToday();
+    renderSmileDelta();
+  });
+});
+document.getElementById("sd-date-today").addEventListener("click", ()=>{
+  activeSdDate = dpIsoToday();
+  renderSmileDelta();
 });
 document.querySelectorAll("#beleg-agg-zeitraum-modus .filter-chip").forEach(chip=>{
   chip.addEventListener("click", ()=>{
@@ -2707,6 +2817,7 @@ const belegJahrEndTagInput = document.getElementById("beleg-jahr-end-tag");
 });
 populateBelegJahrRangeSelects();
 populateDpDateSelects();
+populateSdDateSelects();
 belegJahrStartTagInput.addEventListener("change", ()=>{
   activeBelegJahrStart = belegJahrStartTagInput.value || activeBelegJahrStart;
   renderBelegAgg();
