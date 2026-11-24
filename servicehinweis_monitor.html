@@ -27,6 +27,17 @@
   --kat-fragl:        #9ba842;
   --kat-teilw:        #c98a3a;
 
+  --grund-1:          #e4e6cf;
+  --grund-2:          #e7dcef;
+  --grund-3:          #d6e6e2;
+  --grund-4:          #f1e1c9;
+  --grund-5:          #dde4ee;
+  --grund-6:          #efd9d4;
+  --grund-7:          #e2ecd0;
+  --grund-8:          #e9e4d6;
+  --grund-9:          #d9e2e1;
+  --grund-10:         #f0e8c4;
+
   --radius-lg: 16px; --radius-md: 10px; --radius-sm: 6px;
   --shadow-sm: 0 1px 3px rgba(38,86,81,.08);
 }
@@ -253,6 +264,70 @@ svg.linechart .line-z31{stroke:var(--kat-z31); stroke-width:2; fill:none;}
 svg.linechart .line-fragl{stroke:var(--kat-fragl); stroke-width:2; fill:none;}
 svg.linechart .line-teilw{stroke:var(--kat-teilw); stroke-width:2; fill:none;}
 
+/* ---------- Betragsfilter ---------- */
+.betrag-toggle{
+  display:flex; align-items:flex-start; gap:7px; margin:8px 0 0; font-size:12.5px;
+  color:var(--ink-soft); cursor:pointer;
+}
+.betrag-toggle input{margin-top:2px; cursor:pointer;}
+.betrag-toggle span{line-height:1.35;}
+
+/* ---------- Verteilung nach Anzahl Hellwerdegründe ---------- */
+.verteilung-block{
+  margin:10px 0 16px; padding:12px 14px; background:var(--surface-cool);
+  border-radius:var(--radius-md); border:1px solid var(--border);
+}
+.verteilung-row{
+  display:grid; grid-template-columns:72px 1fr 70px; align-items:center; gap:10px;
+  font-size:13px; margin-bottom:5px;
+}
+.verteilung-row:last-child{margin-bottom:0;}
+.verteilung-row.sum-row{
+  border-top:1px solid var(--border); padding-top:6px; margin-top:6px; font-weight:700;
+}
+.verteilung-bar-track{height:14px; border-radius:7px; background:#fff; border:1px solid var(--border); overflow:hidden;}
+.verteilung-bar-fill{height:100%; background:var(--dkv-teal); border-radius:7px 0 0 7px;}
+.verteilung-row.sum-row .verteilung-bar-fill{background:var(--dkv-green);}
+.verteilung-val{text-align:right; font-variant-numeric:tabular-nums; color:var(--ink-soft);}
+.verteilung-row.sum-row .verteilung-val{color:var(--ink);}
+.verteilung-row.clickable{cursor:pointer;}
+.verteilung-row.clickable:hover .verteilung-bar-track{outline:2px solid var(--dkv-lime);}
+
+/* ---------- Servicehinweise: Detail-Panel ---------- */
+.sh-row-expand-btn{
+  display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px;
+  border:none; background:none; cursor:pointer; color:var(--ink-soft); border-radius:4px;
+}
+.sh-row-expand-btn:hover{background:var(--surface-beige); color:var(--ink);}
+.sh-row-expand-btn .chev{display:inline-block; transition:transform .12s;}
+.sh-row-expand-btn[aria-expanded="true"] .chev{transform:rotate(90deg);}
+.sh-detail-row td{background:var(--surface-cool); padding:12px 18px 16px;}
+.sh-filter-icon-btn{
+  border:1px solid var(--border); background:#fff; cursor:pointer; color:var(--dkv-teal); padding:2px 7px;
+  border-radius:999px; vertical-align:middle; font-size:11px; font-weight:700; letter-spacing:.02em;
+}
+.sh-filter-icon-btn:hover{background:var(--dkv-lime-soft); color:var(--dkv-green-700);}
+.sh-ohne-konkret{font-size:13px; color:var(--ink-soft); font-style:italic; padding:4px 0;}
+
+/* ---------- Grund-Kombinationen (Tabelle + Legende) ---------- */
+.grund-cell{
+  display:inline-flex; align-items:center; padding:3px 9px; border-radius:999px;
+  font-size:12.5px; margin:1px 3px 1px 0; white-space:nowrap;
+}
+.grund-cell.typ-sonstig{font-style:italic; border:1px dashed rgba(0,0,0,.18);}
+.grund-cell.grau{background:var(--surface-cool) !important; color:var(--ink-soft); opacity:.55;}
+.kombi-table{width:100%; border-collapse:collapse; font-size:13.5px;}
+.kombi-table th{text-align:left; padding:6px 10px; color:var(--ink-soft); font-size:12px; border-bottom:1px solid var(--border);}
+.kombi-table td{padding:7px 10px; border-bottom:1px solid var(--border); vertical-align:middle;}
+.kombi-table td.num{text-align:right; font-variant-numeric:tabular-nums;}
+.kombi-block-head td{
+  background:var(--surface-beige); font-weight:700; color:var(--dkv-green-700);
+  padding:8px 10px; border-bottom:1px solid var(--border);
+}
+.grund-legend{display:flex; flex-wrap:wrap; gap:6px 14px; margin:10px 0; font-size:12.5px; color:var(--ink-soft);}
+.grund-legend-item{display:flex; align-items:center; gap:5px;}
+.grund-legend-swatch{width:12px; height:12px; border-radius:3px; display:inline-block;}
+
 @media (max-width:980px){
   .app-body{flex-direction:column;}
   .sidebar{position:static; width:100%; max-height:none;}
@@ -314,6 +389,16 @@ svg.linechart .line-teilw{stroke:var(--kat-teilw); stroke-width:2; fill:none;}
       <div class="sh-list" id="filter-sh-list"></div>
     </div>
 
+    <div class="sidebar-section">
+      <div class="sidebar-section-head">Rechnungsbetrag</div>
+      <div class="chip-col" id="filter-betrag" role="group" aria-label="Betrags-Filter"></div>
+      <label class="betrag-toggle">
+        <input type="checkbox" id="filter-betrag-null-separat">
+        <span>0 € (kein Betrag erfasst) separat ausweisen</span>
+      </label>
+      <p class="hint">Betrag je Beleg = höchster Rechnungsbetrag über seine Servicehinweis-Zeilen.</p>
+    </div>
+
     <button type="button" class="btn btn-ghost btn-sm" id="btn-filter-reset" style="width:100%;">Filter zurücksetzen</button>
 
     <div class="sidebar-section" style="margin-top:28px;">
@@ -341,6 +426,7 @@ svg.linechart .line-teilw{stroke:var(--kat-teilw); stroke-width:2; fill:none;}
       <div class="tabs" role="tablist">
         <button type="button" class="tab-btn" role="tab" data-tab="uebersicht" aria-selected="true">Übersicht</button>
         <button type="button" class="tab-btn" role="tab" data-tab="servicehinweise">Servicehinweise</button>
+        <button type="button" class="tab-btn" role="tab" data-tab="hellwerdegruende">Konkrete Hellwerdegründe</button>
         <button type="button" class="tab-btn" role="tab" data-tab="verlauf">Verlauf</button>
       </div>
 
@@ -365,6 +451,10 @@ svg.linechart .line-teilw{stroke:var(--kat-teilw); stroke-width:2; fill:none;}
               <div class="chart-card">
                 <h3>Mit / ohne konkreten Hellwerdegrund je Kategorie</h3>
                 <div id="chart-kategorie-stack"></div>
+              </div>
+              <div class="chart-card">
+                <h3>Belege je Betragsklasse</h3>
+                <div id="chart-betragsklasse"></div>
               </div>
             </div>
           </div>
@@ -397,6 +487,41 @@ svg.linechart .line-teilw{stroke:var(--kat-teilw); stroke-width:2; fill:none;}
             </tr></thead>
             <tbody id="sh-body"></tbody>
           </table>
+        </div>
+      </section>
+
+      <section id="tab-hellwerdegruende" hidden>
+        <div class="sh-toolbar">
+          <input type="search" id="hwg-search" placeholder="Servicehinweis suchen…" style="max-width:220px;">
+          <select id="hwg-select-hinweis" class="date-field" style="width:auto; max-width:360px; margin-top:0;"></select>
+          <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--ink-soft); margin-left:auto;">
+            Top
+            <select id="hwg-select-topn" class="date-field" style="width:auto; margin-top:0;">
+              <option value="4" selected>4</option>
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="alle">Alle</option>
+            </select>
+          </label>
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-hwg-csv">CSV exportieren</button>
+        </div>
+        <p class="hint" id="hwg-hint" style="margin-bottom:14px;"></p>
+
+        <div id="hwg-kpi-row" class="kpi-row" style="margin-bottom:18px;"></div>
+
+        <div id="hwg-stichtag-content">
+          <div class="grund-legend" id="hwg-legend"></div>
+          <div class="table-wrap">
+            <table class="kombi-table" id="hwg-table"><tbody></tbody></table>
+          </div>
+        </div>
+
+        <div id="hwg-verlauf-content" hidden>
+          <p class="hint">Für die Kombinationsdetails einen einzelnen Stichtag wählen (Zeitscheibe oben in der Sidebar).</p>
+          <div class="chart-card">
+            <h3>Belege nach Anzahl Hellwerdegründe je Stichtag</h3>
+            <div id="hwg-chart-verlauf"></div>
+          </div>
         </div>
       </section>
 
@@ -504,7 +629,9 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
 </script>
 <script id="core-js-src">
 /* Servicehinweis-Monitor — reine Datenlogik (kein DOM).
-   Läuft identisch im Browser (Worker) und in Node (Tests). */
+   Läuft identisch im Browser (Worker) und in Node (Tests).
+   v2: Hellwerdegründe (Grund-Schlüssel, Anzahl, Kombinationen) + Betragsfilter.
+   Tarifkombination (TA_KOMB_EB1) ist auf Nutzerwunsch vorerst NICHT umgesetzt. */
 (function (root, factory) {
   if (typeof module === "object" && module.exports) {
     module.exports = factory();
@@ -514,9 +641,10 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
 })(typeof self !== "undefined" ? self : this, function () {
   "use strict";
 
+  const SCHEMA_VERSION = 2;
   const REQUIRED_HEADERS = [
     "DOK_NR", "DOK_ART_SL", "NAME_DOK", "BEWERT_CODE_SL", "SERV_NAME",
-    "BEWERT_FREI_TXT", "DET_TXT_1", "DET_TXT_2", "DET_TXT_3", "DET_TXT_4",
+    "BEWERT_FREI_TXT", "DET_TXT_1", "DET_TXT_2", "DET_TXT_3", "DET_TXT_4", "RECHN_BETR",
   ];
   const KATEGORIE_ORDER = ["Z31", "FRAGL", "TEILW"];
   const KATEGORIE_LABEL = { Z31: "Z31", FRAGL: "FRAGL, fraglich", TEILW: "TEILW, teilweise" };
@@ -528,10 +656,8 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     "GO-ZIFF": "GO-Ziffer",
     "GO-ART-SL": "GO-Art",
     "LEIST-ART-SL": "Leistungsart",
-    "BEH-PE-NR": "Behandler-Nr.",
+    "BEH-PE-NR": "Acxiom-ID",
   };
-  const FELD_DETAIL_RE = /^Feld\s+(\S+)\s+in\s+(\S+)\s+fehlt$/;
-  const SONSTIGE_FELD_KEY = "__sonstige__";
 
   function trimOrNull(v) {
     if (v === null || v === undefined) return null;
@@ -545,6 +671,51 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     if (v === null || v === undefined) return null;
     const s = String(v).trim();
     return s === "" ? null : s;
+  }
+
+  /* ---------- Grund-Schlüssel (Abschnitt 2.2 des Build Plan v2) ---------- */
+  /* Reihenfolge ist Priorität. Jeder nicht leere Detailtext wird auf genau einen Grund-Schlüssel
+     abgebildet. Konfig-Tabelle, damit der Fachbereich sie ohne Code-Umbau anpassen kann. */
+  const GRUND_REGELN = [
+    { re: /^Feld\s+(\S+)\s+in\s+\S+\s+fehlt$/, typ: "feld", key: (m) => "F:" + m[1], label: (m) => FELD_LABEL[m[1]] || m[1] },
+    { re: /^Vorgang\s+\d+\/\d+/, typ: "sonstig", key: () => "S:VORGANG", label: () => "Vorgangsverweis (Doppelzahlung)" },
+    { re: /^Tarif:/, typ: "sonstig", key: () => "S:TARIF", label: () => "Tarifangabe" },
+    { re: /^GO-Art\s+\d+\s*\/\s*Ziffer/, typ: "sonstig", key: () => "S:GO_FAKTOR", label: () => "GO-Ziffer/Faktor" },
+    { re: /^GOÄ\s+\S+/, typ: "sonstig", key: () => "S:GOAE_POS", label: () => "GOÄ-Position" },
+    { re: /^Diag:/, typ: "sonstig", key: () => "S:DIAG", label: () => "Diagnose-Detail" },
+    { re: /^Rezept\s/, typ: "sonstig", key: () => "S:REZEPT", label: () => "Rezeptverweis" },
+  ];
+  const GRUND_SONSTIGES_FALLBACK = { typ: "sonstig", key: "S:SONST", label: "Sonstiger Detailtext" };
+  function classifyGrund(normalizedText) {
+    for (const regel of GRUND_REGELN) {
+      const m = normalizedText.match(regel.re);
+      if (m) return { typ: regel.typ, key: regel.key(m), label: regel.label(m) };
+    }
+    return GRUND_SONSTIGES_FALLBACK;
+  }
+
+  /* ---------- Rechnungsbetrag-Klassen (Abschnitt 2.6) ---------- */
+  const BETRAG_KLASSEN = [
+    { label: "< 50 €", min: -Infinity, max: 4999 },
+    { label: "50 – 100 €", min: 5000, max: 10000 },
+    { label: "100 – 200 €", min: 10001, max: 20000 },
+    { label: "200 – 500 €", min: 20001, max: 50000 },
+    { label: "500 – 1.000 €", min: 50001, max: 100000 },
+    { label: "> 1.000 €", min: 100001, max: Infinity },
+  ];
+  /* nullSeparat=true: ein eigener Chip "0 € / kein Betrag" vor "< 50 €"; "< 50 €" bedeutet dann
+     0 < betrag < 50. Default (false): 0-€-Belege zählen regulär zu "< 50 €". */
+  function betragsklasseVon(cents, nullSeparat) {
+    if (cents == null) return null;
+    if (nullSeparat && cents === 0) return "0 € / kein Betrag";
+    for (const k of BETRAG_KLASSEN) if (cents >= k.min && cents <= k.max) return k.label;
+    return null;
+  }
+  function parseBetragCents(raw) {
+    if (raw == null) return null;
+    const num = typeof raw === "number" ? raw : parseFloat(String(raw).trim().replace(",", "."));
+    if (isNaN(num)) return null;
+    return Math.round(num * 100);
   }
 
   const EXCEL_EPOCH_UTC = Date.UTC(1899, 11, 30);
@@ -589,15 +760,6 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     return Math.round(ms / 86400000);
   }
 
-  function parseDetailText(raw) {
-    const trimmed = trimOrNull(raw);
-    if (trimmed === null) return null;
-    const norm = normalizeWhitespace(trimmed);
-    const m = norm.match(FELD_DETAIL_RE);
-    if (m) return { feldcode: m[1], maske: m[2], text: norm };
-    return { feldcode: null, maske: null, text: norm };
-  }
-
   /* rows: Array von Arrays (erste Zeile = Header), wie XLSX.utils.sheet_to_json(ws,{header:1}) liefert. */
   function validateHeader(headerRow) {
     const missing = REQUIRED_HEADERS.filter((h) => !headerRow.includes(h));
@@ -637,9 +799,9 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     const iDokNr = idx("DOK_NR"), iDokArt = idx("DOK_ART_SL"), iNameDok = idx("NAME_DOK"),
       iBewertCode = idx("BEWERT_CODE_SL"), iServName = idx("SERV_NAME"), iFreiTxt = idx("BEWERT_FREI_TXT"),
       iDet1 = idx("DET_TXT_1"), iDet2 = idx("DET_TXT_2"), iDet3 = idx("DET_TXT_3"), iDet4 = idx("DET_TXT_4"),
-      iEingDat = idx("EING_DAT"), iInsertZp = idx("INSERT_ZP"), iGesSl = idx("GES_SL");
+      iEingDat = idx("EING_DAT"), iInsertZp = idx("INSERT_ZP"), iGesSl = idx("GES_SL"), iRechnBetr = idx("RECHN_BETR");
 
-    const warnungen = { verworfenOhneDokNr: 0, unbekannteKategorien: new Set(), unparsebareDaten: 0 };
+    const warnungen = { verworfenOhneDokNr: 0, unbekannteKategorien: new Set(), unparsebareDaten: 0, luecken: 0 };
     const out = [];
     for (let r = 0; r < dataRows.length; r++) {
       const row = dataRows[r];
@@ -654,6 +816,14 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       if ((row[iEingDat] != null && !eingDat) || (row[iInsertZp] != null && !insertZp)) {
         warnungen.unparsebareDaten++;
       }
+      const detailTexte = [row[iDet1], row[iDet2], row[iDet3], row[iDet4]].map((v) => {
+        const t = trimOrNull(v);
+        return t === null ? null : normalizeWhitespace(t);
+      });
+      // Robustheitsregel 2.1: Lücke (z. B. U leer, V befüllt) wird gezählt, aber nicht verworfen.
+      let seenEmpty = false;
+      detailTexte.forEach((t) => { if (t === null) seenEmpty = true; else if (seenEmpty) warnungen.luecken++; });
+
       out.push({
         dokNr,
         dokArtSl: trimOrNull(row[iDokArt]),
@@ -662,7 +832,8 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
         kategorie,
         servName: trimOrNull(row[iServName]),
         bewertFreiTxt: trimOrNull(row[iFreiTxt]),
-        details: [row[iDet1], row[iDet2], row[iDet3], row[iDet4]].map(parseDetailText),
+        detailTexte,
+        betragCents: parseBetragCents(row[iRechnBetr]),
         eingDat,
         insertZp,
       });
@@ -670,15 +841,16 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     return { rows: out, warnungen };
   }
 
-  /* Baut den wörterbuch-kodierten Snapshot (Abschnitt 6 des Build Plans). */
+  /* Baut den wörterbuch-kodierten Snapshot (Abschnitt 6 v1 + Abschnitt 1.2 v2). */
   function buildSnapshot(normalizedRows, meta) {
     const dokArtList = [], dokArtIndex = new Map();
     const kategorieList = KATEGORIE_ORDER.slice();
     const kategorieIndex = new Map(KATEGORIE_ORDER.map((k, i) => [k, i]));
     const hinweisList = [], hinweisIndex = new Map();
     const hinweisTextCounts = []; // parallel zu hinweisList: Map(text -> count)
-    const feldList = [], feldIndex = new Map();
+    const grundList = [], grundIndex = new Map(); // {key,label,typ}
     const belegeList = [], belegeIndex = new Map();
+    const belegBetragCt = []; // parallel zu belegeList: Max-Betrag in Cent je Beleg (Regel 2.6)
     const zeilen = [];
 
     function dokArtIdxOf(code, name) {
@@ -705,17 +877,18 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       hinweisIndex.set(key, i);
       return i;
     }
-    function feldIdxOf(code) {
-      if (feldIndex.has(code)) return feldIndex.get(code);
-      const i = feldList.length;
-      feldList.push(code);
-      feldIndex.set(code, i);
+    function grundIdxOf(g) {
+      if (grundIndex.has(g.key)) return grundIndex.get(g.key);
+      const i = grundList.length;
+      grundList.push(g);
+      grundIndex.set(g.key, i);
       return i;
     }
     function belegIdxOf(dokNr) {
       if (belegeIndex.has(dokNr)) return belegeIndex.get(dokNr);
       const i = belegeList.length;
       belegeList.push(dokNr);
+      belegBetragCt.push(null);
       belegeIndex.set(dokNr, i);
       return i;
     }
@@ -732,26 +905,25 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
         m.set(r.bewertFreiTxt, (m.get(r.bewertFreiTxt) || 0) + 1);
       }
 
-      const feldIdxs = [];
-      let sonstigesDetail = 0;
-      let hatDetail = 0;
-      r.details.forEach((d) => {
-        if (!d) return;
-        hatDetail = 1;
-        if (d.feldcode) feldIdxs.push(feldIdxOf(d.feldcode));
-        else sonstigesDetail = 1;
-      });
+      if (r.betragCents != null) {
+        const cur = belegBetragCt[belegIdx];
+        if (cur === null || r.betragCents > cur) belegBetragCt[belegIdx] = r.betragCents;
+      }
+
+      // Grund-Sequenz (Abschnitt 2.2/2.4): geordnet U->X, null wo leer.
+      const grundSeq = r.detailTexte.map((t) => (t === null ? null : grundIdxOf(classifyGrund(t))));
+      const anzahlGruende = grundSeq.reduce((n, g) => n + (g === null ? 0 : 1), 0);
 
       let eingDatOffsetTage = null;
       if (r.eingDat) eingDatOffsetTage = dayDiff(stichtagDate, r.eingDat);
 
-      zeilen.push([belegIdx, dokArtIdx, hinweisIdx, hatDetail, feldIdxs, sonstigesDetail, eingDatOffsetTage]);
+      zeilen.push([belegIdx, dokArtIdx, hinweisIdx, anzahlGruende, grundSeq, eingDatOffsetTage]);
     });
 
     const hinweisText = hinweisTextCounts.map((m) => Array.from(m.entries()).sort((a, b) => b[1] - a[1]));
 
     return {
-      schemaVersion: 1,
+      schemaVersion: SCHEMA_VERSION,
       stichtag: meta.stichtag,
       quelle: {
         dateiname: meta.dateiname || null,
@@ -765,19 +937,20 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
         kategorie: kategorieList,
         hinweis: hinweisList,
         hinweisText,
-        feld: feldList,
+        grund: grundList,
       },
       belege: belegeList,
+      belegBetragCt,
       zeilen,
     };
   }
 
   function emptyFilter() {
-    return { dokArt: null, kategorien: new Set(), hinweise: new Set(), fehlendeFelder: new Set() };
+    return { dokArt: null, kategorien: new Set(), hinweise: new Set(), fehlendeFelder: new Set(), betragsklassen: new Set(), betragNullSeparat: false };
   }
 
   function rowMatchesFilter(snapshot, zeile, filter) {
-    const [, dokArtIdx, hinweisIdx, , feldIdxs] = zeile;
+    const [, dokArtIdx, hinweisIdx, , grundSeq] = zeile;
     if (filter.dokArt !== null) {
       const code = snapshot.dict.dokArt[dokArtIdx].code;
       if (code !== filter.dokArt) return false;
@@ -789,32 +962,44 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     }
     if (filter.hinweise.size > 0 && !filter.hinweise.has(hinweisIdx)) return false;
     if (filter.fehlendeFelder.size > 0) {
-      const hit = feldIdxs.some((f) => filter.fehlendeFelder.has(f));
+      const hit = grundSeq.some((g) => g !== null && filter.fehlendeFelder.has(g));
       if (!hit) return false;
     }
     return true;
   }
+  function belegMatchesBetragFilter(snapshot, belegIdx, filter) {
+    if (filter.betragsklassen.size === 0) return true;
+    const cents = snapshot.belegBetragCt ? snapshot.belegBetragCt[belegIdx] : null;
+    const klasse = betragsklasseVon(cents, filter.betragNullSeparat);
+    return klasse !== null && filter.betragsklassen.has(klasse);
+  }
 
-  /* Kernaggregation. Liefert alle Kennzahlen aus Abschnitt 4/7.3/7.4, strikt auf Belegebene
-     (distinct DOK_NR), berechnet zur Laufzeit aus snapshot.zeilen + filter — nichts vorberechnet. */
+  /* Kernaggregation. Liefert alle Kennzahlen aus v1 Abschnitt 4/7.3/7.4 sowie v2 Abschnitt 2/3/4/5,
+     strikt auf Belegebene (distinct DOK_NR), berechnet zur Laufzeit aus snapshot.zeilen + filter. */
   function aggregate(snapshot, filter) {
     filter = filter || emptyFilter();
+    const hasGrund = !!(snapshot.dict && snapshot.dict.grund);
     const matchedZeilen = [];
     const zeilenJeKategorie = {};
     const belegDokArt = new Map(); // belegIdx -> Set(dokArtIdx) für "Betrachtete Dok.-Arten"
     const belegHatDetail = new Map(); // belegIdx -> boolean (irgendeine gematchte Zeile hat Detail)
     const belegKategorien = new Map(); // belegIdx -> Set(katCode)
-    const belegFelder = new Map(); // belegIdx -> Set(feldIdx) (für Regel 4.5, nur gematchte Zeilen)
+    const belegGrunde = new Map(); // belegIdx -> Set(grundIdx), nur typ "feld" (für v1 "fehlende Angaben")
     const belegSonstiges = new Map(); // belegIdx -> boolean
     const belegHinweise = new Map(); // belegIdx -> Set(hinweisIdx)
     const belegZeilenCount = new Map(); // belegIdx -> Anzahl gematchter Zeilen (roh, für "Belege mit genau n Hinweisen")
     const hinweisBelege = new Map(); // hinweisIdx -> Set(belegIdx)
     const hinweisBelegeKonkret = new Map(); // hinweisIdx -> Set(belegIdx) mit Detail
+    // Regel 2.3: je (belegIdx,hinweisIdx) die Zeile mit der höchsten anzahlGruende merken
+    // (bei Gleichstand die erste in Dateireihenfolge).
+    const bestZeileJeBelegHinweis = new Map(); // key "beleg|hinweis" -> zeile
 
     snapshot.zeilen.forEach((zeile) => {
       if (!rowMatchesFilter(snapshot, zeile, filter)) return;
+      const [belegIdx] = zeile;
+      if (!belegMatchesBetragFilter(snapshot, belegIdx, filter)) return;
       matchedZeilen.push(zeile);
-      const [belegIdx, dokArtIdx, hinweisIdx, hatDetail, feldIdxs, sonstigesDetail] = zeile;
+      const [, dokArtIdx, hinweisIdx, anzahlGruende, grundSeq] = zeile;
       const katIdx = snapshot.dict.hinweis[hinweisIdx].kat;
       const katCode = snapshot.dict.kategorie[katIdx];
       zeilenJeKategorie[katCode] = (zeilenJeKategorie[katCode] || 0) + 1;
@@ -822,8 +1007,8 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       if (!belegDokArt.has(belegIdx)) belegDokArt.set(belegIdx, new Set());
       belegDokArt.get(belegIdx).add(dokArtIdx);
 
+      const hatDetail = anzahlGruende > 0;
       if (hatDetail) belegHatDetail.set(belegIdx, true);
-      if (sonstigesDetail) belegSonstiges.set(belegIdx, true);
 
       if (!belegKategorien.has(belegIdx)) belegKategorien.set(belegIdx, new Set());
       belegKategorien.get(belegIdx).add(katCode);
@@ -832,8 +1017,13 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       belegHinweise.get(belegIdx).add(hinweisIdx);
       belegZeilenCount.set(belegIdx, (belegZeilenCount.get(belegIdx) || 0) + 1);
 
-      if (!belegFelder.has(belegIdx)) belegFelder.set(belegIdx, new Set());
-      feldIdxs.forEach((f) => belegFelder.get(belegIdx).add(f));
+      if (!belegGrunde.has(belegIdx)) belegGrunde.set(belegIdx, new Set());
+      grundSeq.forEach((g) => {
+        if (g === null) return;
+        const grund = snapshot.dict.grund[g];
+        if (grund.typ === "feld") belegGrunde.get(belegIdx).add(g);
+        else belegSonstiges.set(belegIdx, true);
+      });
 
       if (!hinweisBelege.has(hinweisIdx)) hinweisBelege.set(hinweisIdx, new Set());
       hinweisBelege.get(hinweisIdx).add(belegIdx);
@@ -841,6 +1031,10 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
         if (!hinweisBelegeKonkret.has(hinweisIdx)) hinweisBelegeKonkret.set(hinweisIdx, new Set());
         hinweisBelegeKonkret.get(hinweisIdx).add(belegIdx);
       }
+
+      const key = belegIdx + "|" + hinweisIdx;
+      const cur = bestZeileJeBelegHinweis.get(key);
+      if (!cur || anzahlGruende > cur[3]) bestZeileJeBelegHinweis.set(key, zeile);
     });
 
     const belegIdxs = Array.from(belegDokArt.keys());
@@ -870,21 +1064,20 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       hinweiseProBeleg.set(n, (hinweiseProBeleg.get(n) || 0) + 1);
     });
 
-    /* Fehlende Angaben: Belegzahl je Feldcode + Sammelzeile "sonstige" (Regel 4.5). */
-    const feldBelege = new Map(); // feldIdx -> Set(belegIdx)
-    belegFelder.forEach((set, belegIdx) => {
-      set.forEach((feldIdx) => {
-        if (!feldBelege.has(feldIdx)) feldBelege.set(feldIdx, new Set());
-        feldBelege.get(feldIdx).add(belegIdx);
+    /* Fehlende Angaben: Belegzahl je Feldcode (typ "feld") + Sammelzeile "sonstige" (v1 Regel 4.5). */
+    const feldBelege = new Map(); // grundIdx -> Set(belegIdx)
+    belegGrunde.forEach((set, belegIdx) => {
+      set.forEach((grundIdx) => {
+        if (!feldBelege.has(grundIdx)) feldBelege.set(grundIdx, new Set());
+        feldBelege.get(grundIdx).add(belegIdx);
       });
     });
     const sonstigeBelege = new Set(Array.from(belegSonstiges.keys()));
     const fehlendeAngaben = Array.from(feldBelege.entries())
-      .map(([feldIdx, set]) => ({
-        feldIdx, code: snapshot.dict.feld[feldIdx],
-        label: FELD_LABEL[snapshot.dict.feld[feldIdx]] || snapshot.dict.feld[feldIdx],
-        belege: set.size,
-      }))
+      .map(([grundIdx, set]) => {
+        const g = snapshot.dict.grund[grundIdx];
+        return { feldIdx: grundIdx, code: g.key.replace(/^F:/, ""), label: g.label, belege: set.size };
+      })
       .sort((a, b) => b.belege - a.belege);
 
     function top2HinweisCodes(belegSubset) {
@@ -900,7 +1093,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
         .map(([hIdx]) => snapshot.dict.hinweis[hIdx].code);
     }
 
-    /* Servicehinweis-Tabelle: je Kategorie x Code eine Zeile (Abschnitt 7.4). */
+    /* Servicehinweis-Tabelle: je Kategorie x Code eine Zeile (v1 Abschnitt 7.4). */
     const servicehinweise = Array.from(hinweisBelege.entries()).map(([hinweisIdx, belegSet]) => {
       const h = snapshot.dict.hinweis[hinweisIdx];
       const katCode = snapshot.dict.kategorie[h.kat];
@@ -914,6 +1107,59 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
         davonKonkret: hinweisBelegeKonkret.has(hinweisIdx) ? hinweisBelegeKonkret.get(hinweisIdx).size : 0,
       };
     }).sort((a, b) => b.belege - a.belege);
+
+    /* v2 Abschnitt 2.3/3: Verteilung nach Anzahl Hellwerdegründe je Hinweis (oder "alle" gemeinsam,
+       dann zählt ein Beleg je Hinweis separat — "Beleg-Servicehinweis-Paare"). */
+    function verteilungAnzahlGruende(hinweisIdxFilter) {
+      const buckets = { 1: 0, 2: 0, 3: 0, 4: 0 };
+      bestZeileJeBelegHinweis.forEach((zeile, key) => {
+        const hinweisIdx = Number(key.split("|")[1]);
+        if (hinweisIdxFilter != null && hinweisIdx !== hinweisIdxFilter) return;
+        const anzahl = zeile[3];
+        if (anzahl >= 1 && anzahl <= 4) buckets[anzahl]++;
+      });
+      return buckets;
+    }
+
+    /* v2 Abschnitt 4: Grund-Kombinationen je Anzahl-Block ("Nur Grund-Kombination", Tarif ausgelassen). */
+    function grundKombinationen(hinweisIdxFilter) {
+      const blocks = { 1: new Map(), 2: new Map(), 3: new Map(), 4: new Map() };
+      bestZeileJeBelegHinweis.forEach((zeile, key) => {
+        const hinweisIdx = Number(key.split("|")[1]);
+        if (hinweisIdxFilter != null && hinweisIdx !== hinweisIdxFilter) return;
+        const anzahl = zeile[3];
+        if (anzahl < 1 || anzahl > 4) return;
+        const grundSeq = zeile[4];
+        const seqKeys = grundSeq.filter((g) => g !== null).map((g) => snapshot.dict.grund[g].key);
+        const comboKey = seqKeys.join(">");
+        const map = blocks[anzahl];
+        if (!map.has(comboKey)) map.set(comboKey, { labels: seqKeys.map((k) => snapshot.dict.grund[grundIdxByKey(snapshot, k)].label), keys: seqKeys, belege: 0 });
+        map.get(comboKey).belege++;
+      });
+      const out = {};
+      [1, 2, 3, 4].forEach((n) => {
+        out[n] = Array.from(blocks[n].values()).sort((a, b) => b.belege - a.belege || a.keys.join().localeCompare(b.keys.join()));
+      });
+      return out;
+    }
+    function grundIdxByKey(snap, key) {
+      return snap.dict.grund.findIndex((g) => g.key === key);
+    }
+
+    /* v2 Abschnitt 5: Belege je Betragsklasse (im aktuellen Zeilenfilter, VOR dem Betragsfilter
+       selbst — Grundlage für die Chip-Zahlen, die beim Auswählen nicht verschwinden sollen). */
+    function betragsklassenVerteilung(nullSeparat) {
+      const labels = nullSeparat ? ["0 € / kein Betrag"].concat(BETRAG_KLASSEN.map((k) => k.label)) : BETRAG_KLASSEN.map((k) => k.label);
+      const counts = {}; labels.forEach((l) => { counts[l] = 0; });
+      let nullCount = 0;
+      belegIdxs.forEach((b) => {
+        const cents = snapshot.belegBetragCt ? snapshot.belegBetragCt[b] : null;
+        if (cents === 0) nullCount++;
+        const klasse = betragsklasseVon(cents, nullSeparat);
+        if (klasse !== null) counts[klasse] = (counts[klasse] || 0) + 1;
+      });
+      return { counts, nullCount };
+    }
 
     return {
       betrachteteBelege,
@@ -930,14 +1176,19 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       fehlendeAngaben,
       sonstigeDetailBelege: sonstigeBelege.size,
       servicehinweise,
+      verteilungAnzahlGruende,
+      grundKombinationen,
+      betragsklassenVerteilung,
+      hasV2Daten: hasGrund && !!snapshot.belegBetragCt,
     };
   }
 
   return {
-    REQUIRED_HEADERS, KATEGORIE_ORDER, KATEGORIE_LABEL, FELD_LABEL, SONSTIGE_FELD_KEY,
+    SCHEMA_VERSION, REQUIRED_HEADERS, KATEGORIE_ORDER, KATEGORIE_LABEL, FELD_LABEL,
+    GRUND_REGELN, BETRAG_KLASSEN, classifyGrund, betragsklasseVon, parseBetragCents,
     trimOrNull, normalizeWhitespace, parseFlexibleDate, isoDateOnly, dayDiff,
-    parseDetailText, validateHeader, detectStichtag, detectStichtagFromFilename,
-    normalizeRows, buildSnapshot, emptyFilter, rowMatchesFilter, aggregate,
+    validateHeader, detectStichtag, detectStichtagFromFilename,
+    normalizeRows, buildSnapshot, emptyFilter, rowMatchesFilter, belegMatchesBetragFilter, aggregate,
   };
 });
 
@@ -1057,6 +1308,9 @@ const state = {
   filter: Core.emptyFilter(),
   activeTab: "uebersicht",
   shSearch: "", shGrouped: true, shSort: { key: "belege", dir: "desc" },
+  hwgSelectedHinweis: null, // null = "Alle Servicehinweise"
+  hwgExplicit: false, // true, sobald Nutzer/Sprung eine Auswahl getroffen hat (auch explizit "Alle")
+  hwgTopN: 4, hwgSearch: "",
 };
 
 function snapshotByStichtag(stichtag) { return state.snapshots.find((s) => s.stichtag === stichtag) || null; }
@@ -1229,7 +1483,23 @@ function rebuildFilterUI() {
   katBox.innerHTML = chipHtml("alle", "Alle Kategorien", null, state.filter.kategorien.size === 0)
     + katOrder.filter((k) => agg.jeKategorie[k] != null).map((k) => chipHtml(k, Core.KATEGORIE_LABEL[k] || k, agg.jeKategorie[k], state.filter.kategorien.has(k))).join("");
 
+  renderBetragFilterUI(agg);
   renderServicehinweisFilterList(snap, agg);
+}
+function betragLabelsFor(nullSeparat) {
+  const base = Core.BETRAG_KLASSEN.map((k) => k.label);
+  return nullSeparat ? ["0 € / kein Betrag"].concat(base) : base;
+}
+function renderBetragFilterUI(agg) {
+  const box = $("#filter-betrag");
+  if (!box) return;
+  const nullSeparat = state.filter.betragNullSeparat;
+  const dist = agg.betragsklassenVerteilung(nullSeparat);
+  const labels = betragLabelsFor(nullSeparat);
+  box.innerHTML = chipHtml("alle", "Alle Beträge", null, state.filter.betragsklassen.size === 0)
+    + labels.map((l) => chipHtml(l, l, dist.counts[l], state.filter.betragsklassen.has(l))).join("");
+  const cb = $("#filter-betrag-null-separat");
+  if (cb) cb.checked = nullSeparat;
 }
 function chipHtml(value, label, count, pressed) {
   return '<button type="button" class="chip" data-value="' + esc(value) + '" aria-pressed="' + (pressed ? "true" : "false") + '">'
@@ -1272,10 +1542,36 @@ function activeFilterPills() {
     pills.push({ label: "Hinweis: " + h.code, clear: () => state.filter.hinweise.delete(hIdx) });
   });
   state.filter.fehlendeFelder.forEach((fIdx) => {
-    const code = snap.dict.feld[fIdx];
-    pills.push({ label: "Fehlendes Feld: " + (Core.FELD_LABEL[code] || code), clear: () => state.filter.fehlendeFelder.delete(fIdx) });
+    const g = snap.dict.grund[fIdx];
+    pills.push({ label: "Fehlendes Feld: " + (g ? g.label : fIdx), clear: () => state.filter.fehlendeFelder.delete(fIdx) });
   });
+  const betragLabel = betragPillLabel();
+  if (betragLabel) pills.push({ label: "Betrag: " + betragLabel, clear: () => state.filter.betragsklassen.clear() });
   return pills;
+}
+function fmtEuroBreak(n) { return n.toLocaleString("de-DE") + " €"; }
+function betragPillLabel() {
+  const fb = state.filter.betragsklassen;
+  if (fb.size === 0) return null;
+  const breakpoints = [50, 100, 200, 500, 1000];
+  const nullSel = fb.has("0 € / kein Betrag");
+  const normalSelected = Core.BETRAG_KLASSEN.filter((k) => fb.has(k.label));
+  let text = null;
+  if (normalSelected.length) {
+    const idxs = normalSelected.map((k) => Core.BETRAG_KLASSEN.indexOf(k)).sort((a, b) => a - b);
+    const contiguous = idxs.every((v, i) => i === 0 || v === idxs[i - 1] + 1);
+    if (contiguous && idxs.length > 1) {
+      const i = idxs[0], j = idxs[idxs.length - 1];
+      if (i === 0 && j === Core.BETRAG_KLASSEN.length - 1) text = "Alle Beträge";
+      else if (i === 0) text = "< " + fmtEuroBreak(breakpoints[j]);
+      else if (j === Core.BETRAG_KLASSEN.length - 1) text = "> " + fmtEuroBreak(breakpoints[i - 1]);
+      else text = fmtEuroBreak(breakpoints[i - 1]).replace(" €", "") + " – " + fmtEuroBreak(breakpoints[j]);
+    } else {
+      text = normalSelected.map((k) => k.label).join(", ");
+    }
+  }
+  if (nullSel) text = text ? "0 € / kein Betrag, " + text : "0 € / kein Betrag";
+  return text;
 }
 function renderPills() {
   const pills = activeFilterPills();
@@ -1351,6 +1647,7 @@ function renderUebersicht(snap, agg) {
   });
 
   renderKategorieCharts(agg);
+  renderBetragsklasseChart(agg);
 }
 function renderUebersichtFullFieldList(snap, agg) {
   const rows = agg.fehlendeAngaben.map((f) => fieldRowHtml(f).join(""));
@@ -1405,6 +1702,31 @@ function renderKategorieCharts(agg) {
   $("#chart-kategorie-stack-bars").innerHTML = bars;
 }
 
+function renderBetragsklasseChart(agg) {
+  const box = $("#chart-betragsklasse");
+  if (!box) return;
+  const nullSeparat = state.filter.betragNullSeparat;
+  const dist = agg.betragsklassenVerteilung(nullSeparat);
+  const labels = betragLabelsFor(nullSeparat);
+  const total = Math.max(1, ...labels.map((l) => dist.counts[l] || 0));
+  box.innerHTML = labels.map((l) => {
+    const v = dist.counts[l] || 0;
+    const pct = Math.round((v / total) * 100);
+    const active = state.filter.betragsklassen.has(l);
+    return '<div class="bar-row clickable" data-betragsklasse="' + esc(l) + '" style="cursor:pointer;' + (active ? "font-weight:700;" : "") + '">'
+      + '<div class="bar-label">' + esc(l) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + (active ? "var(--dkv-green)" : "var(--dkv-teal)") + ';"></div></div>'
+      + '<div class="bar-num mono">' + fmtInt(v) + "</div></div>";
+  }).join("");
+  $all("[data-betragsklasse]", box).forEach((el) => {
+    el.addEventListener("click", () => {
+      const l = el.dataset.betragsklasse;
+      if (state.filter.betragsklassen.has(l)) state.filter.betragsklassen.delete(l);
+      else { state.filter.betragsklassen.clear(); state.filter.betragsklassen.add(l); }
+      rebuildFilterUI(); renderAll();
+    });
+  });
+}
+
 /* ---------- Render: Servicehinweise ---------- */
 function renderServicehinweise(snap, agg) {
   let rows = agg.servicehinweise.slice();
@@ -1421,17 +1743,47 @@ function renderServicehinweise(snap, agg) {
     return list.map((h) => {
       const varianten = h.varianten || [];
       const varText = varianten.length > 1 ? " <span class=\"ov-sub\">+ " + (varianten.length - 1) + " Varianten</span>" : "";
-      return '<tr class="ov-row-clickable" data-toggle-variants="' + h.hinweisIdx + '" data-hinweis-filter="' + h.hinweisIdx + '">'
-        + '<td><span class="kat-badge ' + h.kategorie.toLowerCase() + '">' + esc(h.kategorie) + "</span></td>"
-        + '<td><span class="code-badge">' + esc(h.code) + "</span></td>"
+      return '<tr class="ov-row-clickable sh-row" data-toggle-variants="' + h.hinweisIdx + '">'
+        + '<td><button type="button" class="sh-row-expand-btn" aria-expanded="false" aria-label="Details ein-/ausblenden"><span class="chev">&#9656;</span></button> '
+        + '<span class="kat-badge ' + h.kategorie.toLowerCase() + '">' + esc(h.kategorie) + "</span></td>"
+        + '<td><span class="code-badge">' + esc(h.code) + '</span> <button type="button" class="sh-filter-icon-btn" data-hinweis-filter="' + h.hinweisIdx + '" title="Nach ' + esc(h.code) + ' filtern" aria-label="Nach ' + esc(h.code) + ' filtern">Filter</button></td>'
         + "<td>" + esc(h.bezeichnung || "—") + varText + "</td>"
         + '<td class="num mono">' + fmtInt(h.belege) + "</td>"
         + '<td class="num"><div class="bar-track" style="display:inline-flex;width:70px;vertical-align:middle;"><div class="bar-fill" style="width:' + Math.round(h.anteil * 100) + '%;background:var(--dkv-green);"></div></div> ' + fmtPct(h.anteil) + "</td>"
         + '<td class="num mono">' + fmtInt(h.davonKonkret) + "</td></tr>"
-        + '<tr class="varianten-row" hidden data-variants-for="' + h.hinweisIdx + '"><td colspan="6">'
-        + (varianten.map((v) => '<div class="variante-item"><span>' + esc(v[0]) + '</span><span class="mono">' + fmtInt(v[1]) + "</span></div>").join("") || "Keine Textvarianten erfasst.")
+        + '<tr class="sh-detail-row" hidden data-variants-for="' + h.hinweisIdx + '"><td colspan="6">'
+        + detailPanelHtml(h)
         + "</td></tr>";
     }).join("");
+  }
+
+  function detailPanelHtml(h) {
+    if (!h.davonKonkret) {
+      return '<p class="sh-ohne-konkret">Kein Beleg zu diesem Servicehinweis hat einen konkreten Hellwerdegrund (keine erkannte Detailangabe in DET_TXT_1–4).</p>';
+    }
+    const v = agg.verteilungAnzahlGruende(h.hinweisIdx);
+    const summe = v[1] + v[2] + v[3] + v[4];
+    const bucketRow = (n) => {
+      const cnt = v[n] || 0;
+      const pct = summe ? cnt / summe : 0;
+      return '<div class="verteilung-row clickable" data-hwg-jump="' + h.hinweisIdx + '" data-hwg-anzahl="' + n + '" title="Zu den Kombinationsdetails springen">'
+        + "<div>Genau " + n + "</div>"
+        + '<div class="verteilung-bar-track"><div class="verteilung-bar-fill" style="width:' + Math.round(pct * 100) + '%;"></div></div>'
+        + '<div class="verteilung-val">' + fmtInt(cnt) + " (" + fmtPct(pct) + ")</div></div>";
+    };
+    const sumRow = '<div class="verteilung-row sum-row">'
+      + "<div>Summe</div><div class=\"verteilung-bar-track\"><div class=\"verteilung-bar-fill\" style=\"width:100%;\"></div></div>"
+      + '<div class="verteilung-val">' + fmtInt(summe) + "</div></div>";
+    const varianten = h.varianten || [];
+    const variantenHtml = varianten.length
+      ? varianten.map((vv) => '<div class="variante-item"><span>' + esc(vv[0]) + '</span><span class="mono">' + fmtInt(vv[1]) + "</span></div>").join("")
+      : '<p class="hint">Keine Textvarianten erfasst.</p>';
+    return '<div class="verteilung-block">'
+      + '<div class="sidebar-section-head" style="margin-bottom:8px;">Verteilung nach Anzahl Hellwerdegründe</div>'
+      + [1, 2, 3, 4].map(bucketRow).join("") + sumRow
+      + "</div>"
+      + '<div class="sidebar-section-head" style="margin:10px 0 6px;">Textvarianten der Freitext-Bewertung</div>'
+      + variantenHtml;
   }
 
   let bodyHtml;
@@ -1451,24 +1803,154 @@ function renderServicehinweise(snap, agg) {
 
   $all("#sh-body tr[data-toggle-variants]").forEach((tr) => {
     tr.addEventListener("click", (ev) => {
-      if (ev.target.closest("[data-hinweis-filter]") && ev.detail === 2) return;
+      if (ev.target.closest(".sh-filter-icon-btn") || ev.target.closest("[data-hwg-jump]")) return;
       const idx = tr.dataset.toggleVariants;
       const vrow = $('tr[data-variants-for="' + idx + '"]');
-      if (vrow) vrow.hidden = !vrow.hidden;
+      const btn = tr.querySelector(".sh-row-expand-btn");
+      if (vrow) {
+        vrow.hidden = !vrow.hidden;
+        if (btn) btn.setAttribute("aria-expanded", String(!vrow.hidden));
+      }
     });
   });
-  $all("#sh-body [data-hinweis-filter]").forEach((el) => {
-    // Klick auf den Code setzt den Servicehinweis-Filter (Doppelklick, um nicht mit dem Aufklappen zu kollidieren)
-  });
-  $all("#sh-body .code-badge").forEach((el) => {
-    el.addEventListener("click", (ev) => {
+  $all("#sh-body .sh-filter-icon-btn").forEach((btn) => {
+    btn.addEventListener("click", (ev) => {
       ev.stopPropagation();
-      const tr = el.closest("tr[data-toggle-variants]");
-      const hIdx = Number(tr.dataset.toggleVariants);
+      const hIdx = Number(btn.dataset.hinweisFilter);
       state.filter.hinweise.clear(); state.filter.hinweise.add(hIdx);
       rebuildFilterUI(); renderAll();
     });
   });
+  $all("#sh-body [data-hwg-jump]").forEach((el) => {
+    el.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      jumpToHellwerdegruende(Number(el.dataset.hwgJump), Number(el.dataset.hwgAnzahl));
+    });
+  });
+}
+
+/* ---------- Sprung zu Tab "Konkrete Hellwerdegründe" ---------- */
+function jumpToHellwerdegruende(hinweisIdx, anzahl) {
+  state.hwgSelectedHinweis = hinweisIdx;
+  state.hwgExplicit = true;
+  state.hwgSelectedAnzahl = anzahl;
+  state.activeTab = "hellwerdegruende";
+  renderAll();
+}
+
+/* ---------- Render: Konkrete Hellwerdegründe (v2 Tab D, Tarif ausgelassen) ---------- */
+const GRUND_PALETTE = ["--grund-1", "--grund-2", "--grund-3", "--grund-4", "--grund-5", "--grund-6", "--grund-7", "--grund-8", "--grund-9", "--grund-10"];
+function grundEntryByKey(snap, key) { return snap.dict.grund.find((g) => g.key === key) || null; }
+function renderHellwerdegruende(snap, agg) {
+  // --- Servicehinweis-Auswahl: nur Hinweise mit >=1 konkretem Beleg, sortiert nach Belegzahl ---
+  const kandidaten = agg.servicehinweise.filter((h) => h.davonKonkret > 0).slice().sort((a, b) => b.davonKonkret - a.davonKonkret);
+
+  // One-way-Sync: ist in der Sidebar genau EIN Servicehinweis gefiltert, folgt die Auswahl hier.
+  if (state.filter.hinweise.size === 1) { state.hwgSelectedHinweis = Array.from(state.filter.hinweise)[0]; state.hwgExplicit = true; }
+  else if (!state.hwgExplicit && kandidaten.length) { state.hwgSelectedHinweis = kandidaten[0].hinweisIdx; }
+  if (state.hwgSelectedHinweis != null && !kandidaten.some((h) => h.hinweisIdx === state.hwgSelectedHinweis)) {
+    state.hwgSelectedHinweis = kandidaten.length ? kandidaten[0].hinweisIdx : null;
+    state.hwgExplicit = false;
+  }
+
+  const search = state.hwgSearch.trim().toLowerCase();
+  const selectBox = $("#hwg-select-hinweis");
+  const optionsHtml = ['<option value="">Alle Servicehinweise (' + fmtInt(kandidaten.reduce((a, h) => a + h.davonKonkret, 0)) + " Belege)</option>"]
+    .concat(kandidaten.filter((h) => h.hinweisIdx === state.hwgSelectedHinweis || !search || h.code.toLowerCase().includes(search) || (h.bezeichnung || "").toLowerCase().includes(search))
+      .map((h) => '<option value="' + h.hinweisIdx + '">' + esc(h.kategorie) + " · " + esc(h.code) + " — " + fmtInt(h.davonKonkret) + " Beleg(e)</option>"));
+  selectBox.innerHTML = optionsHtml.join("");
+  selectBox.value = state.hwgSelectedHinweis == null ? "" : String(state.hwgSelectedHinweis);
+
+  if (!kandidaten.length) {
+    $("#hwg-hint").textContent = "Für die aktuelle Filterauswahl liegen keine Belege mit konkretem Hellwerdegrund vor.";
+    $("#hwg-kpi-row").innerHTML = "";
+    $("#hwg-legend").innerHTML = "";
+    $("#hwg-table").innerHTML = "";
+    return;
+  }
+  $("#hwg-hint").textContent = "Reihenfolge der Detailtextspalten (U\u2192X) zählt — eine andere Reihenfolge ergibt eine andere Kombination. Tarifkombination derzeit nicht ausgewertet.";
+
+  const hinweisFilter = state.hwgSelectedHinweis;
+  const v = agg.verteilungAnzahlGruende(hinweisFilter);
+  const vSum = v[1] + v[2] + v[3] + v[4];
+  $("#hwg-kpi-row").innerHTML = [1, 2, 3, 4].map((n) => {
+    const cnt = v[n] || 0;
+    const pct = vSum ? cnt / vSum : 0;
+    return kpiTileHtml("Genau " + n + " Hellwerdegrund" + (n === 1 ? "" : "e"), fmtInt(cnt), fmtPct(pct));
+  }).join("");
+
+  // --- Top-N ---
+  const topN = state.hwgTopN === "alle" ? Infinity : Number(state.hwgTopN);
+
+  const kombi = agg.grundKombinationen(hinweisFilter);
+  const colorMap = new Map();
+  [1, 2, 3, 4].forEach((n) => kombi[n].forEach((c) => c.keys.forEach((k) => {
+    if (!colorMap.has(k)) colorMap.set(k, "var(" + GRUND_PALETTE[colorMap.size % GRUND_PALETTE.length] + ")");
+  })));
+
+  function grundCellHtml(key) {
+    const g = grundEntryByKey(snap, key);
+    const label = g ? g.label : key;
+    const typ = g ? g.typ : "feld";
+    const title = typ === "feld" ? label + " — Pflichtfeld " + key.replace(/^F:/, "") : label + " — sonstiger Freitext";
+    return '<span class="grund-cell' + (typ === "sonstig" ? " typ-sonstig" : "") + '" style="background:' + colorMap.get(key) + ';" title="' + esc(title) + '">' + esc(label) + "</span>";
+  }
+  function grauCellHtml() { return '<span class="grund-cell grau">—</span>'; }
+
+  const blockRowsHtml = [1, 2, 3, 4].map((n) => {
+    const list = kombi[n];
+    const blockTotal = list.reduce((a, c) => a + c.belege, 0);
+    const shown = topN === Infinity ? list : list.slice(0, topN);
+    const head = '<tr class="kombi-block-head"><td colspan="6">Genau ' + n + " Hellwerdegrund" + (n === 1 ? "" : "e") + " — " + fmtInt(blockTotal) + " Belege gesamt"
+      + (list.length > shown.length ? " (Top " + shown.length + " von " + fmtInt(list.length) + " Kombinationen gezeigt)" : "") + "</td></tr>";
+    if (!shown.length) return head + '<tr><td colspan="6" class="ov-caption">Keine Kombinationen in diesem Block.</td></tr>';
+    const rows = shown.map((c) => {
+      const cells = [0, 1, 2, 3].map((i) => (i < c.keys.length ? grundCellHtml(c.keys[i]) : grauCellHtml()));
+      const pct = blockTotal ? c.belege / blockTotal : 0;
+      return "<tr><td>" + cells.join("</td><td>") + '</td><td class="num mono">' + fmtInt(c.belege) + '</td><td class="num">' + fmtPct(pct) + "</td></tr>";
+    }).join("");
+    return head + rows;
+  }).join("");
+  $("#hwg-table").innerHTML = '<thead><tr><th>Grund 1</th><th>Grund 2</th><th>Grund 3</th><th>Grund 4</th><th class="num">Belege</th><th class="num">Anteil im Block</th></tr></thead><tbody>' + blockRowsHtml + "</tbody>";
+
+  $("#hwg-legend").innerHTML = Array.from(colorMap.entries()).map(([key, color]) => {
+    const g = grundEntryByKey(snap, key);
+    return '<span class="grund-legend-item"><span class="grund-legend-swatch" style="background:' + color + ';"></span>' + esc(g ? g.label : key) + "</span>";
+  }).join("");
+
+  // --- Verlauf-Modus: gestapeltes Balkendiagramm statt Kombinationstabelle ---
+  const isVerlauf = state.zeitscheibeModus === "verlauf";
+  $("#hwg-stichtag-content").hidden = isVerlauf;
+  $("#hwg-verlauf-content").hidden = !isVerlauf;
+  if (isVerlauf) renderHwgVerlaufChart();
+
+  if (state.hwgSelectedAnzahl) {
+    const head = $all("#hwg-table .kombi-block-head")[state.hwgSelectedAnzahl - 1];
+    if (head) head.scrollIntoView({ block: "center", behavior: "smooth" });
+    state.hwgSelectedAnzahl = null;
+  }
+}
+function renderHwgVerlaufChart() {
+  const start = $("#zs-select-verlauf-start").value, end = $("#zs-select-verlauf-end").value;
+  const inRange = state.snapshots.filter((s) => (!start || s.stichtag >= start) && (!end || s.stichtag <= end));
+  if (inRange.length < 2) { $("#hwg-chart-verlauf").innerHTML = '<p class="hint">Mindestens 2 Stichtage im gewählten Zeitraum benötigt.</p>'; return; }
+  const points = inRange.map((s) => {
+    const a = Core.aggregate(s, state.filter);
+    const v = a.verteilungAnzahlGruende(state.hwgSelectedHinweis);
+    return { stichtag: s.stichtag, v, sum: v[1] + v[2] + v[3] + v[4] };
+  });
+  const maxSum = Math.max(1, ...points.map((p) => p.sum));
+  const colors = ["var(--grund-1)", "var(--grund-2)", "var(--grund-3)", "var(--grund-4)"];
+  $("#hwg-chart-verlauf").innerHTML = '<div class="grund-legend">'
+    + [1, 2, 3, 4].map((n) => '<span class="grund-legend-item"><span class="grund-legend-swatch" style="background:' + colors[n - 1] + ';"></span>Genau ' + n + "</span>").join("")
+    + "</div>"
+    + points.map((p) => {
+      const segs = [1, 2, 3, 4].map((n) => {
+        const w = maxSum ? (p.v[n] / maxSum) * 100 : 0;
+        return '<div class="bar-fill" style="width:' + w + "%;background:" + colors[n - 1] + ';" title="Genau ' + n + ": " + fmtInt(p.v[n]) + '"></div>';
+      }).join("");
+      return '<div class="bar-row"><div class="bar-label">' + fmtDateDe(p.stichtag) + '</div><div class="bar-track" style="display:flex;">' + segs + '</div><div class="bar-num mono">' + fmtInt(p.sum) + "</div></div>";
+    }).join("");
 }
 
 /* ---------- Render: Verlauf ---------- */
@@ -1547,11 +2029,14 @@ function renderAll() {
   $("#tab-uebersicht").hidden = state.activeTab !== "uebersicht";
   $("#tab-servicehinweise").hidden = state.activeTab !== "servicehinweise";
   $("#tab-verlauf").hidden = state.activeTab !== "verlauf";
-  $("#kpi-row").hidden = state.activeTab === "verlauf";
+  const tabHwg = $("#tab-hellwerdegruende");
+  if (tabHwg) tabHwg.hidden = state.activeTab !== "hellwerdegruende";
+  $("#kpi-row").hidden = state.activeTab === "verlauf" || state.activeTab === "hellwerdegruende";
 
   if (state.activeTab === "uebersicht") renderUebersicht(snap, agg);
   else if (state.activeTab === "servicehinweise") renderServicehinweise(snap, agg);
   else if (state.activeTab === "verlauf") renderVerlauf();
+  else if (state.activeTab === "hellwerdegruende" && typeof renderHellwerdegruende === "function") renderHellwerdegruende(snap, agg);
 }
 
 /* ---------- Snapshot-Verwaltung ---------- */
@@ -1607,6 +2092,28 @@ function exportCsv() {
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "servicehinweise_" + (state.activeStichtag || "export") + ".csv";
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---------- CSV-Export (Konkrete Hellwerdegründe) ---------- */
+function exportHwgCsv() {
+  const snap = activeSnapshot();
+  const agg = Core.aggregate(snap, state.filter);
+  const kombi = agg.grundKombinationen(state.hwgSelectedHinweis);
+  const header = ["Anzahl Hellwerdegründe", "Grund 1", "Grund 2", "Grund 3", "Grund 4", "Belege"];
+  const lines = [header.join(";")];
+  [1, 2, 3, 4].forEach((n) => {
+    kombi[n].forEach((c) => {
+      const labels = [0, 1, 2, 3].map((i) => c.keys[i] != null ? (grundEntryByKey(snap, c.keys[i]) || {}).label || c.keys[i] : "");
+      const vals = [n].concat(labels).concat([c.belege]);
+      lines.push(vals.map((v) => '"' + String(v).replace(/"/g, '""') + '"').join(";"));
+    });
+  });
+  const csv = "﻿" + lines.join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "konkrete_hellwerdegruende_" + (state.activeStichtag || "export") + ".csv";
   document.body.appendChild(a); a.click(); a.remove();
 }
 
@@ -1672,6 +2179,19 @@ function wireEvents() {
     else { if (state.filter.kategorien.has(btn.dataset.value)) state.filter.kategorien.delete(btn.dataset.value); else state.filter.kategorien.add(btn.dataset.value); }
     rebuildFilterUI(); renderAll();
   });
+  $("#filter-betrag").addEventListener("click", (e) => {
+    const btn = e.target.closest(".chip"); if (!btn) return;
+    if (btn.dataset.value === "alle") state.filter.betragsklassen.clear();
+    else {
+      if (state.filter.betragsklassen.has(btn.dataset.value)) state.filter.betragsklassen.delete(btn.dataset.value);
+      else state.filter.betragsklassen.add(btn.dataset.value);
+    }
+    rebuildFilterUI(); renderAll();
+  });
+  $("#filter-betrag-null-separat").addEventListener("change", (e) => {
+    state.filter.betragNullSeparat = e.target.checked;
+    rebuildFilterUI(); renderAll();
+  });
   $("#filter-sh-search").addEventListener("input", (e) => { state.shSearch = e.target.value; rebuildFilterUI(); });
   $("#filter-sh-list").addEventListener("change", (e) => {
     const cb = e.target.closest("input[type=checkbox]"); if (!cb) return;
@@ -1688,6 +2208,15 @@ function wireEvents() {
     renderAll();
   });
   $("#btn-sh-csv").addEventListener("click", exportCsv);
+
+  $("#hwg-select-hinweis").addEventListener("change", (e) => {
+    state.hwgSelectedHinweis = e.target.value === "" ? null : Number(e.target.value);
+    state.hwgExplicit = true;
+    renderAll();
+  });
+  $("#hwg-search").addEventListener("input", (e) => { state.hwgSearch = e.target.value; renderAll(); });
+  $("#hwg-select-topn").addEventListener("change", (e) => { state.hwgTopN = e.target.value === "alle" ? "alle" : Number(e.target.value); renderAll(); });
+  $("#btn-hwg-csv").addEventListener("click", exportHwgCsv);
   $all("th.sortable").forEach((th) => th.addEventListener("click", () => {
     const key = th.dataset.sort;
     if (state.shSort.key === key) state.shSort.dir = state.shSort.dir === "asc" ? "desc" : "asc";
