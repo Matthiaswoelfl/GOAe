@@ -63,6 +63,8 @@ a{color:var(--dkv-green);}
 .app-wordmark b{color:var(--dkv-green); font-size:22px; font-weight:800; letter-spacing:.2px;}
 .app-wordmark span{color:var(--ink-soft); font-size:12px;}
 .app-header-mid{flex:1; padding:0 24px;}
+.header-actions{display:flex; align-items:center; gap:10px;}
+.sync-hint{font-size:12px; color:var(--ink-soft); white-space:nowrap;}
 .app-title{font-size:17px; font-weight:700;}
 .app-subtitle{font-size:13px; color:var(--ink-soft);}
 .btn{
@@ -343,7 +345,11 @@ svg.linechart .line-teilw{stroke:var(--kat-teilw); stroke-width:2; fill:none;}
     <div class="app-title">Servicehinweis-Monitor</div>
     <div class="app-subtitle" id="header-subtitle">KLTB0570 · RE-ambulant · kein Abzug geladen</div>
   </div>
-  <button type="button" class="btn" id="btn-upload-header">Excel hochladen</button>
+  <div class="header-actions">
+    <span class="sync-hint" id="sync-status-text" hidden></span>
+    <button type="button" class="btn btn-ghost btn-sm" data-sync-btn hidden>Ordner verbinden…</button>
+    <button type="button" class="btn" id="btn-upload-header">Excel hochladen</button>
+  </div>
   <input type="file" id="file-input" accept=".xlsx" hidden>
 </header>
 <div class="disclaimer">Interne Auswertung · enthält aggregierte Bestandsdaten der KLTB0570 · nur für den Dienstgebrauch</div>
@@ -415,12 +421,15 @@ svg.linechart .line-teilw{stroke:var(--kat-teilw); stroke-width:2; fill:none;}
         <p><b>Datei hierher ziehen</b> oder</p>
         <button type="button" class="btn" id="btn-upload-empty">Excel hochladen</button>
       </div>
+      <p class="hint" style="margin-top:14px;">oder, falls der SharePoint-Ordner lokal synchronisiert ist:</p>
+      <button type="button" class="btn btn-ghost btn-sm" data-sync-btn hidden>Ordner verbinden…</button>
     </div>
 
     <div id="app-content" hidden>
       <div class="dropzone-compact" id="dropzone-compact">
         <span>Neuen Abzug per Drag &amp; Drop hinzufügen, oder</span>
         <button type="button" class="btn btn-ghost btn-sm" id="btn-upload-compact">Excel hochladen</button>
+        <button type="button" class="btn btn-ghost btn-sm" data-sync-btn hidden>Ordner synchronisieren</button>
       </div>
 
       <div class="tabs" role="tablist">
@@ -1202,6 +1211,8 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
    ============================================================ */
 const DB_NAME = "ServicehinweisMonitor";
 const DB_STORE = "snapshots";
+const SETTINGS_STORE = "settings";
+const DB_VERSION = 2;
 const Core = window.ShMonitorCore;
 
 function $(sel, root) { return (root || document).querySelector(sel); }
@@ -1216,13 +1227,32 @@ function fmtDateDe(iso) { if (!iso) return "—"; const [y, m, d] = iso.split("-
 /* ---------- IndexedDB ---------- */
 function idbOpen() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
       const db = req.result;
       if (!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE, { keyPath: "stichtag" });
+      if (!db.objectStoreNames.contains(SETTINGS_STORE)) db.createObjectStore(SETTINGS_STORE, { keyPath: "key" });
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
+  });
+}
+async function idbGetSetting(key) {
+  const db = await idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SETTINGS_STORE, "readonly");
+    const req = tx.objectStore(SETTINGS_STORE).get(key);
+    req.onsuccess = () => resolve(req.result ? req.result.value : null);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function idbSetSetting(key, value) {
+  const db = await idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SETTINGS_STORE, "readwrite");
+    tx.objectStore(SETTINGS_STORE).put({ key, value });
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
   });
 }
 async function idbPutSnapshot(snapshot) {
@@ -1311,6 +1341,8 @@ const state = {
   hwgSelectedHinweis: null, // null = "Alle Servicehinweise"
   hwgExplicit: false, // true, sobald Nutzer/Sprung eine Auswahl getroffen hat (auch explizit "Alle")
   hwgTopN: 4, hwgSearch: "",
+  syncDirHandle: null, // FileSystemDirectoryHandle eines verbundenen lokalen (OneDrive-)Ordners
+  syncLastRun: null,
 };
 
 function snapshotByStichtag(stichtag) { return state.snapshots.find((s) => s.stichtag === stichtag) || null; }
@@ -1407,6 +1439,119 @@ function showToast(msg) {
   t.textContent = msg; t.hidden = false;
   clearTimeout(showToast._t);
   showToast._t = setTimeout(() => { t.hidden = true; }, 4200);
+}
+
+/* ---------- Ordner-Synchronisierung (lokal synchronisierter SharePoint-/OneDrive-Ordner) ---------- */
+function parseFileToSnapshot(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const worker = buildParseWorker();
+      worker.onmessage = (ev) => {
+        const msg = ev.data;
+        if (msg.type === "done") { worker.terminate(); resolve({ snapshot: msg.snapshot, warnungen: msg.warnungen }); }
+        else if (msg.type === "error") { worker.terminate(); reject(new Error(msg.message)); }
+      };
+      worker.onerror = (err) => reject(new Error("Worker-Fehler: " + (err.message || "unbekannt")));
+      worker.postMessage({ dateiname: file.name, buffer: reader.result }, [reader.result]);
+    };
+    reader.onerror = () => reject(new Error("Datei konnte nicht gelesen werden: " + file.name));
+    reader.readAsArrayBuffer(file);
+  });
+}
+async function ensureReadPermission(handle) {
+  const opts = { mode: "read" };
+  try {
+    if ((await handle.queryPermission(opts)) === "granted") return true;
+    if ((await handle.requestPermission(opts)) === "granted") return true;
+  } catch (e) { /* Handle evtl. ungültig/veraltet */ }
+  return false;
+}
+async function pickSyncFolder() {
+  if (!window.showDirectoryPicker) {
+    showError("Diese Funktion wird von deinem Browser nicht unterstützt (nur in Chrome/Edge verfügbar).");
+    return;
+  }
+  let handle;
+  try {
+    handle = await window.showDirectoryPicker({ id: "servicehinweis-ordner", mode: "read" });
+  } catch (e) {
+    return; // Auswahl abgebrochen
+  }
+  state.syncDirHandle = handle;
+  idbSetSetting("syncDirHandle", handle).catch(() => {});
+  updateSyncButtonUI();
+  await syncFromFolder(handle);
+}
+async function syncFromFolder(handle) {
+  const ok = await ensureReadPermission(handle);
+  if (!ok) { showToast("Zugriff auf den Ordner wurde nicht erlaubt."); return; }
+
+  const fileHandles = [];
+  try {
+    for await (const [name, entryHandle] of handle.entries()) {
+      if (entryHandle.kind !== "file") continue;
+      if (!/\.xlsx$/i.test(name) || name.startsWith("~$")) continue;
+      fileHandles.push(entryHandle);
+    }
+  } catch (e) {
+    showToast("Ordner konnte nicht gelesen werden (evtl. verschoben oder gelöscht).");
+    return;
+  }
+  if (!fileHandles.length) { showToast("Keine Excel-Dateien im verbundenen Ordner gefunden."); return; }
+
+  openProgressModal();
+  let imported = 0, skipped = 0, failed = 0;
+  const neueStichtage = [];
+  for (let i = 0; i < fileHandles.length; i++) {
+    setProgress(Math.round((i / fileHandles.length) * 100), "Ordner-Synchronisierung: Datei " + (i + 1) + " von " + fileHandles.length + "…");
+    try {
+      const file = await fileHandles[i].getFile();
+      const { snapshot } = await parseFileToSnapshot(file);
+      if (snapshotByStichtag(snapshot.stichtag)) { skipped++; continue; }
+      await idbPutSnapshot(snapshot);
+      state.snapshots.push(snapshot);
+      neueStichtage.push(snapshot.stichtag);
+      imported++;
+    } catch (err) {
+      failed++;
+    }
+  }
+  closeProgressModal();
+
+  state.snapshots.sort((a, b) => a.stichtag.localeCompare(b.stichtag));
+  if (imported > 0) {
+    state.activeStichtag = state.snapshots[state.snapshots.length - 1].stichtag;
+    state.zeitscheibeModus = "stichtag";
+  }
+  rebuildSidebarOptions();
+  updateZeitscheibeHint();
+  if (state.snapshots.length) { showAppContent(); rebuildFilterUI(); renderAll(); }
+
+  state.syncLastRun = new Date();
+  updateSyncButtonUI();
+
+  const parts = [];
+  if (imported) parts.push(imported + (imported === 1 ? " neuer Stichtag" : " neue Stichtage") + " hinzugefügt" + (neueStichtage.length ? " (" + neueStichtage.map(fmtDateDe).join(", ") + ")" : ""));
+  if (skipped) parts.push(skipped + " bereits vorhanden, übersprungen");
+  if (failed) parts.push(failed + " Datei(en) fehlerhaft übersprungen");
+  showToast(parts.length ? "Ordner synchronisiert: " + parts.join(" · ") : "Ordner synchronisiert: keine Änderungen.");
+}
+function updateSyncButtonUI() {
+  const supported = !!window.showDirectoryPicker;
+  const has = !!state.syncDirHandle;
+  const label = has ? "Ordner synchronisieren" : "Ordner verbinden…";
+  $all("[data-sync-btn]").forEach((btn) => {
+    btn.hidden = !supported;
+    btn.textContent = label;
+  });
+  const statusEl = $("#sync-status-text");
+  if (!statusEl) return;
+  if (!supported || !has) { statusEl.hidden = true; return; }
+  statusEl.hidden = false;
+  let txt = "Ordner verbunden" + (state.syncDirHandle.name ? " (" + state.syncDirHandle.name + ")" : "");
+  if (state.syncLastRun) txt += " · zuletzt synchronisiert " + state.syncLastRun.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  statusEl.textContent = txt;
 }
 
 /* ---------- Sidebar: Optionen aus den Snapshots ableiten ---------- */
@@ -2128,6 +2273,10 @@ function wireEvents() {
   $("#btn-upload-compact").addEventListener("click", () => $("#file-input").click());
   $("#file-input").addEventListener("change", (e) => { if (e.target.files[0]) handleFile(e.target.files[0]); e.target.value = ""; });
 
+  $all("[data-sync-btn]").forEach((btn) => {
+    btn.addEventListener("click", () => { if (state.syncDirHandle) syncFromFolder(state.syncDirHandle); else pickSyncFolder(); });
+  });
+
   [$("#dropzone-big"), $("#dropzone-compact")].forEach((zone) => {
     zone.addEventListener("dragover", (e) => { e.preventDefault(); zone.classList.add("drag-over"); });
     zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
@@ -2232,8 +2381,21 @@ async function init() {
   wireEvents();
   state.snapshots = await idbGetAllSnapshots();
   state.snapshots.sort((a, b) => a.stichtag.localeCompare(b.stichtag));
+
+  if (window.showDirectoryPicker) {
+    const storedHandle = await idbGetSetting("syncDirHandle").catch(() => null);
+    if (storedHandle) {
+      state.syncDirHandle = storedHandle;
+      try {
+        if ((await storedHandle.queryPermission({ mode: "read" })) === "granted") {
+          await syncFromFolder(storedHandle);
+        }
+      } catch (e) { /* Ordner evtl. verschoben/gelöscht — Button bleibt sichtbar, Nutzer kann neu verbinden */ }
+    }
+  }
+
   if (state.snapshots.length) {
-    state.activeStichtag = state.snapshots[state.snapshots.length - 1].stichtag;
+    if (!state.activeStichtag) state.activeStichtag = state.snapshots[state.snapshots.length - 1].stichtag;
     rebuildSidebarOptions();
     updateZeitscheibeHint();
     showAppContent();
@@ -2242,6 +2404,7 @@ async function init() {
   } else {
     showEmptyState();
   }
+  updateSyncButtonUI();
 }
 init();
 

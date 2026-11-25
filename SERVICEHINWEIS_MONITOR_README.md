@@ -19,6 +19,38 @@ Seite. Über „Abzüge verwalten…" in der Sidebar lassen sich alle gespeicher
 einsehen, löschen sowie als JSON exportieren/importieren (z. B. um den Verlauf mit
 Kolleg:innen zu teilen, ohne die Excel-Dateien weiterzugeben).
 
+## Alternative: Ordner-Synchronisierung statt manuellem Hochladen
+
+Statt jede Excel-Datei einzeln hochzuladen, kann der Button **„Ordner verbinden…"** (oben
+rechts, sowie im Leerzustand und in der Kompakt-Leiste) einen lokalen Ordner verbinden und
+darin automatisch nach neuen `.xlsx`-Dateien suchen. Das ist gedacht für den Fall, dass die
+SharePoint-/Teams-Ablage (z. B. „Servicehinweise" unter „DTA KLE/KLS") über den
+OneDrive-Sync-Client lokal gespiegelt wird.
+
+**Voraussetzungen:**
+- **Chrome oder Edge** (nutzt die File System Access API; in Firefox/Safari ist der Button
+  ausgeblendet, das manuelle Hochladen funktioniert dort unverändert).
+- Der SharePoint-Ordner muss **über den OneDrive-Sync-Client lokal synchronisiert** sein
+  (im SharePoint-/Teams-„Dateien"-Bereich auf „Synchronisieren" klicken), sodass er als
+  normaler Ordner im Windows-Explorer erscheint (typischerweise unter
+  `C:\Users\<Name>\OneDrive - ERGO Group AG\…`).
+
+**Ablauf:** Beim ersten Klick auf „Ordner verbinden…" öffnet sich die native
+Ordnerauswahl des Betriebssystems — dort den synchronisierten Ordner auswählen. Danach liest
+das Dashboard automatisch **alle** `.xlsx`-Dateien im Ordner ein: neue Stichtage werden
+importiert, bereits vorhandene Stichtage automatisch übersprungen (kein versehentliches
+Überschreiben). Eine Zusammenfassung erscheint als Hinweis unten rechts. Ab dem zweiten Mal
+genügt ein Klick auf „Ordner synchronisieren" — die Verbindung wird gemerkt (die Datei selbst
+verlässt dabei weiterhin nie den Browser).
+
+**Wichtig — pro Person einzurichten:** Diese Verbindung ist nicht an eine bestimmte Person
+gebunden, funktioniert aber auch nicht automatisch für alle. Jede Person, die das Dashboard
+nutzt, braucht Zugriff auf die SharePoint-Bibliothek, muss den Ordner selbst einmalig über
+OneDrive synchronisieren und beim ersten Öffnen des Dashboards einmal selbst auf „Ordner
+verbinden…" klicken (Browser-Berechtigungen für Ordnerzugriff sind pro Person/Browser-Profil
+und lassen sich nicht zentral vorab erteilen). Jede Person sieht dabei ihren eigenen lokalen
+Sync-Pfad — das Dashboard braucht dafür keinen festen Pfad.
+
 ## Datenschutz
 
 - Die Excel-Datei selbst wird **nicht gespeichert** — nur die für die Auswertung nötigen,
@@ -75,7 +107,8 @@ CSV-Export), Ansicht „Verlauf" (Zeitreihe über mehrere Stichtage, inkl. gesta
 Balkendiagramm der Grund-Anzahl je Stichtag), vollständige Sidebar-Filterung (Zeitscheibe,
 Dok.-Art, Kategorie, Servicehinweis, Drilldown auf fehlende Felder, Rechnungsbetrag mit
 optional separat ausgewiesenen 0-€-Belegen), mehrtägige Snapshot-Verwaltung mit
-Export/Import.
+Export/Import, optionale Ordner-Synchronisierung für automatischen Mehrfach-Import aus einem
+lokal gespiegelten SharePoint-/OneDrive-Ordner (Chrome/Edge, siehe eigener Abschnitt oben).
 
 Bewusst **nicht** enthalten (siehe Build Plan v1 + v2): Tarif-Auswertung (`TA_KOMB_EB1`,
 weder als eigene Analyse noch als Gruppierungsdimension der Grund-Kombinationen) und
