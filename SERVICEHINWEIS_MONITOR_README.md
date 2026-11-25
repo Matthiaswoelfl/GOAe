@@ -103,6 +103,9 @@ Diagramm), Ansicht „Servicehinweise" (vollständige Tabelle mit Such-/Sortier-
 funktion, aufklappbarem Detailpanel je Servicehinweis mit Verteilung nach Anzahl
 Hellwerdegründe, CSV-Export), Ansicht „Konkrete Hellwerdegründe" (Grund-Kombinationen je
 Servicehinweis, gruppiert nach Anzahl der Gründe 1–4, mit Top-N-Auswahl, Farblegende und
+CSV-Export), Ansicht „Verteilung je Dok.-Art" (Kreuztabelle: Anzahl heller Belege je
+Dok.-Art × Anzahl konkreter Hellwerdegründe 1–4, optional auf einen Servicehinweis
+eingeschränkt — die Servicehinweis-Auswahl ist mit „Konkrete Hellwerdegründe" synchron,
 CSV-Export), Ansicht „Verlauf" (Zeitreihe über mehrere Stichtage, inkl. gestapeltem
 Balkendiagramm der Grund-Anzahl je Stichtag), vollständige Sidebar-Filterung (Zeitscheibe,
 Dok.-Art, Kategorie, Servicehinweis, Drilldown auf fehlende Felder, Rechnungsbetrag mit

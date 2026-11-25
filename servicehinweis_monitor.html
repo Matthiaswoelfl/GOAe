@@ -436,6 +436,7 @@ svg.linechart .line-teilw{stroke:var(--kat-teilw); stroke-width:2; fill:none;}
         <button type="button" class="tab-btn" role="tab" data-tab="uebersicht" aria-selected="true">Übersicht</button>
         <button type="button" class="tab-btn" role="tab" data-tab="servicehinweise">Servicehinweise</button>
         <button type="button" class="tab-btn" role="tab" data-tab="hellwerdegruende">Konkrete Hellwerdegründe</button>
+        <button type="button" class="tab-btn" role="tab" data-tab="dokart-verteilung">Verteilung je Dok.-Art</button>
         <button type="button" class="tab-btn" role="tab" data-tab="verlauf">Verlauf</button>
       </div>
 
@@ -531,6 +532,28 @@ svg.linechart .line-teilw{stroke:var(--kat-teilw); stroke-width:2; fill:none;}
             <h3>Belege nach Anzahl Hellwerdegründe je Stichtag</h3>
             <div id="hwg-chart-verlauf"></div>
           </div>
+        </div>
+      </section>
+
+      <section id="tab-dokart-verteilung" hidden>
+        <div class="sh-toolbar">
+          <input type="search" id="dav-search" placeholder="Servicehinweis suchen…" style="max-width:220px;">
+          <select id="dav-select-hinweis" class="date-field" style="width:auto; max-width:360px; margin-top:0;"></select>
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-dav-csv" style="margin-left:auto;">CSV exportieren</button>
+        </div>
+        <p class="hint" id="dav-hint" style="margin-bottom:14px;"></p>
+        <div class="table-wrap">
+          <table class="ov-table" id="dav-table">
+            <thead><tr>
+              <th>Dok.-Art</th>
+              <th class="num">Genau 1 Hellwerdegrund</th>
+              <th class="num">Genau 2 Hellwerdegründe</th>
+              <th class="num">Genau 3 Hellwerdegründe</th>
+              <th class="num">Genau 4 Hellwerdegründe</th>
+              <th class="num">Gesamt</th>
+            </tr></thead>
+            <tbody id="dav-body"></tbody>
+          </table>
         </div>
       </section>
 
@@ -1155,6 +1178,27 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       return snap.dict.grund.findIndex((g) => g.key === key);
     }
 
+    /* v3: Verteilung nach Anzahl Hellwerdegründe je Dok.-Art (optional auf einen Servicehinweis
+       eingeschränkt) — gleiche Zählweise wie verteilungAnzahlGruende (Beleg-Servicehinweis-Paare
+       bei "alle"), nur zusätzlich nach Dok.-Art gruppiert statt in einem Gesamt-Bucket. */
+    function verteilungAnzahlGruendeJeDokArt(hinweisIdxFilter) {
+      const perDokArt = new Map(); // dokArtIdx -> {1,2,3,4}
+      bestZeileJeBelegHinweis.forEach((zeile, key) => {
+        const hinweisIdx = Number(key.split("|")[1]);
+        if (hinweisIdxFilter != null && hinweisIdx !== hinweisIdxFilter) return;
+        const dokArtIdx = zeile[1];
+        const anzahl = zeile[3];
+        if (anzahl < 1 || anzahl > 4) return;
+        if (!perDokArt.has(dokArtIdx)) perDokArt.set(dokArtIdx, { 1: 0, 2: 0, 3: 0, 4: 0 });
+        perDokArt.get(dokArtIdx)[anzahl]++;
+      });
+      return Array.from(perDokArt.entries()).map(([dokArtIdx, buckets]) => {
+        const d = snapshot.dict.dokArt[dokArtIdx];
+        const gesamt = buckets[1] + buckets[2] + buckets[3] + buckets[4];
+        return { dokArtIdx, code: d.code, name: d.name, buckets, gesamt };
+      }).sort((a, b) => b.gesamt - a.gesamt);
+    }
+
     /* v2 Abschnitt 5: Belege je Betragsklasse (im aktuellen Zeilenfilter, VOR dem Betragsfilter
        selbst — Grundlage für die Chip-Zahlen, die beim Auswählen nicht verschwinden sollen). */
     function betragsklassenVerteilung(nullSeparat) {
@@ -1186,6 +1230,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       sonstigeDetailBelege: sonstigeBelege.size,
       servicehinweise,
       verteilungAnzahlGruende,
+      verteilungAnzahlGruendeJeDokArt,
       grundKombinationen,
       betragsklassenVerteilung,
       hasV2Daten: hasGrund && !!snapshot.belegBetragCt,
@@ -1341,6 +1386,7 @@ const state = {
   hwgSelectedHinweis: null, // null = "Alle Servicehinweise"
   hwgExplicit: false, // true, sobald Nutzer/Sprung eine Auswahl getroffen hat (auch explizit "Alle")
   hwgTopN: 4, hwgSearch: "",
+  davSearch: "",
   syncDirHandle: null, // FileSystemDirectoryHandle eines verbundenen lokalen (OneDrive-)Ordners
   syncLastRun: null,
 };
@@ -1986,10 +2032,10 @@ function jumpToHellwerdegruende(hinweisIdx, anzahl) {
 /* ---------- Render: Konkrete Hellwerdegründe (v2 Tab D, Tarif ausgelassen) ---------- */
 const GRUND_PALETTE = ["--grund-1", "--grund-2", "--grund-3", "--grund-4", "--grund-5", "--grund-6", "--grund-7", "--grund-8", "--grund-9", "--grund-10"];
 function grundEntryByKey(snap, key) { return snap.dict.grund.find((g) => g.key === key) || null; }
-function renderHellwerdegruende(snap, agg) {
-  // --- Servicehinweis-Auswahl: nur Hinweise mit >=1 konkretem Beleg, sortiert nach Belegzahl ---
+/* Gemeinsame Servicehinweis-Auswahl für die Tabs "Konkrete Hellwerdegründe" und
+   "Verteilung je Dok.-Art" — beide drillen in denselben aktiven Servicehinweis. */
+function resolveHwgSelection(agg) {
   const kandidaten = agg.servicehinweise.filter((h) => h.davonKonkret > 0).slice().sort((a, b) => b.davonKonkret - a.davonKonkret);
-
   // One-way-Sync: ist in der Sidebar genau EIN Servicehinweis gefiltert, folgt die Auswahl hier.
   if (state.filter.hinweise.size === 1) { state.hwgSelectedHinweis = Array.from(state.filter.hinweise)[0]; state.hwgExplicit = true; }
   else if (!state.hwgExplicit && kandidaten.length) { state.hwgSelectedHinweis = kandidaten[0].hinweisIdx; }
@@ -1997,13 +2043,20 @@ function renderHellwerdegruende(snap, agg) {
     state.hwgSelectedHinweis = kandidaten.length ? kandidaten[0].hinweisIdx : null;
     state.hwgExplicit = false;
   }
+  return kandidaten;
+}
+function hinweisSelectOptionsHtml(kandidaten, search, selectedHinweis) {
+  return ['<option value="">Alle Servicehinweise (' + fmtInt(kandidaten.reduce((a, h) => a + h.davonKonkret, 0)) + " Belege)</option>"]
+    .concat(kandidaten.filter((h) => h.hinweisIdx === selectedHinweis || !search || h.code.toLowerCase().includes(search) || (h.bezeichnung || "").toLowerCase().includes(search))
+      .map((h) => '<option value="' + h.hinweisIdx + '">' + esc(h.kategorie) + " · " + esc(h.code) + " — " + fmtInt(h.davonKonkret) + " Beleg(e)</option>"))
+    .join("");
+}
+function renderHellwerdegruende(snap, agg) {
+  const kandidaten = resolveHwgSelection(agg);
 
   const search = state.hwgSearch.trim().toLowerCase();
   const selectBox = $("#hwg-select-hinweis");
-  const optionsHtml = ['<option value="">Alle Servicehinweise (' + fmtInt(kandidaten.reduce((a, h) => a + h.davonKonkret, 0)) + " Belege)</option>"]
-    .concat(kandidaten.filter((h) => h.hinweisIdx === state.hwgSelectedHinweis || !search || h.code.toLowerCase().includes(search) || (h.bezeichnung || "").toLowerCase().includes(search))
-      .map((h) => '<option value="' + h.hinweisIdx + '">' + esc(h.kategorie) + " · " + esc(h.code) + " — " + fmtInt(h.davonKonkret) + " Beleg(e)</option>"));
-  selectBox.innerHTML = optionsHtml.join("");
+  selectBox.innerHTML = hinweisSelectOptionsHtml(kandidaten, search, state.hwgSelectedHinweis);
   selectBox.value = state.hwgSelectedHinweis == null ? "" : String(state.hwgSelectedHinweis);
 
   if (!kandidaten.length) {
@@ -2098,6 +2151,58 @@ function renderHwgVerlaufChart() {
     }).join("");
 }
 
+/* ---------- Render: Verteilung je Dok.-Art ---------- */
+function renderDokArtVerteilung(snap, agg) {
+  const kandidaten = resolveHwgSelection(agg);
+  const search = state.davSearch.trim().toLowerCase();
+  const selectBox = $("#dav-select-hinweis");
+  selectBox.innerHTML = hinweisSelectOptionsHtml(kandidaten, search, state.hwgSelectedHinweis);
+  selectBox.value = state.hwgSelectedHinweis == null ? "" : String(state.hwgSelectedHinweis);
+
+  if (!kandidaten.length) {
+    $("#dav-hint").textContent = "Für die aktuelle Filterauswahl liegen keine Belege mit konkretem Hellwerdegrund vor.";
+    $("#dav-body").innerHTML = "";
+    return;
+  }
+  $("#dav-hint").textContent = "Anzahl heller Belege je Dok.-Art, gruppiert nach Anzahl konkreter Hellwerdegründe"
+    + (state.hwgSelectedHinweis != null ? " (eingeschränkt auf den gewählten Servicehinweis)." : " (über alle Servicehinweise; ein Beleg mit mehreren Servicehinweisen zählt je Hinweis einmal).");
+
+  const rows = agg.verteilungAnzahlGruendeJeDokArt(state.hwgSelectedHinweis);
+  if (!rows.length) {
+    $("#dav-body").innerHTML = '<tr><td colspan="6" class="ov-caption">Keine Daten für diese Auswahl.</td></tr>';
+    return;
+  }
+  const totals = { 1: 0, 2: 0, 3: 0, 4: 0, gesamt: 0 };
+  const bodyHtml = rows.map((r) => {
+    [1, 2, 3, 4].forEach((n) => { totals[n] += r.buckets[n]; });
+    totals.gesamt += r.gesamt;
+    return "<tr><td>" + esc(r.name) + " (" + esc(r.code) + ")</td>"
+      + [1, 2, 3, 4].map((n) => '<td class="num mono">' + fmtInt(r.buckets[n]) + "</td>").join("")
+      + '<td class="num mono"><b>' + fmtInt(r.gesamt) + "</b></td></tr>";
+  }).join("");
+  const totalRow = '<tr class="ov-section"><td>Gesamt</td>'
+    + [1, 2, 3, 4].map((n) => '<td class="num mono">' + fmtInt(totals[n]) + "</td>").join("")
+    + '<td class="num mono">' + fmtInt(totals.gesamt) + "</td></tr>";
+  $("#dav-body").innerHTML = bodyHtml + totalRow;
+}
+function exportDavCsv() {
+  const snap = activeSnapshot();
+  const agg = Core.aggregate(snap, state.filter);
+  const rows = agg.verteilungAnzahlGruendeJeDokArt(state.hwgSelectedHinweis);
+  const header = ["Dok.-Art", "Code", "Genau 1", "Genau 2", "Genau 3", "Genau 4", "Gesamt"];
+  const lines = [header.join(";")];
+  rows.forEach((r) => {
+    const vals = [r.name, r.code, r.buckets[1], r.buckets[2], r.buckets[3], r.buckets[4], r.gesamt];
+    lines.push(vals.map((v) => '"' + String(v).replace(/"/g, '""') + '"').join(";"));
+  });
+  const csv = "﻿" + lines.join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "verteilung_je_dokart_" + (state.activeStichtag || "export") + ".csv";
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
 /* ---------- Render: Verlauf ---------- */
 function renderVerlauf() {
   const start = $("#zs-select-verlauf-start").value, end = $("#zs-select-verlauf-end").value;
@@ -2176,12 +2281,15 @@ function renderAll() {
   $("#tab-verlauf").hidden = state.activeTab !== "verlauf";
   const tabHwg = $("#tab-hellwerdegruende");
   if (tabHwg) tabHwg.hidden = state.activeTab !== "hellwerdegruende";
-  $("#kpi-row").hidden = state.activeTab === "verlauf" || state.activeTab === "hellwerdegruende";
+  const tabDav = $("#tab-dokart-verteilung");
+  if (tabDav) tabDav.hidden = state.activeTab !== "dokart-verteilung";
+  $("#kpi-row").hidden = state.activeTab === "verlauf" || state.activeTab === "hellwerdegruende" || state.activeTab === "dokart-verteilung";
 
   if (state.activeTab === "uebersicht") renderUebersicht(snap, agg);
   else if (state.activeTab === "servicehinweise") renderServicehinweise(snap, agg);
   else if (state.activeTab === "verlauf") renderVerlauf();
   else if (state.activeTab === "hellwerdegruende" && typeof renderHellwerdegruende === "function") renderHellwerdegruende(snap, agg);
+  else if (state.activeTab === "dokart-verteilung" && typeof renderDokArtVerteilung === "function") renderDokArtVerteilung(snap, agg);
 }
 
 /* ---------- Snapshot-Verwaltung ---------- */
@@ -2366,6 +2474,14 @@ function wireEvents() {
   $("#hwg-search").addEventListener("input", (e) => { state.hwgSearch = e.target.value; renderAll(); });
   $("#hwg-select-topn").addEventListener("change", (e) => { state.hwgTopN = e.target.value === "alle" ? "alle" : Number(e.target.value); renderAll(); });
   $("#btn-hwg-csv").addEventListener("click", exportHwgCsv);
+
+  $("#dav-select-hinweis").addEventListener("change", (e) => {
+    state.hwgSelectedHinweis = e.target.value === "" ? null : Number(e.target.value);
+    state.hwgExplicit = true;
+    renderAll();
+  });
+  $("#dav-search").addEventListener("input", (e) => { state.davSearch = e.target.value; renderAll(); });
+  $("#btn-dav-csv").addEventListener("click", exportDavCsv);
   $all("th.sortable").forEach((th) => th.addEventListener("click", () => {
     const key = th.dataset.sort;
     if (state.shSort.key === key) state.shSort.dir = state.shSort.dir === "asc" ? "desc" : "asc";
