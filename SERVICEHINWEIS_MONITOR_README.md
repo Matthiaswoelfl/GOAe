@@ -23,25 +23,31 @@ Kolleg:innen zu teilen, ohne die Excel-Dateien weiterzugeben).
 
 Statt jede Excel-Datei einzeln hochzuladen, kann der Button **„Ordner verbinden…"** (oben
 rechts, sowie im Leerzustand und in der Kompakt-Leiste) einen lokalen Ordner verbinden und
-darin automatisch nach neuen `.xlsx`-Dateien suchen. Das ist gedacht für den Fall, dass die
-SharePoint-/Teams-Ablage (z. B. „Servicehinweise" unter „DTA KLE/KLS") über den
-OneDrive-Sync-Client lokal gespiegelt wird.
+darin automatisch nach `KLTB0570`-Excel-Dateien suchen. Das funktioniert mit **jedem**
+Ordner, der diese Dateien enthält — zum Beispiel:
+- demselben Ordner, in dem auch diese HTML-Datei selbst liegt (die einfachste Variante, wenn
+  HTML-Datei und tägliche KLTB0570-Exporte ohnehin zusammen abgelegt werden), oder
+- einer SharePoint-/Teams-Ablage (z. B. „Servicehinweise" unter „DTA KLE/KLS"), die über den
+  OneDrive-Sync-Client lokal gespiegelt wird.
 
 **Voraussetzungen:**
 - **Chrome oder Edge** (nutzt die File System Access API; in Firefox/Safari ist der Button
   ausgeblendet, das manuelle Hochladen funktioniert dort unverändert).
-- Der SharePoint-Ordner muss **über den OneDrive-Sync-Client lokal synchronisiert** sein
-  (im SharePoint-/Teams-„Dateien"-Bereich auf „Synchronisieren" klicken), sodass er als
-  normaler Ordner im Windows-Explorer erscheint (typischerweise unter
-  `C:\Users\<Name>\OneDrive - ERGO Group AG\…`).
+- Der Ordner muss als **normaler lokaler Ordner** existieren (im Windows-Explorer sichtbar) —
+  bei einer SharePoint-Ablage also vorher über „Synchronisieren" im Browser/Teams verbunden
+  (typischerweise unter `C:\Users\<Name>\OneDrive - ERGO Group AG\…`).
+- Aus Sicherheitsgründen kann keine Webseite automatisch „ihren eigenen Ordner" erkennen —
+  der einmalige Klick auf „Ordner verbinden…" mit Auswahl des Ordners lässt sich nicht
+  umgehen, auch wenn HTML- und Excel-Dateien zusammen liegen.
 
 **Ablauf:** Beim ersten Klick auf „Ordner verbinden…" öffnet sich die native
-Ordnerauswahl des Betriebssystems — dort den synchronisierten Ordner auswählen. Danach liest
-das Dashboard automatisch **alle** `.xlsx`-Dateien im Ordner ein: neue Stichtage werden
-importiert, bereits vorhandene Stichtage automatisch übersprungen (kein versehentliches
-Überschreiben). Eine Zusammenfassung erscheint als Hinweis unten rechts. Ab dem zweiten Mal
-genügt ein Klick auf „Ordner synchronisieren" — die Verbindung wird gemerkt (die Datei selbst
-verlässt dabei weiterhin nie den Browser).
+Ordnerauswahl des Betriebssystems — dort den Ordner mit den KLTB0570-Dateien auswählen.
+Danach liest das Dashboard automatisch **alle** Dateien ein, deren Name mit `KLTB0570`
+beginnt und auf `.xlsx` endet (andere Dateien im selben Ordner werden ignoriert): neue
+Stichtage werden importiert, bereits vorhandene Stichtage automatisch übersprungen (kein
+versehentliches Überschreiben). Eine Zusammenfassung erscheint als Hinweis unten rechts. Ab
+dem zweiten Mal genügt ein Klick auf „Ordner synchronisieren" — die Verbindung wird gemerkt
+(die Datei selbst verlässt dabei weiterhin nie den Browser).
 
 **Wichtig — pro Person einzurichten:** Diese Verbindung ist nicht an eine bestimmte Person
 gebunden, funktioniert aber auch nicht automatisch für alle. Jede Person, die das Dashboard

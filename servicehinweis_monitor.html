@@ -421,7 +421,7 @@ svg.linechart .line-teilw{stroke:var(--kat-teilw); stroke-width:2; fill:none;}
         <p><b>Datei hierher ziehen</b> oder</p>
         <button type="button" class="btn" id="btn-upload-empty">Excel hochladen</button>
       </div>
-      <p class="hint" style="margin-top:14px;">oder, falls der SharePoint-Ordner lokal synchronisiert ist:</p>
+      <p class="hint" style="margin-top:14px;">oder: Ordner mit den KLTB0570-Excel-Dateien verbinden (z. B. diesen Ordner, oder ein lokal synchronisierter SharePoint-Ordner):</p>
       <button type="button" class="btn btn-ghost btn-sm" data-sync-btn hidden>Ordner verbinden…</button>
     </div>
 
@@ -1537,14 +1537,14 @@ async function syncFromFolder(handle) {
   try {
     for await (const [name, entryHandle] of handle.entries()) {
       if (entryHandle.kind !== "file") continue;
-      if (!/\.xlsx$/i.test(name) || name.startsWith("~$")) continue;
+      if (name.startsWith("~$") || !/\.xlsx$/i.test(name) || !/^KLTB0570/i.test(name)) continue;
       fileHandles.push(entryHandle);
     }
   } catch (e) {
     showToast("Ordner konnte nicht gelesen werden (evtl. verschoben oder gelöscht).");
     return;
   }
-  if (!fileHandles.length) { showToast("Keine Excel-Dateien im verbundenen Ordner gefunden."); return; }
+  if (!fileHandles.length) { showToast("Keine KLTB0570-Excel-Dateien im verbundenen Ordner gefunden."); return; }
 
   openProgressModal();
   let imported = 0, skipped = 0, failed = 0;
