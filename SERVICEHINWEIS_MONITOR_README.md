@@ -57,6 +57,48 @@ verbinden…" klicken (Browser-Berechtigungen für Ordnerzugriff sind pro Person
 und lassen sich nicht zentral vorab erteilen). Jede Person sieht dabei ihren eigenen lokalen
 Sync-Pfad — das Dashboard braucht dafür keinen festen Pfad.
 
+## Management Summary (v3) und die Erkenntnis-Engine
+
+Der erste Reiter **„Management Summary"** ist die Startansicht. Er zeigt:
+- eine **Kennzahlenleiste** (Helle Belege, mit konkretem Grund, Ø Alter (Median), Δ Vortag),
+- **3–5 Kernaussagen**, automatisch ausgewählt und nach betroffener Belegzahl sortiert
+  (Kennzahl „Mengengerüst" steht immer an erster Stelle),
+- ein **einklappbares Akkordeon „Erkenntnisse je Dok.-Art"** (eine Karte je Dok.-Art, mit der
+  gleichen Übersichtstabelle wie im Reiter „Übersicht", gefiltert auf diese Dok.-Art, plus
+  bis zu 4 weiteren Erkenntnissen),
+- ein freies **Kommentarfeld** je Stichtag (manuell, wird im Snapshot gespeichert und bleibt
+  beim JSON-Export erhalten).
+
+**Oberste Regel:** Jede angezeigte Aussage ist aus den geladenen Daten berechnet. Es gibt
+keine frei formulierten oder LLM-generierten Texte und keine hart codierten Zahlen — nur
+feste Textvorlagen mit Platzhaltern, die ausschließlich aus einer Kennzahlen-Funktion befüllt
+werden. Lässt sich eine Vorlage nicht vollständig befüllen, wird sie nicht angezeigt (kein
+leerer oder kaputter Text).
+
+**Wie die Erkenntnisse entstehen** (im eingebetteten `core.js`-Block, Suche nach `REGELN`):
+- **`computeKennzahlen(snapshot, filter, dokArtCode)`** liefert alle Rohkennzahlen (Belege,
+  Anteile, Top-Codes, Feld-Cluster, Altersverteilung, …), wahlweise für den gesamten Bestand
+  oder eine einzelne Dok.-Art.
+- **`REGELN`** ist eine Liste fester Regeln (R01–R12: Mengengerüst, Kategorie-Mix,
+  Konzentration, Einzelhinweis-Hebel, LEA189-Struktur/-Potenzial, Feld-Cluster, ohne
+  konkreten Grund, Rechnungsbetrag 0 €, Alter, Vortagsvergleich, Fokus-Dok.-Arten). Jede
+  Regel hat eine Bedingung (wann sie greift), eine `werte()`-Funktion und feste
+  Text-Vorlagen für Schlagzeile und Befund. Neue Regeln werden hier als weiterer
+  Listeneintrag ergänzt — der Fachbereich kann die Texte direkt lesen und anpassen.
+- **`MIN_BASIS` (= 30)** unterdrückt eine Regel, wenn zu wenige Belege dahinterstehen;
+  zwischen 30 und 99 erscheint der Hinweis „geringe Fallzahl".
+- **`HEBEL_ZUORDNUNG`** ordnet einzelnen Servicehinweis-Codes ein Hebel-Label zu (aktuell nur
+  `LEA189` → „Datenqualität/Belegerfassung"); weitere Zuordnungen sind einfach ergänzbar.
+- Jede Erkenntnis hat ein ⓘ-Symbol (zeigt Regel-ID und Basiszahl beim Hovern) und einen Link
+  „Daten ansehen", der automatisch in den passenden Reiter springt und die dazu passenden
+  Filter setzt.
+
+**Bewusst nicht umgesetzt** (auf ausdrücklichen Wunsch, siehe Build Plan v3 Abschnitt 9):
+eine separate „Einordnung"-Schicht mit fachlich freizugebenden Schlussfolgerungs-Texten und
+Schwellenwerten, sowie Hochrechnungen aufs Jahr (z. B. „~63,2k Belege zusätzlich p.a.") — beide
+erfordern weitere fachliche Abstimmung und lassen sich bei Bedarf später als zusätzliche
+Regel-Eigenschaften ergänzen, ohne die bestehende Struktur zu ändern.
+
 ## Datenschutz
 
 - Die Excel-Datei selbst wird **nicht gespeichert** — nur die für die Auswertung nötigen,
@@ -79,9 +121,11 @@ Sync-Pfad — das Dashboard braucht dafür keinen festen Pfad.
 Stichtag, Dateiname/Importzeitpunkt/Zeilenzahl, je Beleg der höchste Rechnungsbetrag in
 Cent (`belegBetragCt`), sowie je Hinweis-Zeile: Beleg-Index (auf `DOK_NR` verweisend, die
 Nummer selbst nur als anonyme Zähleinheit), Dok.-Art, Servicehinweis (Kategorie × Code),
-die geordnete Folge erkannter Grund-Schlüssel je Detailtextspalte (U–X) und deren Anzahl.
-Siehe `ShMonitorCore.buildSnapshot()` im Quelltext für das
-genaue Schema.
+die geordnete Folge erkannter Grund-Schlüssel je Detailtextspalte (U–X), deren Anzahl sowie
+der Abstand des Eingangsdatums (`EING_DAT`) zum Stichtag in Tagen (für die Altersauswertung,
+v3). Optional ein frei eingegebener **Kommentartext des Fachbereichs** je Stichtag
+(`kommentar`, nur wenn über das Kommentarfeld der Management Summary explizit gespeichert).
+Siehe `ShMonitorCore.buildSnapshot()` im Quelltext für das genaue Schema.
 
 ## Konfiguration
 
@@ -102,31 +146,44 @@ Alles Fachliche steht zentral im eingebetteten `core.js`-Block der HTML-Datei:
   Grund-Kombinationen) stehen im `:root{}`-Block im `<style>`-Teil ganz oben in der
   HTML-Datei — dort gegen offizielle Werte aus dem DKV-Brandportal tauschbar.
 
-## Umfang dieser Version (v2)
+## Umfang dieser Version (v3)
 
-Enthalten: Ansicht „Übersicht" (Kennzahlen + Tabelle + Diagramme, inkl. Betragsklassen-
-Diagramm), Ansicht „Servicehinweise" (vollständige Tabelle mit Such-/Sortier-/Gruppier-
-funktion, aufklappbarem Detailpanel je Servicehinweis mit Verteilung nach Anzahl
-Hellwerdegründe, CSV-Export), Ansicht „Konkrete Hellwerdegründe" (Grund-Kombinationen je
-Servicehinweis, gruppiert nach Anzahl der Gründe 1–4, mit Top-N-Auswahl, Farblegende und
-CSV-Export), Ansicht „Verteilung je Dok.-Art" (Kreuztabelle: Anzahl heller Belege je
-Dok.-Art × Anzahl konkreter Hellwerdegründe 1–4, optional auf einen Servicehinweis
-eingeschränkt — die Servicehinweis-Auswahl ist mit „Konkrete Hellwerdegründe" synchron,
-CSV-Export), Ansicht „Verlauf" (Zeitreihe über mehrere Stichtage, inkl. gestapeltem
-Balkendiagramm der Grund-Anzahl je Stichtag), vollständige Sidebar-Filterung (Zeitscheibe,
-Dok.-Art, Kategorie, Servicehinweis, Drilldown auf fehlende Felder, Rechnungsbetrag mit
-optional separat ausgewiesenen 0-€-Belegen), mehrtägige Snapshot-Verwaltung mit
-Export/Import, optionale Ordner-Synchronisierung für automatischen Mehrfach-Import aus einem
-lokal gespiegelten SharePoint-/OneDrive-Ordner (Chrome/Edge, siehe eigener Abschnitt oben).
+Enthalten: Ansicht **„Management Summary"** (Startansicht — Kennzahlenleiste, automatisch
+erzeugte Kernaussagen, einklappbares Akkordeon „Erkenntnisse je Dok.-Art", manuelles
+Kommentarfeld je Stichtag, siehe eigener Abschnitt oben), Ansicht „Übersicht" (Kennzahlen +
+neu gestaltete Übersichtstabelle im Format „Kategorie | Anzahl | Kommentar" mit Abschnitten
+„Was haben wir betrachtet", „Verteilung der konkreten Hellwerdegründe auf Belegebene" und
+„Welche Angaben fehlen am häufigsten", regelbasierte „Erläuterung" statt statischer
+Begriffserklärungen, plus Diagramme inkl. Betragsklassen-Diagramm), Ansicht
+„Servicehinweise" (vollständige Tabelle mit Such-/Sortier-/Gruppierfunktion, aufklappbarem
+Detailpanel je Servicehinweis mit Verteilung nach Anzahl Hellwerdegründe, CSV-Export),
+Ansicht „Konkrete Hellwerdegründe" (Grund-Kombinationen je Servicehinweis, gruppiert nach
+Anzahl der Gründe 1–4, mit Top-N-Auswahl, Farblegende und CSV-Export), Ansicht „Verteilung
+je Dok.-Art" (Kreuztabelle: Anzahl heller Belege je Dok.-Art × Anzahl konkreter
+Hellwerdegründe 1–4, optional auf einen Servicehinweis eingeschränkt — die
+Servicehinweis-Auswahl ist mit „Konkrete Hellwerdegründe" synchron, CSV-Export), Ansicht
+„Verlauf" (Zeitreihe über mehrere Stichtage, inkl. gestapeltem Balkendiagramm der
+Grund-Anzahl je Stichtag), vollständige Sidebar-Filterung (Zeitscheibe, Dok.-Art, Kategorie,
+Servicehinweis, Drilldown auf fehlende Felder, Rechnungsbetrag mit optional separat
+ausgewiesenen 0-€-Belegen), Altersstruktur des Rückstands aus `EING_DAT` (Median, Klassen
+≤ 7/8–30/31–90/> 90 Tage), mehrtägige Snapshot-Verwaltung mit Export/Import, optionale
+Ordner-Synchronisierung für automatischen Mehrfach-Import aus einem lokalen oder
+SharePoint-/OneDrive-synchronisierten Ordner (Chrome/Edge, siehe eigener Abschnitt oben).
 
-Bewusst **nicht** enthalten (siehe Build Plan v1 + v2): Tarif-Auswertung (`TA_KOMB_EB1`,
-weder als eigene Analyse noch als Gruppierungsdimension der Grund-Kombinationen) und
-Bewertung der Hellwerdegründe nach Automatisierbarkeit — beides auf ausdrücklichen Wunsch
-für eine spätere Ausbaustufe zurückgestellt. Ebenfalls optional und noch offen:
-Altersstruktur des Rückstands (aus `EING_DAT`).
+Bewusst **nicht** enthalten (siehe Build Plan v1–v3): Tarif-Auswertung (`TA_KOMB_EB1`, weder
+als eigene Analyse noch als Gruppierungsdimension der Grund-Kombinationen), Bewertung der
+Hellwerdegründe nach Automatisierbarkeit, eine freigabepflichtige „Einordnung"-Textschicht
+mit Schwellenwerten sowie Hochrechnungen aufs Jahr — alle vier auf ausdrücklichen Wunsch
+zurückgestellt (siehe Abschnitt „Management Summary" oben für die Details zu den letzten
+beiden).
 
 ## Tests
 
 `scripts/` (im Build-Verzeichnis, nicht Teil der ausgelieferten HTML-Datei) enthält die
-Playwright- und Node-Testskripte, die alle Sollwerte aus dem Build Plan gegen die reale
-Beispieldatei prüfen.
+Playwright- und Node-Testskripte, die alle Sollwerte aus den Build Plänen (v1–v3) gegen die
+reale Beispieldatei prüfen — darunter Golden-Tests für jede einzelne Regel (inkl. R11/R12, die
+im Beispieldatensatz mit nur einem Stichtag/einer Dok.-Art sonst nie aktiv würden, dafür mit
+synthetischen Mini-Datensätzen geprüft), Negativtests (zu geringe Fallzahl, fehlendes
+`LEA189`/`EING_DAT`/Vortag → Regel entfällt ohne Fehler statt mit kaputtem Text) sowie ein
+Konsistenztest je Drill-Link (die im Zielreiter angezeigte Zahl muss exakt der in der
+Erkenntnis genannten Zahl entsprechen).

@@ -184,6 +184,15 @@ tr.ov-section.lvl1 td{font-size:14.5px;}
 .ov-row-clickable{cursor:pointer;}
 .ov-row-clickable:hover{background:var(--surface-cool);}
 .ov-sub{color:var(--ink-soft); font-size:12.5px; font-style:italic;}
+.ov-basis{color:var(--ink-soft); font-size:12px; font-style:italic; font-weight:400; text-transform:none; letter-spacing:0;}
+.ov-kommentar{color:var(--ink-soft); font-size:13px;}
+.info-icon{cursor:help; color:var(--ink-soft); font-size:12px;}
+.erl-drill-link{
+  display:inline-block; margin-top:4px; border:none; background:none; cursor:pointer;
+  color:var(--dkv-green); font-weight:700; font-size:12.5px; padding:0;
+}
+.erl-drill-link:hover{text-decoration:underline;}
+.ov-geringe-fallzahl{color:var(--up-bad); font-style:italic; font-size:12px;}
 
 .erl-box{background:var(--surface-cool); border-radius:var(--radius-md); padding:16px; font-size:13.5px;}
 .erl-box h3{font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft); margin-bottom:10px;}
@@ -330,10 +339,59 @@ svg.linechart .line-teilw{stroke:var(--kat-teilw); stroke-width:2; fill:none;}
 .grund-legend-item{display:flex; align-items:center; gap:5px;}
 .grund-legend-swatch{width:12px; height:12px; border-radius:3px; display:inline-block;}
 
+/* ---------- v3: Management Summary ---------- */
+.ms-header{display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:6px;}
+.ms-header-title{font-size:19px; font-weight:800; color:var(--dkv-green-700);}
+.ms-filter-banner{
+  background:var(--dkv-lime-soft); color:var(--dkv-green-700); font-size:13px; font-weight:600;
+  padding:8px 14px; border-radius:var(--radius-sm); margin-bottom:18px;
+}
+.ms-section-head{display:flex; align-items:center; justify-content:space-between; margin:28px 0 12px;}
+.ms-section-head h3{font-size:15px; font-weight:700; margin:0;}
+.ms-kernaussagen{display:flex; flex-direction:column; gap:14px; margin-bottom:8px;}
+.ms-kernaussage{
+  display:flex; gap:14px; padding:16px 18px; background:var(--surface-beige);
+  border-radius:var(--radius-lg); border:1px solid var(--border);
+}
+.ms-kernaussage-num{
+  flex:0 0 auto; width:28px; height:28px; border-radius:50%; background:var(--dkv-green); color:#fff;
+  font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center;
+}
+.ms-kernaussage-body b{font-size:14.5px; color:var(--dkv-green-700);}
+.ms-kernaussage-body p{margin:5px 0 0; font-size:13.5px; color:var(--ink);}
+.beleg-cluster{
+  background:#fff; border:1px solid var(--border); border-radius:var(--radius-lg);
+  margin-bottom:10px; box-shadow:var(--shadow-sm);
+}
+.beleg-cluster-summary{
+  display:flex; align-items:center; gap:12px; padding:14px 18px; cursor:pointer; list-style:none;
+  font-size:14px;
+}
+.beleg-cluster-summary::-webkit-details-marker{display:none;}
+.beleg-cluster-summary .chev{color:var(--dkv-green); display:inline-block; transition:transform .15s; flex:0 0 auto;}
+.beleg-cluster[open] .beleg-cluster-summary .chev{transform:rotate(90deg);}
+.beleg-cluster-summary .bc-name{font-weight:700; flex:0 0 auto;}
+.beleg-cluster-summary .bc-schlagzeile{color:var(--ink-soft); font-size:13px; flex:1 1 auto;}
+.beleg-cluster-summary .bc-stats{flex:0 0 auto; font-variant-numeric:tabular-nums; color:var(--ink-soft); font-size:13px;}
+.beleg-cluster-body{padding:0 18px 18px; border-top:1px solid var(--border);}
+.bc-grid{display:grid; grid-template-columns:1fr 280px; gap:20px; align-items:start; margin-top:16px;}
+.bc-footnotes{margin-top:14px; font-size:12px; color:var(--ink-soft);}
+.ms-kommentar{margin-top:28px; background:var(--surface-cool); border-radius:var(--radius-md); padding:16px;}
+.ms-kommentar textarea{
+  width:100%; min-height:70px; padding:9px 11px; border:1px solid var(--border); border-radius:var(--radius-sm);
+  font-family:inherit; font-size:13.5px; resize:vertical;
+}
+.ms-kommentar-footer{display:flex; align-items:center; justify-content:space-between; margin-top:8px;}
+.ms-kommentar-saved{
+  background:var(--dkv-lime-soft); border-left:3px solid var(--dkv-lime); padding:10px 14px;
+  border-radius:0 var(--radius-sm) var(--radius-sm) 0; font-size:13px; margin-top:10px;
+}
+
 @media (max-width:980px){
   .app-body{flex-direction:column;}
   .sidebar{position:static; width:100%; max-height:none;}
   .content-grid{grid-template-columns:1fr;}
+  .bc-grid{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -433,7 +491,8 @@ svg.linechart .line-teilw{stroke:var(--kat-teilw); stroke-width:2; fill:none;}
       </div>
 
       <div class="tabs" role="tablist">
-        <button type="button" class="tab-btn" role="tab" data-tab="uebersicht" aria-selected="true">Übersicht</button>
+        <button type="button" class="tab-btn" role="tab" data-tab="management-summary" aria-selected="true">Management Summary</button>
+        <button type="button" class="tab-btn" role="tab" data-tab="uebersicht">Übersicht</button>
         <button type="button" class="tab-btn" role="tab" data-tab="servicehinweise">Servicehinweise</button>
         <button type="button" class="tab-btn" role="tab" data-tab="hellwerdegruende">Konkrete Hellwerdegründe</button>
         <button type="button" class="tab-btn" role="tab" data-tab="dokart-verteilung">Verteilung je Dok.-Art</button>
@@ -442,7 +501,36 @@ svg.linechart .line-teilw{stroke:var(--kat-teilw); stroke-width:2; fill:none;}
 
       <div class="kpi-row" id="kpi-row"></div>
 
-      <section id="tab-uebersicht">
+      <section id="tab-management-summary">
+        <div class="ms-header">
+          <div class="ms-header-title" id="ms-header-title"></div>
+        </div>
+        <div class="ms-filter-banner" id="ms-filter-banner" hidden></div>
+
+        <div class="kpi-row" id="ms-kpi-row"></div>
+
+        <div class="ms-kernaussagen" id="ms-kernaussagen"></div>
+
+        <div class="ms-section-head">
+          <h3>Erkenntnisse je Dok.-Art</h3>
+          <div>
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-ms-alle-auf">Alle aufklappen</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-ms-alle-zu">Alle zuklappen</button>
+          </div>
+        </div>
+        <div id="ms-dokart-liste"></div>
+
+        <div class="ms-kommentar">
+          <h3>Kommentar des Fachbereichs</h3>
+          <textarea id="ms-kommentar-text" rows="3" placeholder="Manueller Kommentar (optional) …"></textarea>
+          <div class="ms-kommentar-footer">
+            <span id="ms-kommentar-label" class="hint"></span>
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-ms-kommentar-speichern">Speichern</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-uebersicht" hidden>
         <div class="vg-row">
           <div class="vg-step"><b>1 · Stichprobe</b><span id="vg-stichprobe-text"></span></div>
           <div class="vg-step"><b>2 · Services</b><span id="vg-services-text"></span></div>
@@ -469,12 +557,8 @@ svg.linechart .line-teilw{stroke:var(--kat-teilw); stroke-width:2; fill:none;}
             </div>
           </div>
           <div class="erl-box">
-            <h3>Einordnung</h3>
-            <dl>
-              <dt>Beleg</dt><dd>Eindeutige Belegnummer (DOK_NR). Nie Zeilen gezählt.</dd>
-              <dt>Konkreter Hellwerdegrund</dt><dd>Mindestens eine Detailtext-Spalte (U–X) ist befüllt.</dd>
-              <dt>Stichtagsbestand</dt><dd>Jeder Abzug ist eine Momentaufnahme des Rückstands, kein Tageszugang. Bestände werden nicht summiert.</dd>
-            </dl>
+            <h3>Erläuterung</h3>
+            <dl id="ov-erlaeuterung-body"></dl>
           </div>
         </div>
       </section>
@@ -1237,12 +1321,524 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     };
   }
 
+  /* ---------- v3: Kennzahlen-Schicht fuer die Management Summary (Build Plan v3 Abschnitt 2) ----------
+     Reine Funktion, keine Einordnung/Freitexte. "vortag" wird NICHT hier berechnet (braucht einen
+     zweiten Snapshot) -- der Aufrufer ruft computeKennzahlen zweimal auf und haengt .vortag selbst an. */
+  function computeKennzahlen(snapshot, filter, dokArtCode) {
+    filter = filter || emptyFilter();
+    const effFilter = dokArtCode != null ? Object.assign({}, filter, { dokArt: dokArtCode }) : filter;
+    const agg = aggregate(snapshot, effFilter);
+
+    const belegKategorien = new Map();      // belegIdx -> Set(katCode)
+    const belegCodes = new Map();           // belegIdx -> Set(code)
+    const codeBelege = new Map();           // code -> Set(belegIdx)
+    const belegMaxAnzahl = new Map();       // belegIdx -> hoechste anzahlGruende ueber ALLE Zeilen des Belegs
+    const belegFeldGrunde = new Map();      // belegIdx -> Set(feldKey), nur typ 'feld'
+    const belegHatSonstig = new Set();      // belegIdx
+    const belegEingOffset = new Map();      // belegIdx -> groesster eingDatOffsetTage (= fruehestes EING_DAT)
+    const bestZeileJeBelegCode = new Map(); // "belegIdx|code" -> hoechste anzahlGruende (fuer anzahlGruendeVert je Code)
+    const dokArtBelege = new Map();          // dokArtCode -> {name, set(belegIdx)}
+
+    snapshot.zeilen.forEach((zeile) => {
+      if (!rowMatchesFilter(snapshot, zeile, effFilter)) return;
+      const belegIdx = zeile[0];
+      if (!belegMatchesBetragFilter(snapshot, belegIdx, effFilter)) return;
+      const [, dokArtIdx, hinweisIdx, anzahlGruende, grundSeq, eingOffset] = zeile;
+      const h = snapshot.dict.hinweis[hinweisIdx];
+      const katCode = snapshot.dict.kategorie[h.kat];
+      const code = h.code;
+      const dokArt = snapshot.dict.dokArt[dokArtIdx];
+
+      if (!belegKategorien.has(belegIdx)) belegKategorien.set(belegIdx, new Set());
+      belegKategorien.get(belegIdx).add(katCode);
+      if (!belegCodes.has(belegIdx)) belegCodes.set(belegIdx, new Set());
+      belegCodes.get(belegIdx).add(code);
+      if (!codeBelege.has(code)) codeBelege.set(code, new Set());
+      codeBelege.get(code).add(belegIdx);
+      if (!dokArtBelege.has(dokArt.code)) dokArtBelege.set(dokArt.code, { name: dokArt.name, set: new Set() });
+      dokArtBelege.get(dokArt.code).set.add(belegIdx);
+
+      const curMax = belegMaxAnzahl.get(belegIdx);
+      if (curMax === undefined || anzahlGruende > curMax) belegMaxAnzahl.set(belegIdx, anzahlGruende);
+
+      const keyBC = belegIdx + "|" + code;
+      const curBC = bestZeileJeBelegCode.get(keyBC);
+      if (curBC === undefined || anzahlGruende > curBC) bestZeileJeBelegCode.set(keyBC, anzahlGruende);
+
+      grundSeq.forEach((g) => {
+        if (g === null) return;
+        const grund = snapshot.dict.grund[g];
+        if (grund.typ === "feld") {
+          if (!belegFeldGrunde.has(belegIdx)) belegFeldGrunde.set(belegIdx, new Set());
+          belegFeldGrunde.get(belegIdx).add(grund.key);
+        } else {
+          belegHatSonstig.add(belegIdx);
+        }
+      });
+
+      if (eingOffset != null) {
+        const curO = belegEingOffset.get(belegIdx);
+        if (curO === undefined || eingOffset > curO) belegEingOffset.set(belegIdx, eingOffset);
+      }
+    });
+
+    const belegIdxs = Array.from(belegKategorien.keys());
+    const belege = belegIdxs.length;
+
+    const mitKonkretSet = new Set(), ohneKonkretSet = new Set();
+    belegIdxs.forEach((b) => {
+      const hatFeld = belegFeldGrunde.has(b) && belegFeldGrunde.get(b).size > 0;
+      if (hatFeld || belegHatSonstig.has(b)) mitKonkretSet.add(b); else ohneKonkretSet.add(b);
+    });
+    const konkret = mitKonkretSet.size, ohneKonkret = ohneKonkretSet.size;
+
+    const katBelege = {};
+    KATEGORIE_ORDER.forEach((k) => { katBelege[k] = agg.jeKategorie[k] || 0; });
+
+    const shBelege = {}; // "kategorie|code" -> Belege
+    agg.servicehinweise.forEach((h) => { shBelege[h.kategorie + "|" + h.code] = h.belege; });
+
+    const shCodeBelege = {};
+    codeBelege.forEach((set, code) => { shCodeBelege[code] = set.size; });
+    const codeOrderDesc = Array.from(codeBelege.entries()).sort((a, b) => b[1].size - a[1].size);
+
+    // Rangfolge mit KUMULATIVER (echter Mengen-)Abdeckung -- Grundlage fuer R03 (Top-N-Anteil)
+    // UND abdeckung80, damit beide aus derselben Berechnung stammen (Prinzip 9).
+    const codeRangfolge = [];
+    {
+      const unionSoFar = new Set();
+      codeOrderDesc.forEach(([code, set]) => {
+        set.forEach((b) => unionSoFar.add(b));
+        codeRangfolge.push({ code, belege: set.size, kumulativBelege: unionSoFar.size, kumulativAnteil: belege ? unionSoFar.size / belege : 0 });
+      });
+    }
+
+    // Dok.-Art-Rangfolge, analog zu codeRangfolge, fuer R12 (Fokus-Dok.-Arten).
+    const dokArtOrderDesc = Array.from(dokArtBelege.entries()).sort((a, b) => b[1].set.size - a[1].set.size);
+    const dokArtRangfolge = [];
+    {
+      const unionSoFar = new Set();
+      dokArtOrderDesc.forEach(([code, info]) => {
+        info.set.forEach((b) => unionSoFar.add(b));
+        dokArtRangfolge.push({ code, name: info.name, belege: info.set.size, kumulativBelege: unionSoFar.size, kumulativAnteil: belege ? unionSoFar.size / belege : 0 });
+      });
+    }
+    const dokArtAnzahl = dokArtBelege.size;
+    const dokArtTopN = dokArtRangfolge.slice(0, Math.min(5, dokArtRangfolge.length));
+    const dokArtTopListe = dokArtTopN.map((e) => e.name + " (" + e.code + ")");
+    const dokArtTopAnteil = dokArtTopN.length ? dokArtTopN[dokArtTopN.length - 1].kumulativAnteil : 0;
+
+    // Co-Occurrence: welche ANDEREN Codes tragen Belege, die auch "code" tragen (fuer R06 "topWeiterer").
+    function coOccurrenceMitCode(code) {
+      const counts = new Map();
+      belegCodes.forEach((set) => {
+        if (!set.has(code) || set.size <= 1) return;
+        set.forEach((c) => { if (c !== code) counts.set(c, (counts.get(c) || 0) + 1); });
+      });
+      return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+    }
+
+    let nurEinCode = 0;
+    const alleinigerCode = {};
+    belegCodes.forEach((set) => {
+      if (set.size === 1) {
+        nurEinCode++;
+        const c = Array.from(set)[0];
+        alleinigerCode[c] = (alleinigerCode[c] || 0) + 1;
+      }
+    });
+
+    let abdeckung80 = 0;
+    for (const entry of codeRangfolge) {
+      abdeckung80++;
+      if (entry.kumulativAnteil >= 0.8) break;
+    }
+
+    let feldBasis = 0;
+    const feldBelege = {};
+    const feldKombiMap = new Map(); // sortierter Key -> {felder:[keys], anzahl}
+    belegFeldGrunde.forEach((set) => {
+      if (set.size === 0) return;
+      feldBasis++;
+      set.forEach((k) => { feldBelege[k] = (feldBelege[k] || 0) + 1; });
+      const keys = Array.from(set).sort();
+      const kombiKey = keys.join("+");
+      if (!feldKombiMap.has(kombiKey)) feldKombiMap.set(kombiKey, { felder: keys, anzahl: 0 });
+      feldKombiMap.get(kombiKey).anzahl++;
+    });
+    const feldOrderDesc = Object.keys(feldBelege).sort((a, b) => feldBelege[b] - feldBelege[a]);
+    let feldKombi = null;
+    {
+      const top = Array.from(feldKombiMap.values()).sort((a, b) => b.anzahl - a.anzahl)[0];
+      if (top) {
+        feldKombi = {
+          anzahl: top.anzahl,
+          felder: top.felder.slice().sort((a, b) => feldOrderDesc.indexOf(a) - feldOrderDesc.indexOf(b)),
+          label: top.felder.slice().sort((a, b) => feldOrderDesc.indexOf(a) - feldOrderDesc.indexOf(b))
+            .map((k) => FELD_LABEL[k.replace(/^F:/, "")] || k).join(", "),
+        };
+      }
+    }
+
+    const anzahlGruendeVert = {};
+    bestZeileJeBelegCode.forEach((anzahl, key) => {
+      const code = key.slice(key.indexOf("|") + 1);
+      if (anzahl < 1 || anzahl > 4) return;
+      if (!anzahlGruendeVert[code]) anzahlGruendeVert[code] = { 1: 0, 2: 0, 3: 0, 4: 0 };
+      anzahlGruendeVert[code][anzahl]++;
+    });
+
+    const ohneKonkretCodeCounts = new Map();
+    ohneKonkretSet.forEach((b) => {
+      (belegCodes.get(b) || new Set()).forEach((c) => ohneKonkretCodeCounts.set(c, (ohneKonkretCodeCounts.get(c) || 0) + 1));
+    });
+    const ohneKonkretTopCodes = Array.from(ohneKonkretCodeCounts.entries()).sort((a, b) => b[1] - a[1]);
+
+    let betragNullGesamt = 0;
+    const betragNullJeCode = {};
+    belegIdxs.forEach((b) => {
+      if (snapshot.belegBetragCt && snapshot.belegBetragCt[b] === 0) {
+        betragNullGesamt++;
+        (belegCodes.get(b) || new Set()).forEach((c) => { betragNullJeCode[c] = (betragNullJeCode[c] || 0) + 1; });
+      }
+    });
+
+    const offsets = Array.from(belegEingOffset.values()).sort((a, b) => a - b);
+    let median = null;
+    if (offsets.length) {
+      const mid = Math.floor(offsets.length / 2);
+      median = offsets.length % 2 ? offsets[mid] : (offsets[mid - 1] + offsets[mid]) / 2;
+    }
+    const alterBuckets = { le7: 0, b8_30: 0, b31_90: 0, gt90: 0 };
+    offsets.forEach((o) => {
+      if (o <= 7) alterBuckets.le7++;
+      else if (o <= 30) alterBuckets.b8_30++;
+      else if (o <= 90) alterBuckets.b31_90++;
+      else alterBuckets.gt90++;
+    });
+
+    return {
+      belege, konkret, ohneKonkret,
+      katBelege, shBelege, shCodeBelege, codeRangfolge,
+      nurEinCode, alleinigerCode,
+      abdeckung80,
+      coOccurrenceMitCode,
+      dokArtAnzahl, dokArtRangfolge, dokArtTopListe, dokArtTopAnteil,
+      feldBasis, feldBelege, feldKombi,
+      anzahlGruendeVert,
+      ohneKonkretTopCodes,
+      betragNull: { gesamt: betragNullGesamt, jeCode: betragNullJeCode },
+      alter: { basis: offsets.length, median, le7: alterBuckets.le7, b8_30: alterBuckets.b8_30, b31_90: alterBuckets.b31_90, gt90: alterBuckets.gt90 },
+      belegMaxAnzahlVerteilung: (() => {
+        const b = { 1: 0, 2: 0, 3: 0, 4: 0 };
+        belegMaxAnzahl.forEach((n) => { if (n >= 1 && n <= 4) b[n]++; });
+        return b;
+      })(),
+      vortag: null,
+    };
+  }
+
+  /* ---------- v3: Regelkatalog / Erkenntnis-Engine (Build Plan v3 Abschnitt 3) ----------
+     Auf Nutzerwunsch OHNE Einordnungs-Schicht (Abschnitt 3.3) und OHNE Hochrechnung p.a. --
+     ausschliesslich datenbelegte Befund-Texte aus festen Vorlagen. Jede Regel liefert einen
+     Befund UND eine kurze Schlagzeile; Platzhalter kommen ausschliesslich aus werte(k). */
+  const MIN_BASIS = 30;
+  const GERINGE_FALLZAHL_SCHWELLE = 100; // 30 <= basis < 100 => Hinweis "geringe Fallzahl"
+  const HEBEL_ZUORDNUNG = { LEA189: "Datenqualität/Belegerfassung" };
+
+  function fmtIntDe(n) { return (n || 0).toLocaleString("de-DE"); }
+  function fmtPctDe(n) { return (n * 100).toFixed(1).replace(".", ",") + " %"; }
+  function kategorieFuerCode(k, code) {
+    const key = Object.keys(k.shBelege).find((x) => x.endsWith("|" + code));
+    return key ? key.split("|")[0] : null;
+  }
+  function renderBefund(template, werte) {
+    return template.replace(/\{(\w+)\}/g, (match, key) => {
+      const v = werte[key];
+      if (v === undefined || v === null || (typeof v === "number" && isNaN(v))) {
+        throw new Error("Platzhalter '" + key + "' fehlt oder ist ungültig in Vorlage: " + template);
+      }
+      return String(v);
+    });
+  }
+
+  const REGELN = [
+    {
+      id: "R01_MENGENGERUEST",
+      ebene: ["gesamt", "dokArt"],
+      bedingung: () => true,
+      werte: (k) => ({
+        basis: k.belege,
+        belege: fmtIntDe(k.belege),
+        anteilKonkret: fmtPctDe(k.belege ? k.konkret / k.belege : 0),
+        anteilOhne: fmtPctDe(k.belege ? k.ohneKonkret / k.belege : 0),
+      }),
+      schlagzeile: "{belege} helle Belege im Rückstand",
+      befund: "{belege} helle Belege; {anteilKonkret} mit konkretem Hellwerdegrund, {anteilOhne} ohne.",
+      prioritaet: (w) => w.basis,
+      drill: () => ({ tab: "uebersicht" }),
+    },
+    {
+      id: "R02_KATEGORIE_MIX",
+      ebene: ["gesamt", "dokArt"],
+      bedingung: (k) => k.belege > 0,
+      werte: (k) => {
+        const kats = KATEGORIE_ORDER.slice().sort((a, b) => (k.katBelege[b] || 0) - (k.katBelege[a] || 0));
+        const topKat = kats[0];
+        const topBelege = k.katBelege[topKat] || 0;
+        return { basis: topBelege, topKat, topKatRaw: topKat, anteil: fmtPctDe(k.belege ? topBelege / k.belege : 0) };
+      },
+      schlagzeile: "{topKat} häufigste Kategorie ({anteil})",
+      befund: "Am häufigsten ist {topKat} mit {anteil} der Belege.",
+      prioritaet: (w) => w.basis,
+      drill: (w) => ({ tab: "uebersicht", kategorie: w.topKatRaw }),
+    },
+    {
+      id: "R03_KONZENTRATION",
+      ebene: ["gesamt", "dokArt"],
+      bedingung: (k) => Object.keys(k.shCodeBelege).length >= 5,
+      werte: (k) => {
+        const top3 = k.codeRangfolge.slice(0, 3);
+        const codes = top3.map((e) => e.code).join(", ");
+        const anteilTop3 = top3.length === 3 ? top3[2].kumulativAnteil : 0;
+        return {
+          basis: top3.length ? top3[top3.length - 1].kumulativBelege : 0,
+          codes,
+          anteilTop3: fmtPctDe(anteilTop3),
+          abdeckung80: fmtIntDe(k.abdeckung80),
+        };
+      },
+      schlagzeile: "Drei Servicehinweise prägen {anteilTop3} des Rückstands",
+      befund: "Die drei häufigsten Servicehinweise ({codes}) betreffen {anteilTop3} der Belege; {abdeckung80} Codes decken 80 % ab.",
+      prioritaet: (w) => w.basis,
+      drill: () => ({ tab: "servicehinweise" }),
+    },
+    {
+      id: "R04_EINZELHINWEIS_HEBEL",
+      ebene: ["gesamt", "dokArt"],
+      bedingung: (k) => k.belege > 0 && Object.keys(k.alleinigerCode).length > 0,
+      werte: (k) => {
+        const anteilNurEin = k.belege ? k.nurEinCode / k.belege : 0;
+        const topEntries = Object.entries(k.alleinigerCode).sort((a, b) => b[1] - a[1]).slice(0, 3);
+        const top1 = topEntries[0];
+        const liste = topEntries.map(([c, n]) => c + " " + fmtIntDe(n) + " (" + fmtPctDe(k.belege ? n / k.belege : 0) + ")").join(" · ");
+        return {
+          basis: k.nurEinCode,
+          anteilNurEin: fmtPctDe(anteilNurEin),
+          top1: top1 ? top1[0] : "-",
+          top1Code: top1 ? top1[0] : null,
+          n1: top1 ? fmtIntDe(top1[1]) : "0",
+          anteil1: top1 ? fmtPctDe(k.belege ? top1[1] / k.belege : 0) : "0,0 %",
+          liste,
+        };
+      },
+      schlagzeile: "{anteilNurEin} der Belege mit nur einem Servicehinweis",
+      befund: "{anteilNurEin} der Belege tragen genau einen Servicehinweis-Code. Größtes Einzelpotenzial: {top1} mit bis zu {n1} Belegen ({anteil1}), sofern keine weiteren Hinweise greifen. Weitere: {liste}.",
+      prioritaet: (w) => w.basis,
+      drill: () => ({ tab: "servicehinweise" }),
+    },
+    {
+      id: "R05_LEA189_STRUKTUR",
+      ebene: ["gesamt", "dokArt"],
+      bedingung: (k) => (k.shCodeBelege.LEA189 || 0) >= MIN_BASIS,
+      werte: (k) => {
+        const v = k.anzahlGruendeVert.LEA189 || { 1: 0, 2: 0, 3: 0, 4: 0 };
+        const basis = k.shCodeBelege.LEA189;
+        return {
+          basis,
+          basisFmt: fmtIntDe(basis),
+          n1: fmtIntDe(v[1]), n2: fmtIntDe(v[2]), n3: fmtIntDe(v[3]), n4: fmtIntDe(v[4]),
+          anteil1: fmtPctDe(basis ? v[1] / basis : 0), anteil4: fmtPctDe(basis ? v[4] / basis : 0),
+        };
+      },
+      schlagzeile: "LEA189: {anteil4} mit vier Hellwerdegründen",
+      befund: "Von {basisFmt} Belegen mit LEA189 haben {anteil4} vier Hellwerdegründe, {anteil1} genau einen.",
+      prioritaet: (w) => w.basis,
+      drill: () => ({ tab: "hellwerdegruende", hinweis: { kategorie: "Z31", code: "LEA189" } }),
+    },
+    {
+      id: "R06_LEA189_POTENZIAL",
+      ebene: ["gesamt", "dokArt"],
+      bedingung: (k) => (k.shCodeBelege.LEA189 || 0) >= MIN_BASIS,
+      werte: (k) => {
+        const basisLea = k.shCodeBelege.LEA189;
+        const allein = k.alleinigerCode.LEA189 || 0;
+        const mit = basisLea - allein;
+        const topWeiterer = k.coOccurrenceMitCode("LEA189")[0] || null;
+        return {
+          basis: allein,
+          nAllein: fmtIntDe(allein),
+          anteilGesamt: fmtPctDe(k.belege ? allein / k.belege : 0),
+          nMit: fmtIntDe(mit),
+          topWeiterer: topWeiterer ? topWeiterer[0] + " (" + fmtIntDe(topWeiterer[1]) + ")" : "—",
+          hebel: HEBEL_ZUORDNUNG.LEA189,
+        };
+      },
+      schlagzeile: "LEA189 allein: bis zu {anteilGesamt} Dunkel-Potenzial",
+      befund: "Wird LEA189 behoben, könnten bis zu {nAllein} Belege ({anteilGesamt} aller hellen Belege) dunkel werden; {nMit} LEA189-Belege tragen weitere Hinweise (häufigster: {topWeiterer}). Hebel: {hebel}. Maximal mögliches Potenzial auf Basis des Stichtagsbestands, nicht als gesichert dunkel durchlaufende Menge zu verstehen.",
+      prioritaet: (w) => w.basis,
+      drill: () => ({ tab: "hellwerdegruende", hinweis: { kategorie: "Z31", code: "LEA189" } }),
+    },
+    {
+      id: "R07_FELD_CLUSTER",
+      ebene: ["gesamt", "dokArt"],
+      bedingung: (k) => k.feldBasis >= MIN_BASIS,
+      werte: (k) => {
+        const top = Object.entries(k.feldBelege).sort((a, b) => b[1] - a[1]).slice(0, 2);
+        const f1 = top[0], f2 = top[1];
+        const label = (key) => FELD_LABEL[key.replace(/^F:/, "")] || key;
+        return {
+          basis: k.feldBasis, feldBasis: fmtIntDe(k.feldBasis),
+          f1: f1 ? label(f1[0]) : "-", a1: f1 ? fmtPctDe(f1[1] / k.feldBasis) : "0,0 %",
+          f2: f2 ? label(f2[0]) : "-", a2: f2 ? fmtPctDe(f2[1] / k.feldBasis) : "0,0 %",
+          aKombi: k.feldKombi ? fmtPctDe(k.feldKombi.anzahl / k.feldBasis) : "0,0 %",
+          kombi: k.feldKombi ? k.feldKombi.label : "-",
+        };
+      },
+      schlagzeile: "Feld-Cluster: {aKombi} fehlen alle Felder gemeinsam",
+      befund: "Bei {feldBasis} Belegen mit Feldangabe fehlen am häufigsten {f1} ({a1}) und {f2} ({a2}); {aKombi} fehlen gemeinsam: {kombi}.",
+      prioritaet: (w) => w.basis,
+      drill: () => ({ tab: "uebersicht" }),
+    },
+    {
+      id: "R08_OHNE_KONKRETEN_GRUND",
+      ebene: ["gesamt", "dokArt"],
+      bedingung: (k) => k.ohneKonkret >= MIN_BASIS,
+      werte: (k) => {
+        const top = k.ohneKonkretTopCodes.slice(0, 2);
+        const c1 = top[0], c2 = top[1];
+        return {
+          basis: k.ohneKonkret, ohneKonkret: fmtIntDe(k.ohneKonkret),
+          c1: c1 ? c1[0] : "-", a1: c1 ? fmtPctDe(c1[1] / k.ohneKonkret) : "0,0 %",
+          c2: c2 ? c2[0] : "-", a2: c2 ? fmtPctDe(c2[1] / k.ohneKonkret) : "0,0 %",
+        };
+      },
+      schlagzeile: "{ohneKonkret} Belege ohne konkreten Grund",
+      befund: "{ohneKonkret} Belege ohne Detailangabe; davon entfallen {a1} auf {c1}, {a2} auf {c2}.",
+      prioritaet: (w) => w.basis,
+      drill: () => ({ tab: "servicehinweise" }),
+    },
+    {
+      id: "R09_BETRAG_NULL",
+      ebene: ["gesamt", "dokArt"],
+      bedingung: (k) => k.betragNull.gesamt >= MIN_BASIS,
+      werte: (k) => {
+        const nLea = k.betragNull.jeCode.LEA189 || 0;
+        const basisLea = k.shCodeBelege.LEA189 || 0;
+        return {
+          basis: k.betragNull.gesamt,
+          nNull: fmtIntDe(k.betragNull.gesamt), aNull: fmtPctDe(k.belege ? k.betragNull.gesamt / k.belege : 0),
+          aNull189: basisLea ? fmtPctDe(nLea / basisLea) + " (" + fmtIntDe(nLea) + " von " + fmtIntDe(basisLea) + ")" : "—",
+        };
+      },
+      schlagzeile: "{aNull} ohne erfassten Rechnungsbetrag",
+      befund: "{nNull} Belege ({aNull}) ohne erfassten Rechnungsbetrag; bei LEA189 sind es {aNull189}. Das passt zum fehlenden Feld Rechnungsbetrag.",
+      prioritaet: (w) => w.basis,
+      drill: () => ({ tab: "uebersicht", betragsklasse: "0 € / kein Betrag" }),
+    },
+    {
+      id: "R10_ALTER",
+      ebene: ["gesamt", "dokArt"],
+      bedingung: (k) => k.alter.basis >= MIN_BASIS,
+      werte: (k) => ({
+        basis: k.alter.basis,
+        median: fmtIntDe(k.alter.median),
+        nAlt: fmtIntDe(k.alter.gt90),
+        aAlt: fmtPctDe(k.alter.basis ? k.alter.gt90 / k.alter.basis : 0),
+      }),
+      schlagzeile: "Medianes Alter {median} Tage",
+      befund: "Medianes Alter {median} Tage; {nAlt} Belege ({aAlt}) sind älter als 90 Tage.",
+      prioritaet: (w) => w.basis,
+      drill: () => ({ tab: "uebersicht" }),
+    },
+    {
+      id: "R11_VORTAG",
+      ebene: ["gesamt", "dokArt"],
+      bedingung: (k) => !!k.vortag,
+      werte: (k) => {
+        const delta = k.belege - k.vortag.belege;
+        const deltaPct = k.vortag.belege ? delta / k.vortag.belege : 0;
+        let topCode = null, topDelta = 0;
+        Object.keys(k.shCodeBelege).forEach((code) => {
+          const d = (k.shCodeBelege[code] || 0) - (k.vortag.shCodeBelege[code] || 0);
+          if (Math.abs(d) > Math.abs(topDelta)) { topDelta = d; topCode = code; }
+        });
+        return {
+          basis: Math.abs(delta),
+          deltaRaw: delta,
+          deltaPctRaw: deltaPct,
+          richtung: delta > 0 ? "gestiegen" : (delta < 0 ? "gesunken" : "unverändert"),
+          delta: fmtIntDe(Math.abs(delta)),
+          deltaPct: fmtPctDe(Math.abs(deltaPct)),
+          vortag: fmtIntDe(k.vortag.belege),
+          code: topCode || "-",
+          deltaCode: fmtIntDe(Math.abs(topDelta)),
+        };
+      },
+      schlagzeile: "Rückstand {richtung} um {deltaPct}",
+      befund: "Rückstand {richtung} um {delta} Belege ({deltaPct}) gegenüber {vortag}; stärkster Treiber: {code} ({deltaCode}).",
+      prioritaet: (w) => w.basis,
+      drill: () => ({ tab: "verlauf" }),
+    },
+    {
+      id: "R12_FOKUS_DOKARTEN",
+      ebene: ["gesamt"],
+      bedingung: (k) => k.dokArtAnzahl >= 2,
+      werte: (k) => ({
+        basis: k.belege,
+        n: fmtIntDe(k.dokArtAnzahl),
+        topN: fmtIntDe(Math.min(5, k.dokArtAnzahl)),
+        liste: k.dokArtTopListe.join(", "),
+        anteil: fmtPctDe(k.dokArtTopAnteil),
+      }),
+      schlagzeile: "{n} Dok.-Arten betrachtet",
+      befund: "{n} Dok.-Arten betrachtet; die Top {topN} ({liste}) machen {anteil} der Belege aus.",
+      prioritaet: (w) => w.basis,
+      drill: () => ({ tab: "dokart-verteilung" }),
+    },
+  ];
+
+  function evaluateRegeln(kennzahlen, ebene) {
+    const out = [];
+    REGELN.forEach((regel) => {
+      if (regel.ebene.indexOf(ebene) === -1) return;
+      if (!regel.bedingung(kennzahlen)) return;
+      let werte;
+      try { werte = regel.werte(kennzahlen); } catch (e) { return; }
+      if (werte.basis == null || werte.basis < MIN_BASIS) return;
+      let befund, schlagzeile;
+      try {
+        befund = renderBefund(regel.befund, werte);
+        schlagzeile = renderBefund(regel.schlagzeile, werte);
+      } catch (e) { return; }
+      let drill;
+      try {
+        drill = regel.drill(werte);
+        if (regel.id === "R04_EINZELHINWEIS_HEBEL" && werte.top1Code) {
+          drill.hinweis = { kategorie: kategorieFuerCode(kennzahlen, werte.top1Code), code: werte.top1Code };
+        }
+      } catch (e) { drill = { tab: "uebersicht" }; }
+      out.push({
+        id: regel.id,
+        schlagzeile, befund,
+        geringeFallzahl: werte.basis < GERINGE_FALLZAHL_SCHWELLE,
+        prioritaet: regel.prioritaet(werte),
+        drill,
+        werte,
+      });
+    });
+    out.sort((a, b) => b.prioritaet - a.prioritaet);
+    return out;
+  }
+
   return {
     SCHEMA_VERSION, REQUIRED_HEADERS, KATEGORIE_ORDER, KATEGORIE_LABEL, FELD_LABEL,
     GRUND_REGELN, BETRAG_KLASSEN, classifyGrund, betragsklasseVon, parseBetragCents,
     trimOrNull, normalizeWhitespace, parseFlexibleDate, isoDateOnly, dayDiff,
     validateHeader, detectStichtag, detectStichtagFromFilename,
     normalizeRows, buildSnapshot, emptyFilter, rowMatchesFilter, belegMatchesBetragFilter, aggregate,
+    computeKennzahlen,
+    MIN_BASIS, GERINGE_FALLZAHL_SCHWELLE, HEBEL_ZUORDNUNG, REGELN, evaluateRegeln, renderBefund, fmtIntDe, fmtPctDe,
   };
 });
 
@@ -1381,7 +1977,8 @@ const state = {
   zeitscheibeModus: "stichtag", // stichtag | woche | monat | verlauf
   verlaufStart: null, verlaufEnd: null,
   filter: Core.emptyFilter(),
-  activeTab: "uebersicht",
+  activeTab: "management-summary",
+  msOpenDokArten: new Set(), msErlaeuterungAlle: new Set(),
   shSearch: "", shGrouped: true, shSort: { key: "belege", dir: "desc" },
   hwgSelectedHinweis: null, // null = "Alle Servicehinweise"
   hwgExplicit: false, // true, sobald Nutzer/Sprung eine Auswahl getroffen hat (auch explizit "Alle")
@@ -1799,68 +2396,252 @@ function renderKpiRow(agg, prevAgg) {
   $("#kpi-row").innerHTML = html;
 }
 
-function renderUebersicht(snap, agg) {
+function fmtPctWhole(n) { return Math.round(n * 100) + " %"; }
+
+/* ---------- v3 Abschnitt 6: wiederverwendbare Übersichtstabelle (Kategorie | Anzahl | Kommentar) ---------- */
+function uebersichtTabelleSectionRow(title, basisText) {
+  return '<tr class="ov-section lvl1"><td colspan="3">' + esc(title)
+    + (basisText ? ' <span class="ov-basis">(' + esc(basisText) + ")</span>" : "") + "</td></tr>";
+}
+function uebersichtTabelleDataRow(label, value, kommentar, dataAttr) {
+  return '<tr class="ov-row-clickable"' + (dataAttr || "") + "><td>" + esc(label) + '</td><td class="num mono">' + fmtInt(value)
+    + '</td><td class="ov-kommentar">' + esc(kommentar || "") + "</td></tr>";
+}
+function uebersichtTabelleHtml(k, opts) {
+  opts = opts || {};
   const rows = [];
-  rows.push(['<tr class="ov-section lvl1"><td colspan="2">1. Was haben wir betrachtet?</td></tr>']);
-  rows.push(rowHtml("Betrachtete Belege", agg.betrachteteBelege));
-  rows.push(rowHtml("Betrachtete Dok.-Arten", agg.betrachteteDokArten));
-  rows.push(rowHtml("Servicehinweise (Zeilen)", agg.servicehinweiseZeilen));
-  rows.push(['<tr class="ov-section lvl1"><td colspan="2">2. Warum werden Belege hell?</td></tr>']);
-  rows.push(rowHtml("… mit konkretem Hellwerdegrund", agg.mitKonkret, agg.mitKonkretTop2));
-  rows.push(rowHtml("… ohne konkreten Hellwerdegrund", agg.ohneKonkret, agg.ohneKonkretTop2));
-  const katLine = Core.KATEGORIE_ORDER.map((k) => Core.KATEGORIE_LABEL[k].split(",")[0]).join(" · ") + ": "
-    + Core.KATEGORIE_ORDER.map((k) => fmtInt(agg.jeKategorie[k] || 0)).join(" · ");
-  rows.push(['<tr><td colspan="2" style="padding-left:24px;">davon nach Kategorie: ' + esc(katLine) + " ¹</td></tr>"]);
-  rows.push(['<tr class="ov-section lvl1"><td colspan="2">3. Welche Angaben fehlen am häufigsten?</td></tr>']);
-  const topFelder = agg.fehlendeAngaben.slice(0, 8);
-  topFelder.forEach((f) => rows.push(fieldRowHtml(f)));
-  if (agg.sonstigeDetailBelege) rows.push(fieldRowHtml({ feldIdx: null, label: "Sonstige Detailangaben (keine Feldangabe)", belege: agg.sonstigeDetailBelege }, true));
-  if (agg.fehlendeAngaben.length > 8) {
-    rows.push(['<tr><td colspan="2"><button type="button" class="btn btn-ghost btn-sm" id="btn-felder-alle">Alle anzeigen (' + agg.fehlendeAngaben.length + ")</button></td></tr>"]);
+  rows.push(uebersichtTabelleSectionRow("1. Was haben wir betrachtet?"));
+  rows.push(uebersichtTabelleDataRow("Betrachtete Belege", k.belege, "Belege im Rückstand"));
+  rows.push(uebersichtTabelleDataRow("… mit konkretem Hellwerdegrund", k.konkret, fmtPctWhole(k.belege ? k.konkret / k.belege : 0)));
+  rows.push(uebersichtTabelleDataRow("… ohne konkreten Hellwerdegrund", k.ohneKonkret, fmtPctWhole(k.belege ? k.ohneKonkret / k.belege : 0)));
+
+  rows.push(uebersichtTabelleSectionRow("2. Wie verteilt sich die Anzahl der konkreten Hellwerdegründe?", "Basis: " + fmtInt(k.konkret) + " Belege mit konkretem Grund"));
+  const v = k.belegMaxAnzahlVerteilung;
+  const labels = { 1: "Ein Hellwerdegrund", 2: "Zwei Hellwerdegründe", 3: "Drei Hellwerdegründe", 4: "Vier Hellwerdegründe" };
+  [1, 2, 3, 4].forEach((n) => {
+    if (n === 4 && opts.globalHatVier === false) return;
+    rows.push(uebersichtTabelleDataRow(labels[n], v[n], fmtPctWhole(k.konkret ? v[n] / k.konkret : 0) + (n === 1 ? "¹" : "")));
+  });
+
+  rows.push(uebersichtTabelleSectionRow("3. Welche Angaben fehlen am häufigsten?", "Basis: " + fmtInt(k.feldBasis) + " Belege mit Feldangabe"));
+  const feldOrder = Object.entries(k.feldBelege).sort((a, b) => b[1] - a[1]);
+  feldOrder.forEach(([key, count]) => {
+    const label = Core.FELD_LABEL[key.replace(/^F:/, "")] || key;
+    rows.push(uebersichtTabelleDataRow(label, count, fmtPctWhole(k.feldBasis ? count / k.feldBasis : 0), ' data-feldkey="' + esc(key) + '"'));
+  });
+
+  const footnoten = ['<tr><td colspan="3" class="ov-footnote">¹ Bezugsgröße der Prozentwerte in Abschnitt 2 und 3 weicht von Abschnitt 1 ab (siehe Basis-Angabe je Abschnitt).</td></tr>'];
+  footnoten.push('<tr><td colspan="3" class="ov-footnote">² Jeder Abzug ist eine Momentaufnahme des Rückstands (Stichtagsbestand), keine Hochrechnung.</td></tr>');
+  if (opts.hinweisFilterAktiv) {
+    footnoten.push('<tr><td colspan="3" class="ov-footnote">³ Abschnitt 2 zählt je Beleg einmal (höchste Anzahl über alle seine Servicehinweis-Zeilen) — das weicht von der Zählung je Servicehinweis in „Konkrete Hellwerdegründe" ab.</td></tr>');
   }
-  $("#ov-body").innerHTML = '<tr><td colspan="2" class="ov-caption">(Stichprobe KLTB0570 am ' + fmtDateDe(snap.stichtag) + ")</td></tr>"
-    + rows.flat().join("")
-    + '<tr><td colspan="2" class="ov-footnote">¹ Ein Beleg kann Hinweise mehrerer Kategorien tragen; die Summe übersteigt daher die Gesamtzahl.</td></tr>';
+
+  return '<tr><td colspan="3" class="ov-caption">(Stichprobe KLTB0570 am ' + esc(fmtDateDe(k.stichtagLabel || "")) + ")</td></tr>"
+    + rows.join("") + footnoten.join("");
+}
+
+function renderUebersicht(snap, agg, k) {
+  const globalK = state.filter.hinweise.size || state.filter.kategorien.size || state.filter.dokArt || state.filter.fehlendeFelder.size || state.filter.betragsklassen.size
+    ? Core.computeKennzahlen(snap, Core.emptyFilter(), null)
+    : k;
+  k.stichtagLabel = snap.stichtag;
+  $("#ov-body").innerHTML = uebersichtTabelleHtml(k, {
+    globalHatVier: globalK.belegMaxAnzahlVerteilung[4] > 0,
+    hinweisFilterAktiv: state.filter.hinweise.size > 0,
+  });
 
   $("#vg-stichprobe-text").textContent = "KLTB0570 am " + fmtDateDe(snap.stichtag) + " (" + fmtInt(snap.zeilen.length) + " Zeilen, " + fmtInt(snap.belege.length) + " Belege).";
-  $("#vg-services-text").textContent = snap.dict.hinweis.length + " Servicehinweise in " + Core.KATEGORIE_ORDER.filter((k) => agg.jeKategorie[k]).length + " Kategorien.";
+  $("#vg-services-text").textContent = snap.dict.hinweis.length + " Servicehinweise in " + Core.KATEGORIE_ORDER.filter((kat) => agg.jeKategorie[kat]).length + " Kategorien.";
 
-  const btnAll = $("#btn-felder-alle");
-  if (btnAll) btnAll.addEventListener("click", () => { renderUebersichtFullFieldList(snap, agg); });
-
-  $all("#ov-body tr[data-feld]").forEach((tr) => {
+  $all("#ov-body tr[data-feldkey]").forEach((tr) => {
     tr.addEventListener("click", () => {
-      const fIdx = Number(tr.dataset.feld);
-      if (state.filter.fehlendeFelder.has(fIdx)) state.filter.fehlendeFelder.delete(fIdx);
-      else { state.filter.fehlendeFelder.clear(); state.filter.fehlendeFelder.add(fIdx); }
+      const key = tr.dataset.feldkey;
+      const grundIdx = snap.dict.grund.findIndex((g) => g.key === key);
+      if (grundIdx < 0) return;
+      if (state.filter.fehlendeFelder.has(grundIdx)) state.filter.fehlendeFelder.delete(grundIdx);
+      else { state.filter.fehlendeFelder.clear(); state.filter.fehlendeFelder.add(grundIdx); }
       rebuildFilterUI(); renderAll();
     });
   });
 
+  renderOvErlaeuterung(k);
   renderKategorieCharts(agg);
   renderBetragsklasseChart(agg);
 }
-function renderUebersichtFullFieldList(snap, agg) {
-  const rows = agg.fehlendeAngaben.map((f) => fieldRowHtml(f).join(""));
-  if (agg.sonstigeDetailBelege) rows.push(fieldRowHtml({ feldIdx: null, label: "Sonstige Detailangaben (keine Feldangabe)", belege: agg.sonstigeDetailBelege }, true).join(""));
-  $("#ov-body").innerHTML = '<tr><td colspan="2" class="ov-caption">Alle fehlenden Angaben (Stichprobe KLTB0570 am ' + fmtDateDe(snap.stichtag) + ")</td></tr>" + rows.join("");
-  $all("#ov-body tr[data-feld]").forEach((tr) => {
-    tr.addEventListener("click", () => {
-      const fIdx = Number(tr.dataset.feld);
-      if (state.filter.fehlendeFelder.has(fIdx)) state.filter.fehlendeFelder.delete(fIdx);
-      else { state.filter.fehlendeFelder.clear(); state.filter.fehlendeFelder.add(fIdx); }
-      rebuildFilterUI(); renderAll();
-    });
+
+/* ---------- v3 Abschnitt 5.2: regelbasierte "Erläuterung" (ersetzt die statische v1-Box) ---------- */
+let ovErlaeuterungAlleZeigen = false;
+function renderOvErlaeuterung(k) {
+  const box = $("#ov-erlaeuterung-body");
+  if (!box) return;
+  const ergebnisse = Core.evaluateRegeln(k, "gesamt");
+  const shown = ovErlaeuterungAlleZeigen ? ergebnisse : ergebnisse.slice(0, 4);
+  box.innerHTML = shown.map((e, i) => erlaeuterungItemHtml(e, i)).join("")
+    + (!ovErlaeuterungAlleZeigen && ergebnisse.length > 4 ? '<button type="button" class="btn btn-ghost btn-sm" id="btn-ov-erl-mehr">Weitere Erkenntnisse anzeigen (' + (ergebnisse.length - 4) + ")</button>" : "")
+    + (!ergebnisse.length ? '<p class="hint">Für die aktuelle Auswahl liegen keine Erkenntnisse mit ausreichender Fallzahl vor.</p>' : "");
+  const btnMehr = $("#btn-ov-erl-mehr");
+  if (btnMehr) btnMehr.addEventListener("click", () => { ovErlaeuterungAlleZeigen = true; renderOvErlaeuterung(k); });
+  $all("#ov-erlaeuterung-body [data-drill]").forEach((el) => {
+    el.addEventListener("click", () => { applyDrill(ergebnisse[Number(el.dataset.drill)].drill); });
   });
 }
-function rowHtml(label, value, top2) {
-  const sub = top2 && top2.length ? ' <span class="ov-sub">(' + top2.join("/") + ")</span>" : "";
-  return ['<tr><td>' + esc(label) + sub + '</td><td class="num mono">' + fmtInt(value) + "</td></tr>"];
+function erlaeuterungItemHtml(e, i) {
+  const titel = e.id + " · Basis: " + fmtInt(e.werte.basis);
+  return "<dt>" + esc(e.schlagzeile) + ' <span class="info-icon" title="' + esc(titel) + '">ⓘ</span></dt>'
+    + "<dd>" + esc(e.befund) + (e.geringeFallzahl ? ' <em class="ov-geringe-fallzahl">(geringe Fallzahl)</em>' : "")
+    + ' <button type="button" class="erl-drill-link" data-drill="' + i + '">Daten ansehen →</button></dd>';
 }
-function fieldRowHtml(f, isSonstige) {
-  const active = f.feldIdx != null && state.filter.fehlendeFelder.has(f.feldIdx);
-  return ['<tr class="ov-row-clickable' + (active ? " ov-section" : "") + '"' + (f.feldIdx != null ? ' data-feld="' + f.feldIdx + '"' : "") + ">"
-    + "<td>" + esc(f.label) + (isSonstige ? "" : "") + '</td><td class="num mono">' + fmtInt(f.belege) + "</td></tr>"];
+
+/* ---------- Generischer Drill-Link: Tab wechseln + passende Filter setzen ---------- */
+function applyDrill(drill) {
+  if (!drill) return;
+  const snap = activeSnapshot();
+  if (!snap) return;
+  if (drill.kategorie) state.filter.kategorien = new Set([drill.kategorie]);
+  if (drill.hinweis && drill.hinweis.code) {
+    const target = snap.dict.hinweis.findIndex((h) => h.code === drill.hinweis.code && (!drill.hinweis.kategorie || snap.dict.kategorie[h.kat] === drill.hinweis.kategorie));
+    if (target >= 0) {
+      state.filter.hinweise = new Set([target]);
+      state.hwgSelectedHinweis = target;
+      state.hwgExplicit = true;
+    }
+  }
+  if (drill.betragsklasse) {
+    state.filter.betragsklassen = new Set([drill.betragsklasse]);
+    if (drill.betragsklasse === "0 € / kein Betrag") state.filter.betragNullSeparat = true;
+  }
+  state.activeTab = drill.tab;
+  rebuildFilterUI();
+  renderAll();
+}
+
+/* ---------- v3 Abschnitt 4: Tab "Management Summary" ---------- */
+function selectKernaussagen(ergebnisse) {
+  const byId = {};
+  ergebnisse.forEach((e) => { byId[e.id] = e; });
+  const selected = [];
+  const used = new Set();
+  if (byId.R01_MENGENGERUEST) { selected.push(byId.R01_MENGENGERUEST); used.add("R01_MENGENGERUEST"); }
+  const r11 = byId.R11_VORTAG;
+  if (r11 && Math.abs(r11.werte.deltaPctRaw || 0) >= 0.05) { selected.push(r11); used.add("R11_VORTAG"); }
+  ergebnisse.forEach((e) => {
+    if (selected.length >= 5 || used.has(e.id)) return;
+    selected.push(e); used.add(e.id);
+  });
+  return selected.slice(0, 5);
+}
+function kernaussageHtml(e, i) {
+  const titel = e.id + " · Basis: " + fmtInt(e.werte.basis);
+  return '<div class="ms-kernaussage"><div class="ms-kernaussage-num">' + (i + 1) + '</div><div class="ms-kernaussage-body">'
+    + "<b>" + esc(e.schlagzeile) + ' <span class="info-icon" title="' + esc(titel) + '">ⓘ</span></b>'
+    + "<p>" + esc(e.befund) + (e.geringeFallzahl ? ' <em class="ov-geringe-fallzahl">(geringe Fallzahl)</em>' : "")
+    + ' <button type="button" class="erl-drill-link" data-drill="' + i + '">Daten ansehen →</button></p></div></div>';
+}
+
+function renderManagementSummary(snap, k) {
+  const dokArtSuffix = k.dokArtAnzahl === 1 && k.dokArtRangfolge[0] ? " · " + k.dokArtRangfolge[0].name + " (" + k.dokArtRangfolge[0].code + ")" : "";
+  $("#ms-header-title").textContent = "Management Summary · Stichtag " + fmtDateDe(snap.stichtag) + dokArtSuffix;
+
+  const pills = activeFilterPills();
+  const banner = $("#ms-filter-banner");
+  if (pills.length) {
+    banner.hidden = false;
+    banner.textContent = "Bezieht sich auf gefilterte Menge: " + pills.map((p) => p.label).join(" · ");
+  } else {
+    banner.hidden = true;
+  }
+
+  const delta = k.vortag ? k.belege - k.vortag.belege : null;
+  $("#ms-kpi-row").innerHTML = [
+    kpiTileHtml("Helle Belege gesamt", fmtInt(k.belege), null),
+    kpiTileHtml("Mit konkretem Hellwerdegrund", fmtInt(k.konkret), fmtPct(k.belege ? k.konkret / k.belege : 0)),
+    kpiTileHtml("Ø Alter (Median)", k.alter.median != null ? fmtInt(k.alter.median) + " Tage" : "—", null),
+    kpiTileHtml("Δ Vortag", delta != null ? (delta >= 0 ? "+" : "") + fmtInt(delta) : "—", delta != null ? "ggü. " + fmtDateDe(k.vortag.stichtagLabel || "") : "Benötigt 2. Stichtag"),
+  ].join("");
+
+  const ergebnisse = Core.evaluateRegeln(k, "gesamt");
+  const kern = selectKernaussagen(ergebnisse);
+  $("#ms-kernaussagen").innerHTML = kern.map((e, i) => kernaussageHtml(e, i)).join("")
+    || '<p class="hint">Für die aktuelle Auswahl liegen keine Kernaussagen mit ausreichender Fallzahl vor.</p>';
+  $all("#ms-kernaussagen [data-drill]").forEach((el) => {
+    el.addEventListener("click", () => applyDrill(kern[Number(el.dataset.drill)].drill));
+  });
+
+  renderMsDokArtListe(snap, k);
+
+  const kommentar = snap.kommentar || {};
+  $("#ms-kommentar-text").value = kommentar.text || "";
+  $("#ms-kommentar-label").textContent = kommentar.text ? "Manueller Kommentar · " + new Date(kommentar.datum).toLocaleString("de-DE") : "";
+}
+
+function renderMsDokArtListe(snap, k) {
+  const list = $("#ms-dokart-liste");
+  const dokArten = k.dokArtRangfolge;
+  if (!dokArten.length) { list.innerHTML = '<p class="hint">Keine Dok.-Arten in der aktuellen Auswahl.</p>'; return; }
+  list.innerHTML = dokArten.map((d) => {
+    const isOpen = state.msOpenDokArten.has(d.code);
+    return '<details class="beleg-cluster" data-dokart="' + esc(d.code) + '"' + (isOpen ? " open" : "") + '>'
+      + '<summary class="beleg-cluster-summary"><span class="chev">&#9656;</span>'
+      + '<span class="bc-name">' + esc(d.name) + " (" + esc(d.code) + ')</span>'
+      + '<span class="bc-schlagzeile" id="bc-schlagzeile-' + esc(d.code) + '"></span>'
+      + '<span class="bc-stats">' + fmtInt(d.belege) + " Belege</span></summary>"
+      + '<div class="beleg-cluster-body" id="bc-body-' + esc(d.code) + '"></div></details>';
+  }).join("");
+
+  dokArten.forEach((d) => {
+    const kDokArt = Core.computeKennzahlen(snap, state.filter, d.code);
+    kDokArt.stichtagLabel = snap.stichtag;
+    const ergebnisseDokArt = Core.evaluateRegeln(kDokArt, "dokArt");
+    const pctKonkret = kDokArt.belege ? Math.round((kDokArt.konkret / kDokArt.belege) * 100) : 0;
+    const schlagzeileEl = $("#bc-schlagzeile-" + CSS.escape(d.code));
+    if (schlagzeileEl) schlagzeileEl.textContent = pctKonkret + " % konkret" + (ergebnisseDokArt[0] ? " · " + ergebnisseDokArt[0].schlagzeile : "");
+
+    const details = list.querySelector('details[data-dokart="' + CSS.escape(d.code) + '"]');
+    if (!details) return;
+    if (details.open) renderMsDokArtBody(d.code, snap, kDokArt, ergebnisseDokArt, true);
+    details.addEventListener("toggle", () => {
+      if (details.open) { state.msOpenDokArten.add(d.code); renderMsDokArtBody(d.code, snap, kDokArt, ergebnisseDokArt, false); }
+      else { state.msOpenDokArten.delete(d.code); }
+    });
+  });
+
+  $("#btn-ms-alle-auf").onclick = () => { dokArten.forEach((d) => state.msOpenDokArten.add(d.code)); renderMsDokArtListe(snap, k); };
+  $("#btn-ms-alle-zu").onclick = () => { state.msOpenDokArten.clear(); renderMsDokArtListe(snap, k); };
+}
+
+function renderMsDokArtBody(code, snap, kDokArt, ergebnisseDokArt, force) {
+  const bodyEl = $("#bc-body-" + CSS.escape(code));
+  if (!bodyEl) return;
+  if (bodyEl.dataset.rendered === "1" && !force) return;
+
+  const alleZeigen = state.msErlaeuterungAlle.has(code);
+  const shown = alleZeigen ? ergebnisseDokArt : ergebnisseDokArt.slice(0, 4);
+  const globalK = Core.computeKennzahlen(snap, Core.emptyFilter(), code);
+
+  bodyEl.innerHTML = '<div class="bc-grid">'
+    + '<div class="table-wrap"><table class="ov-table"><tbody>'
+    + uebersichtTabelleHtml(kDokArt, { globalHatVier: globalK.belegMaxAnzahlVerteilung[4] > 0 })
+    + "</tbody></table></div>"
+    + '<div class="erl-box"><h3>Erläuterung</h3><dl>'
+    + (shown.map((e, i) => erlaeuterungItemHtml(e, i)).join("") || '<p class="hint">Keine Erkenntnisse mit ausreichender Fallzahl.</p>')
+    + (!alleZeigen && ergebnisseDokArt.length > 4 ? '<button type="button" class="btn btn-ghost btn-sm" data-ms-mehr="1">Weitere Erkenntnisse anzeigen (' + (ergebnisseDokArt.length - 4) + ")</button>" : "")
+    + "</dl></div></div>"
+    + '<div class="bc-footnotes">Maximal mögliches Potenzial auf Basis des Stichtagsbestands, nicht als gesichert dunkel durchlaufende Menge zu verstehen. '
+    + '<button type="button" class="erl-drill-link" data-ms-setall="1">Alle Filter auf diese Dok.-Art setzen</button></div>';
+  bodyEl.dataset.rendered = "1";
+
+  $all("[data-drill]", bodyEl).forEach((el) => {
+    el.addEventListener("click", () => applyDrill(shown[Number(el.dataset.drill)].drill));
+  });
+  const btnMehr = bodyEl.querySelector("[data-ms-mehr]");
+  if (btnMehr) btnMehr.addEventListener("click", () => { state.msErlaeuterungAlle.add(code); renderMsDokArtBody(code, snap, kDokArt, ergebnisseDokArt, true); });
+  const btnSetAll = bodyEl.querySelector("[data-ms-setall]");
+  if (btnSetAll) btnSetAll.addEventListener("click", () => {
+    state.filter = Core.emptyFilter();
+    state.filter.dokArt = code;
+    state.activeTab = "uebersicht";
+    rebuildFilterUI(); renderAll();
+  });
 }
 
 function renderKategorieCharts(agg) {
@@ -2270,12 +3051,16 @@ function renderAll() {
   const agg = Core.aggregate(snap, state.filter);
   const prev = previousSnapshot();
   const prevAgg = prev ? Core.aggregate(prev, state.filter) : null;
+  const k = Core.computeKennzahlen(snap, state.filter, null);
+  if (prev) k.vortag = Core.computeKennzahlen(prev, state.filter, null);
 
   renderKpiRow(agg, prevAgg);
   renderPills();
   $("#header-subtitle").textContent = "KLTB0570 · RE-ambulant · Stichtag " + fmtDateDe(state.activeStichtag);
 
   $all(".tab-btn").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === state.activeTab)));
+  const tabMs = $("#tab-management-summary");
+  if (tabMs) tabMs.hidden = state.activeTab !== "management-summary";
   $("#tab-uebersicht").hidden = state.activeTab !== "uebersicht";
   $("#tab-servicehinweise").hidden = state.activeTab !== "servicehinweise";
   $("#tab-verlauf").hidden = state.activeTab !== "verlauf";
@@ -2283,9 +3068,10 @@ function renderAll() {
   if (tabHwg) tabHwg.hidden = state.activeTab !== "hellwerdegruende";
   const tabDav = $("#tab-dokart-verteilung");
   if (tabDav) tabDav.hidden = state.activeTab !== "dokart-verteilung";
-  $("#kpi-row").hidden = state.activeTab === "verlauf" || state.activeTab === "hellwerdegruende" || state.activeTab === "dokart-verteilung";
+  $("#kpi-row").hidden = state.activeTab === "verlauf" || state.activeTab === "hellwerdegruende" || state.activeTab === "dokart-verteilung" || state.activeTab === "management-summary";
 
-  if (state.activeTab === "uebersicht") renderUebersicht(snap, agg);
+  if (state.activeTab === "management-summary" && typeof renderManagementSummary === "function") renderManagementSummary(snap, k);
+  else if (state.activeTab === "uebersicht") renderUebersicht(snap, agg, k);
   else if (state.activeTab === "servicehinweise") renderServicehinweise(snap, agg);
   else if (state.activeTab === "verlauf") renderVerlauf();
   else if (state.activeTab === "hellwerdegruende" && typeof renderHellwerdegruende === "function") renderHellwerdegruende(snap, agg);
@@ -2482,6 +3268,16 @@ function wireEvents() {
   });
   $("#dav-search").addEventListener("input", (e) => { state.davSearch = e.target.value; renderAll(); });
   $("#btn-dav-csv").addEventListener("click", exportDavCsv);
+
+  $("#btn-ms-kommentar-speichern").addEventListener("click", async () => {
+    const snap = activeSnapshot();
+    if (!snap) return;
+    const text = $("#ms-kommentar-text").value.trim();
+    snap.kommentar = text ? { text, datum: new Date().toISOString() } : null;
+    await idbPutSnapshot(snap);
+    showToast(text ? "Kommentar gespeichert." : "Kommentar gelöscht.");
+    renderAll();
+  });
   $all("th.sortable").forEach((th) => th.addEventListener("click", () => {
     const key = th.dataset.sort;
     if (state.shSort.key === key) state.shSort.dir = state.shSort.dir === "asc" ? "desc" : "asc";
